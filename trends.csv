@@ -1,0 +1,40 @@
+﻿category,signal,description,horizon,demand_strength,competition
+Education,AI Tutor Personalization,개인 맞춤형 AI 학습 튜터 확산,1-3y,5,Medium
+Education,Micro Credential Platforms,마이크로 자격증 및 스킬 인증 플랫폼 성장,1-3y,4,Medium
+Education,AI Learning Analytics,학습 데이터 분석 기반 맞춤 교육 서비스,1-3y,4,Medium
+Education,Corporate Upskilling Platforms,기업 재교육 플랫폼 수요 증가,1-3y,4,High
+Education,VR Learning Environments,VR 기반 몰입형 교육 환경 확대,3-5y,3,Medium
+Workforce,SME Reskilling,중소기업 재교육 및 직무 전환 교육 확대,1-3y,5,Medium
+Workforce,AI Career Coaching,AI 기반 경력 설계 및 취업 코칭 서비스,1-3y,4,Medium
+Workforce,Gig Skill Platforms,프리랜서/프로젝트 기반 스킬 매칭 플랫폼 성장,1-3y,4,High
+Workforce,AI Interview Training,AI 기반 면접 훈련 서비스 증가,1-3y,3,Medium
+PublicSector,GovTech Automation,행정 자동화 및 공공 디지털 전환 확대,1-3y,5,Low
+PublicSector,Digital Citizen Services,디지털 민원 서비스 플랫폼 확장,1-3y,4,Medium
+PublicSector,Smart Policy Analytics,정책 분석 및 데이터 기반 의사결정 확대,3-5y,3,Low
+PublicSector,Public Data Platforms,공공 데이터 활용 서비스 증가,1-3y,4,Medium
+Healthcare,Remote Health Monitoring,원격 건강 모니터링 서비스 증가,1-3y,5,High
+Healthcare,AI Diagnostics,AI 기반 질병 진단 서비스 확대,1-3y,5,High
+Healthcare,Digital Therapeutics,디지털 치료제 및 건강관리 앱 확산,3-5y,4,Medium
+Healthcare,AI Mental Health Tools,AI 기반 정신 건강 상담 서비스 증가,1-3y,4,Medium
+Aging,Silver Tech Services,고령층 생활 지원 기술 시장 확대,3-5y,5,Medium
+Aging,Elder Care Platforms,노인 돌봄 플랫폼 및 매칭 서비스 성장,1-3y,4,Medium
+Aging,Smart Home Care,고령층 스마트 홈 케어 기술 확산,3-5y,4,Medium
+ESG,Carbon Tracking SaaS,탄소 배출 추적 SaaS 시장 성장,1-3y,4,High
+ESG,Green Supply Chain Tech,친환경 공급망 관리 기술 확대,3-5y,3,Medium
+ESG,ESG Reporting Automation,ESG 보고 자동화 소프트웨어 증가,1-3y,4,Medium
+ESG,Sustainable Finance Tools,지속가능 투자 분석 도구 확산,3-5y,3,Medium
+Manufacturing,AI Quality Inspection,AI 기반 제조 품질 검사 시스템 확대,1-3y,4,Medium
+Manufacturing,Smart Factory Platforms,스마트 공장 플랫폼 확산,3-5y,4,High
+Manufacturing,Predictive Maintenance AI,AI 기반 설비 예측 유지보수 성장,1-3y,4,Medium
+Logistics,Last Mile Optimization,라스트마일 물류 최적화 서비스 확대,1-3y,4,High
+Logistics,Autonomous Delivery Systems,자율 배송 기술 개발 확대,3-5y,3,High
+Logistics,Warehouse Robotics,물류 창고 로봇 자동화 증가,1-3y,4,Medium
+Security,AI Anomaly Detection,AI 기반 이상 탐지 보안 시스템 성장,1-3y,4,Medium
+Security,Zero Trust Security Platforms,Zero Trust 보안 플랫폼 확산,1-3y,4,High
+Security,Identity Verification AI,AI 기반 신원 인증 기술 확대,1-3y,3,Medium
+Content,AI Video Creation Tools,AI 기반 영상 제작 자동화 서비스 증가,1-3y,4,High
+Content,Creator Economy Platforms,크리에이터 경제 플랫폼 성장,1-3y,4,High
+Content,Synthetic Media Workflows,합성 미디어 제작 파이프라인 확산,1-3y,3,Medium
+Data,Privacy Preserving Analytics,프라이버시 보호 데이터 분석 기술 성장,3-5y,4,Medium
+Data,AI Data Labeling Platforms,AI 학습 데이터 라벨링 시장 확대,1-3y,3,Medium
+Data,Federated Learning Systems,연합학습 기반 데이터 협력 기술 확대,3-5y,3,Medium
