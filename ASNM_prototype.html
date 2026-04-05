@@ -1,0 +1,2581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASNM · Adaptive Startup Navigation Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #020818;
+  --bg2: #050d24;
+  --bg3: #0a1535;
+  --cyan: #00f5ff;
+  --cyan2: #00bcd4;
+  --coral: #ff6b6b;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --purple: #a855f7;
+  --text: #e8f4ff;
+  --text2: #8ba8cc;
+  --glass: rgba(0,245,255,0.05);
+  --glass2: rgba(255,255,255,0.04);
+  --border: rgba(0,245,255,0.2);
+}
+
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg2: #f8f9fc;
+  --bg3: #f0f4f9;
+  --cyan: #0891b2;
+  --cyan2: #06b6d4;
+  --coral: #ef4444;
+  --gold: #d97706;
+  --green: #16a34a;
+  --purple: #9333ea;
+  --text: #1a1a2e;
+  --text2: #4a5568;
+  --glass: rgba(8,145,178,0.06);
+  --glass2: rgba(8,145,178,0.08);
+  --border: rgba(8,145,178,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* CANVAS BG */
+#canvas-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(2,8,24,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+}
+.nav-logo{
+  font-family:'Orbitron',monospace;
+  font-size:1.2rem;font-weight:900;
+  color:var(--cyan);
+  letter-spacing:2px;
+}
+.nav-logo span{color:var(--coral);}
+.nav-links{display:flex;gap:0.5rem;}
+.nav-btn{
+  padding:0.4rem 1rem;
+  background:transparent;
+  border:1px solid rgba(0,245,255,0.3);
+  color:var(--text2);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.78rem;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.nav-btn:hover,.nav-btn.active{
+  background:rgba(0,245,255,0.1);
+  color:var(--cyan);
+  border-color:var(--cyan);
+}
+
+/* PAGE SYSTEM */
+.page{
+  display:none;
+  min-height:100vh;
+  padding-top:64px;
+  position:relative;z-index:1;
+}
+.page.active{display:block;}
+
+/* === PAGE 0: LANDING === */
+#page-home{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;
+  text-align:center;
+  padding:80px 2rem 4rem;
+}
+.hero-badge{
+  display:inline-block;
+  padding:0.3rem 1rem;
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;
+  letter-spacing:3px;
+  border-radius:2px;
+  margin-bottom:2rem;
+  animation:pulse-border 2s infinite;
+}
+@keyframes pulse-border{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,0.4);}
+  50%{box-shadow:0 0 0 8px rgba(0,245,255,0);}
+}
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(2.5rem,6vw,5rem);
+  font-weight:900;
+  line-height:1.1;
+  margin-bottom:1rem;
+  background:linear-gradient(135deg,#fff 0%,var(--cyan) 50%,var(--coral) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:1rem;color:var(--text2);
+  max-width:600px;margin:0 auto 0.5rem;
+  line-height:1.8;
+}
+.hero-sub2{
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;color:var(--cyan2);
+  margin-bottom:3rem;
+  letter-spacing:1px;
+}
+.module-cards{
+  display:flex;gap:1.5rem;
+  flex-wrap:wrap;justify-content:center;
+  max-width:1100px;margin:0 auto;
+}
+.module-card{
+  flex:1;min-width:280px;max-width:340px;
+  background:var(--glass2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:2rem;
+  cursor:pointer;
+  transition:all 0.4s;
+  position:relative;overflow:hidden;
+  text-align:left;
+}
+.module-card::before{
+  content:'';position:absolute;
+  top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(0,245,255,0.06) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.4s;
+}
+.module-card:hover::before{opacity:1;}
+.module-card:hover{
+  transform:translateY(-8px);
+  border-color:var(--cyan);
+  box-shadow:0 20px 60px rgba(0,245,255,0.15);
+}
+.module-card.m2:hover{border-color:var(--coral);box-shadow:0 20px 60px rgba(255,107,107,0.15);}
+.module-card.m3:hover{border-color:var(--gold);box-shadow:0 20px 60px rgba(255,215,0,0.15);}
+.card-num{
+  font-family:'Orbitron',monospace;
+  font-size:0.7rem;letter-spacing:3px;
+  color:var(--cyan);margin-bottom:1rem;
+}
+.m2 .card-num{color:var(--coral);}
+.m3 .card-num{color:var(--gold);}
+.card-icon{font-size:2.5rem;margin-bottom:1rem;}
+.card-title{
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  margin-bottom:0.5rem;line-height:1.3;
+}
+.card-desc{font-size:0.82rem;color:var(--text2);line-height:1.7;}
+.card-arrow{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  margin-top:1.5rem;
+  font-size:0.78rem;color:var(--cyan);
+  font-family:'Space Mono',monospace;
+}
+.m2 .card-arrow{color:var(--coral);}
+.m3 .card-arrow{color:var(--gold);}
+.stats-row{
+  display:flex;gap:3rem;margin-top:4rem;
+  flex-wrap:wrap;justify-content:center;
+}
+.stat-item{text-align:center;}
+.stat-num{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:900;
+  color:var(--cyan);
+}
+.stat-label{font-size:0.75rem;color:var(--text2);margin-top:0.2rem;}
+
+/* === GLASS CARD === */
+.glass-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(0,245,255,0.15);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+}
+
+/* === PAGE HEADER === */
+.page-header{
+  padding:3rem 2rem 2rem;
+  max-width:1200px;margin:0 auto;
+}
+.page-header-inner{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.page-tag{
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;letter-spacing:3px;
+  color:var(--cyan);
+  background:rgba(0,245,255,0.1);
+  border:1px solid rgba(0,245,255,0.3);
+  padding:0.3rem 0.8rem;
+  border-radius:2px;
+  display:inline-block;margin-bottom:0.8rem;
+}
+.page-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1.5rem,3vw,2.2rem);
+  font-weight:800;
+  background:linear-gradient(90deg,#fff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.page-desc{color:var(--text2);font-size:0.88rem;margin-top:0.5rem;line-height:1.8;max-width:600px;}
+.back-btn{
+  padding:0.6rem 1.2rem;
+  background:rgba(0,245,255,0.08);
+  border:1px solid var(--border);
+  color:var(--cyan);
+  border-radius:8px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.82rem;
+  transition:all 0.3s;
+  white-space:nowrap;
+}
+.back-btn:hover{background:rgba(0,245,255,0.15);}
+
+/* === MODULE 1: TRENDS === */
+#page-m1 .content{padding:0 2rem 4rem;max-width:1200px;margin:0 auto;}
+.trend-instruction{
+  background:rgba(0,245,255,0.05);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:12px;
+  padding:1rem 1.5rem;
+  font-size:0.85rem;
+  color:var(--text2);
+  margin-bottom:2rem;
+  display:flex;align-items:center;gap:0.8rem;
+}
+.selected-count{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:900;
+  color:var(--cyan);
+}
+.trend-grid{
+  display:flex;flex-wrap:wrap;gap:0.8rem;
+  margin-bottom:2rem;
+}
+.trend-block{
+  padding:0.6rem 1.2rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px;
+  cursor:pointer;
+  transition:all 0.3s;
+  font-size:0.82rem;
+  display:flex;align-items:center;gap:0.5rem;
+  user-select:none;
+  position:relative;
+  overflow:hidden;
+}
+.trend-block:hover{
+  background:rgba(0,245,255,0.08);
+  border-color:rgba(0,245,255,0.4);
+}
+.trend-block.selected{
+  background:rgba(0,245,255,0.15);
+  border-color:var(--cyan);
+  color:var(--cyan);
+  box-shadow:0 0 15px rgba(0,245,255,0.2);
+}
+.trend-block.hot::after{
+  content:'🔥';position:absolute;top:-2px;right:4px;font-size:0.6rem;
+}
+.trend-tag{
+  font-size:0.6rem;
+  padding:0.1rem 0.4rem;
+  border-radius:3px;
+  font-family:'Space Mono',monospace;
+}
+.tag-ai{background:rgba(168,85,247,0.3);color:#c084fc;}
+.tag-market{background:rgba(0,255,136,0.3);color:var(--green);}
+.tag-tech{background:rgba(0,188,212,0.3);color:var(--cyan2);}
+.tag-social{background:rgba(255,107,107,0.3);color:var(--coral);}
+.tag-finance{background:rgba(255,215,0,0.3);color:var(--gold);}
+.trend-size{font-size:0.7rem;color:var(--text2);}
+
+.trend-result{
+  display:none;
+  animation:fadeInUp 0.5s ease;
+}
+.trend-result.show{display:block;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+.result-section-title{
+  font-family:'Orbitron',monospace;
+  font-size:0.9rem;font-weight:700;
+  color:var(--cyan);
+  margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.result-section-title.coral{color:var(--coral);}
+.result-section-title.gold{color:var(--gold);}
+
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:2rem;}
+.news-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:1.2rem;
+  transition:all 0.3s;
+  cursor:pointer;
+}
+.news-card:hover{border-color:rgba(0,245,255,0.3);background:rgba(0,245,255,0.05);}
+.news-source{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;letter-spacing:2px;
+  color:var(--cyan2);margin-bottom:0.4rem;
+}
+.news-title{font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;line-height:1.5;}
+.news-desc{font-size:0.75rem;color:var(--text2);line-height:1.6;}
+.news-meta{
+  display:flex;justify-content:space-between;
+  margin-top:0.8rem;font-size:0.7rem;color:var(--text2);
+}
+.news-trend-tag{
+  font-size:0.65rem;padding:0.2rem 0.5rem;
+  background:rgba(0,245,255,0.1);color:var(--cyan);
+  border-radius:3px;font-family:'Space Mono',monospace;
+}
+
+/* Market Chart */
+.market-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;
+  margin-bottom:2rem;
+}
+@media(max-width:700px){.market-grid{grid-template-columns:1fr;}}
+.market-chart-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.chart-title{font-size:0.85rem;font-weight:600;margin-bottom:1rem;color:var(--text2);}
+canvas.chart{width:100%!important;height:180px!important;}
+
+/* === MODULE 2: FOUNDER DNA === */
+#page-m2 .content{padding:0 2rem 4rem;max-width:800px;margin:0 auto;}
+.quiz-progress{
+  background:rgba(255,255,255,0.05);
+  border-radius:100px;
+  height:4px;
+  margin-bottom:2rem;
+  overflow:hidden;
+}
+.quiz-progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--coral),#ff9500);
+  border-radius:100px;
+  transition:width 0.5s ease;
+}
+.quiz-step{display:none;}
+.quiz-step.active{display:block;animation:fadeInUp 0.4s ease;}
+.question-num{
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;letter-spacing:2px;
+  color:var(--coral);margin-bottom:0.8rem;
+}
+.question-text{
+  font-size:1.2rem;font-weight:600;
+  line-height:1.7;margin-bottom:2rem;
+}
+.options{display:flex;flex-direction:column;gap:0.8rem;}
+.option-btn{
+  padding:1rem 1.5rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  text-align:left;
+  cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.88rem;
+  color:var(--text);
+  transition:all 0.3s;
+  line-height:1.5;
+}
+.option-btn:hover,.option-btn.selected{
+  background:rgba(255,107,107,0.1);
+  border-color:var(--coral);
+  color:white;
+}
+.option-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;color:var(--coral);
+  margin-bottom:0.2rem;display:block;
+}
+
+/* Founder result */
+.founder-result{display:none;animation:fadeInUp 0.5s ease;}
+.founder-result.show{display:flex;flex-direction:column;gap:2rem;}
+.founder-type-header{text-align:center;padding:2rem;}
+.founder-type-badge{
+  display:inline-block;
+  font-family:'Orbitron',monospace;
+  font-size:2.5rem;font-weight:900;
+  margin-bottom:1rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.founder-type-name{
+  font-family:'Orbitron',monospace;
+  font-size:1.4rem;font-weight:800;
+  margin-bottom:0.5rem;
+}
+.founder-type-eng{font-size:0.85rem;color:var(--text2);}
+.founder-desc{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.founder-traits{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
+.trait-chip{
+  padding:0.3rem 0.8rem;
+  border-radius:100px;
+  font-size:0.75rem;
+  background:rgba(255,107,107,0.15);
+  border:1px solid rgba(255,107,107,0.4);
+  color:var(--coral);
+}
+.suitable-biz{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:0.8rem;margin-top:1rem;
+}
+.biz-chip{
+  padding:0.7rem 1rem;
+  background:rgba(0,245,255,0.08);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:10px;
+  font-size:0.8rem;text-align:center;
+}
+
+.radar-container{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:1.5rem;
+  display:flex;flex-direction:column;align-items:center;
+}
+#radarCanvas{max-width:350px;width:100%;}
+
+.founder-types-all{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;padding:1.5rem;
+}
+.types-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;}
+@media(max-width:600px){.types-grid{grid-template-columns:repeat(2,1fr);}}
+.type-mini{
+  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.type-mini:hover{border-color:var(--coral);background:rgba(255,107,107,0.08);}
+.type-mini.current{border-color:var(--coral);background:rgba(255,107,107,0.12);}
+.type-mini-emoji{font-size:1.5rem;margin-bottom:0.3rem;}
+.type-mini-code{
+  font-family:'Orbitron',monospace;font-size:0.7rem;
+  color:var(--coral);font-weight:700;margin-bottom:0.2rem;
+}
+.type-mini-name{font-size:0.72rem;color:var(--text2);}
+
+/* NEXT BTN */
+.btn-primary{
+  padding:0.9rem 2rem;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  border:none;border-radius:10px;
+  color:var(--bg);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.88rem;font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s;
+  display:inline-flex;align-items:center;gap:0.5rem;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,245,255,0.3);}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#ff9500);}
+.btn-coral:hover{box-shadow:0 8px 30px rgba(255,107,107,0.3);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#ff9500);}
+.btn-gold:hover{box-shadow:0 8px 30px rgba(255,215,0,0.3);}
+
+/* === MODULE 3A: SIMULATOR === */
+#page-m3a .content{padding:0 2rem 4rem;max-width:900px;margin:0 auto;}
+.sim-steps{
+  display:flex;gap:0.3rem;
+  margin-bottom:2rem;
+  overflow-x:auto;padding-bottom:0.5rem;
+}
+.sim-step-dot{
+  display:flex;flex-direction:column;align-items:center;gap:0.3rem;
+  min-width:70px;flex:1;
+}
+.sim-dot{
+  width:32px;height:32px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.03);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;
+  font-family:'Space Mono',monospace;
+  transition:all 0.3s;
+  color:var(--text2);
+  cursor:default;
+}
+.sim-dot.active{border-color:var(--gold);background:rgba(255,215,0,0.15);color:var(--gold);}
+.sim-dot.done{border-color:var(--green);background:rgba(0,255,136,0.15);color:var(--green);}
+.sim-step-label{font-size:0.6rem;color:var(--text2);text-align:center;white-space:nowrap;}
+.sim-connector{
+  flex:1;height:2px;
+  background:rgba(255,255,255,0.08);
+  margin-top:15px;min-width:10px;
+}
+.sim-connector.done{background:var(--green);}
+
+.sim-panel{display:none;}
+.sim-panel.active{display:block;animation:fadeInUp 0.4s ease;}
+
+.sim-field{margin-bottom:1.5rem;}
+.sim-label{
+  font-size:0.78rem;color:var(--text2);
+  margin-bottom:0.5rem;display:block;
+  font-family:'Space Mono',monospace;letter-spacing:1px;
+}
+.sim-input{
+  width:100%;padding:0.8rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+}
+.sim-input:focus{outline:none;border-color:var(--gold);background:rgba(255,215,0,0.05);}
+.sim-input::placeholder{color:rgba(255,255,255,0.2);}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.8rem;}
+.choice-card{
+  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.choice-card:hover{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);}
+.choice-card.selected{border-color:var(--gold);background:rgba(255,215,0,0.1);box-shadow:0 0 15px rgba(255,215,0,0.15);}
+.choice-icon{font-size:1.8rem;margin-bottom:0.5rem;}
+.choice-name{font-size:0.78rem;font-weight:600;margin-bottom:0.2rem;}
+.choice-desc{font-size:0.68rem;color:var(--text2);}
+.capital-slider{width:100%;margin:0.5rem 0;}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--gold),rgba(255,255,255,0.1));
+  border-radius:100px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--gold);cursor:pointer;
+  box-shadow:0 0 10px rgba(255,215,0,0.4);
+}
+.capital-display{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:800;
+  color:var(--gold);text-align:center;
+  margin:1rem 0;
+}
+
+/* Simulation Result */
+.sim-result-container{
+  display:none;
+  animation:fadeInUp 0.6s ease;
+}
+.sim-result-container.show{display:block;}
+.survival-dial{
+  display:flex;flex-direction:column;align-items:center;
+  padding:2rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  margin-bottom:2rem;
+}
+#dialCanvas{max-width:280px;width:100%;}
+.survival-score{
+  font-family:'Orbitron',monospace;
+  font-size:3.5rem;font-weight:900;
+  margin-top:1rem;
+}
+.survival-label{font-size:0.85rem;color:var(--text2);}
+.scenario-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-bottom:2rem;
+}
+@media(max-width:600px){.scenario-cards{grid-template-columns:1fr;}}
+.scenario-card{
+  padding:1.2rem;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  text-align:center;
+}
+.scenario-card.optimistic{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.3);}
+.scenario-card.base{background:rgba(0,245,255,0.06);border-color:rgba(0,245,255,0.3);}
+.scenario-card.pessimistic{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.3);}
+.scenario-label{font-size:0.7rem;font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:0.5rem;}
+.scenario-pct{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:800;}
+.optimistic .scenario-pct{color:var(--green);}
+.base .scenario-pct{color:var(--cyan);}
+.pessimistic .scenario-pct{color:var(--coral);}
+.scenario-desc{font-size:0.72rem;color:var(--text2);margin-top:0.4rem;line-height:1.5;}
+.risk-factors{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;padding:1.5rem;
+  margin-bottom:1.5rem;
+}
+.risk-bar-row{display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem;}
+.risk-bar-label{font-size:0.78rem;color:var(--text2);min-width:120px;}
+.risk-bar-track{
+  flex:1;height:8px;
+  background:rgba(255,255,255,0.06);
+  border-radius:100px;overflow:hidden;
+}
+.risk-bar-fill{
+  height:100%;border-radius:100px;
+  transition:width 1s ease;
+}
+.risk-bar-val{font-size:0.75rem;font-family:'Space Mono',monospace;min-width:35px;text-align:right;}
+.download-btn{
+  width:100%;padding:1rem;
+  background:linear-gradient(135deg,rgba(0,245,255,0.1),rgba(168,85,247,0.1));
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--cyan);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+.download-btn:hover{background:linear-gradient(135deg,rgba(0,245,255,0.2),rgba(168,85,247,0.2));}
+
+/* === MODULE 3B: ZEP === */
+#page-m3b .content{padding:0 2rem 4rem;max-width:1000px;margin:0 auto;}
+.zep-intro{
+  background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(0,245,255,0.05));
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:20px;
+  padding:2rem;margin-bottom:2rem;
+  display:flex;align-items:center;gap:2rem;
+  flex-wrap:wrap;
+}
+.zep-logo-area{
+  text-align:center;min-width:160px;
+}
+.zep-logo{
+  font-family:'Orbitron',monospace;
+  font-size:2.5rem;font-weight:900;
+  color:var(--purple);
+  text-shadow:0 0 30px rgba(168,85,247,0.5);
+}
+.zep-badge{
+  display:inline-block;
+  padding:0.2rem 0.6rem;
+  background:rgba(168,85,247,0.2);
+  border:1px solid rgba(168,85,247,0.4);
+  border-radius:3px;
+  font-size:0.65rem;
+  font-family:'Space Mono',monospace;
+  color:var(--purple);
+  margin-top:0.3rem;
+}
+.zep-desc{font-size:0.88rem;color:var(--text2);line-height:1.8;flex:1;}
+.zep-features{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;}
+.zep-feature{
+  padding:1.2rem;
+  background:rgba(168,85,247,0.06);
+  border:1px solid rgba(168,85,247,0.2);
+  border-radius:14px;
+}
+.zep-feature-icon{font-size:1.5rem;margin-bottom:0.5rem;}
+.zep-feature-title{font-size:0.85rem;font-weight:700;margin-bottom:0.3rem;}
+.zep-feature-desc{font-size:0.75rem;color:var(--text2);line-height:1.6;}
+.zep-enter-btn{
+  width:100%;padding:1.2rem;
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  border:none;border-radius:14px;
+  color:white;
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s;
+  letter-spacing:2px;
+  box-shadow:0 8px 40px rgba(168,85,247,0.3);
+}
+.zep-enter-btn:hover{transform:translateY(-3px);box-shadow:0 12px 50px rgba(168,85,247,0.4);}
+.zep-mock{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(168,85,247,0.2);
+  border-radius:16px;
+  padding:2rem;
+  margin-top:2rem;
+  text-align:center;
+}
+.zep-world{
+  width:100%;max-width:600px;
+  height:300px;
+  background:linear-gradient(135deg,#0d0d2b,#1a0d3d);
+  border-radius:12px;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.pixel-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(168,85,247,0.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(168,85,247,0.08) 1px,transparent 1px);
+  background-size:24px 24px;
+}
+.zep-buildings{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:flex-end;justify-content:center;gap:10px;padding:0 20px;}
+.zep-building{
+  width:40px;
+  background:linear-gradient(180deg,rgba(168,85,247,0.6),rgba(168,85,247,0.2));
+  border-radius:4px 4px 0 0;
+  position:relative;
+}
+.zep-character{
+  position:absolute;bottom:60px;left:50%;transform:translateX(-50%);
+  font-size:2rem;
+  animation:float 2s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(-10px);}}
+.zep-label{
+  position:absolute;top:20px;
+  font-family:'Orbitron',monospace;
+  font-size:0.7rem;letter-spacing:3px;
+  color:rgba(168,85,247,0.7);
+}
+
+/* FINAL RESULT PAGE */
+#page-result .content{padding:0 2rem 4rem;max-width:1000px;margin:0 auto;}
+.report-header{
+  background:linear-gradient(135deg,rgba(0,245,255,0.06),rgba(168,85,247,0.06));
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:20px;
+  padding:2rem;margin-bottom:2rem;
+  text-align:center;
+}
+.report-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:900;
+  margin-bottom:0.5rem;
+}
+.report-meta{font-size:0.78rem;color:var(--text2);font-family:'Space Mono',monospace;}
+.report-sections{display:flex;flex-direction:column;gap:1.5rem;margin-bottom:2rem;}
+.report-section{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.report-section-title{
+  font-family:'Orbitron',monospace;font-size:0.85rem;
+  color:var(--cyan);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.report-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.6rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:0.83rem;
+}
+.report-row:last-child{border-bottom:none;}
+.report-row-label{color:var(--text2);}
+.report-row-val{font-weight:600;font-family:'Space Mono',monospace;}
+.final-score-row{
+  display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;
+}
+.final-score-card{
+  flex:1;min-width:140px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:1.2rem;
+  text-align:center;
+}
+.final-score-num{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:900;margin-bottom:0.3rem;
+}
+.final-score-label{font-size:0.72rem;color:var(--text2);}
+.recommendations{display:flex;flex-direction:column;gap:0.8rem;}
+.rec-item{
+  display:flex;gap:1rem;align-items:flex-start;
+  padding:0.8rem 1rem;
+  background:rgba(255,255,255,0.02);
+  border-radius:10px;
+  border-left:3px solid var(--cyan);
+}
+.rec-item.warn{border-left-color:var(--coral);}
+.rec-item.info{border-left-color:var(--gold);}
+.rec-icon{font-size:1rem;min-width:20px;}
+.rec-text{font-size:0.82rem;line-height:1.6;color:var(--text2);}
+.download-row{display:flex;gap:1rem;flex-wrap:wrap;}
+.dl-btn{
+  flex:1;min-width:200px;
+  padding:1rem;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(0,245,255,0.06);
+  color:var(--cyan);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.85rem;font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+.dl-btn:hover{background:rgba(0,245,255,0.15);}
+.dl-btn.purple{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.06);color:var(--purple);}
+.dl-btn.purple:hover{background:rgba(168,85,247,0.15);}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  .module-cards{flex-direction:column;}
+  .module-card{max-width:100%;}
+  .market-grid{grid-template-columns:1fr;}
+  .scenario-cards{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+  .types-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* TOOLTIP */
+.tooltip{
+  position:relative;cursor:help;
+}
+.tooltip:hover::after{
+  content:attr(data-tip);
+  position:absolute;bottom:100%;left:50%;transform:translateX(-50%);
+  background:rgba(5,13,36,0.95);
+  border:1px solid var(--border);
+  border-radius:6px;padding:0.4rem 0.7rem;
+  font-size:0.72rem;color:var(--text);
+  white-space:nowrap;z-index:200;pointer-events:none;
+}
+
+/* LOADING ANIM */
+.loading-dots{display:inline-flex;gap:4px;}
+.loading-dots span{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);
+  animation:bounce 1.2s infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:.2s;}
+.loading-dots span:nth-child(3){animation-delay:.4s;}
+@keyframes bounce{0%,80%,100%{transform:scale(0);}40%{transform:scale(1);}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:rgba(0,245,255,0.2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,245,255,0.4);}
+
+/* Light theme nav override */
+[data-theme="light"] nav {
+  background:rgba(255,255,255,0.95);
+  border-bottom:1px solid rgba(8,145,178,0.15);
+}
+
+[data-theme="light"] .nav-btn {
+  border-color: rgba(8,145,178,0.3);
+  color: #4a5568;
+}
+
+[data-theme="light"] .nav-btn:hover, 
+[data-theme="light"] .nav-btn.active {
+  background: rgba(8,145,178,0.1);
+  color: #0891b2;
+  border-color: #0891b2;
+}
+
+[data-theme="light"] .nav-logo {
+  color: #0891b2;
+}
+
+[data-theme="light"] .nav-logo span {
+  color: #ef4444;
+}
+
+/* Light theme general */
+[data-theme="light"] {
+  background: #ffffff;
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .glass-card {
+  background: rgba(255,255,255,0.6);
+  border: 1px solid rgba(8,145,178,0.15);
+}
+
+[data-theme="light"] .module-card {
+  background: rgba(255,255,255,0.8);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+}
+
+[data-theme="light"] .module-card:hover {
+  box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+}
+
+[data-theme="light"] .page-tag {
+  background: rgba(8,145,178,0.1);
+  border-color: rgba(8,145,178,0.3);
+  color: #0891b2;
+}
+
+[data-theme="light"] .hero-title {
+  background: linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #ef4444 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] .page-title {
+  background: linear-gradient(90deg, #0891b2, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="light"] .trend-instruction {
+  background: rgba(8,145,178,0.06);
+  border-color: rgba(8,145,178,0.2);
+}
+
+[data-theme="light"] .trend-block {
+  background: rgba(8,145,178,0.06);
+  border-color: rgba(8,145,178,0.15);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .trend-block:hover {
+  background: rgba(8,145,178,0.12);
+  border-color: rgba(8,145,178,0.4);
+}
+
+[data-theme="light"] .trend-block.selected {
+  background: rgba(8,145,178,0.15);
+  border-color: #0891b2;
+  color: #0891b2;
+}
+
+[data-theme="light"] .news-card {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .news-card:hover {
+  border-color: rgba(8,145,178,0.3);
+  background: rgba(8,145,178,0.04);
+}
+
+[data-theme="light"] .market-chart-card {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .option-btn {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .option-btn:hover,
+[data-theme="light"] .option-btn.selected {
+  background: rgba(239,68,68,0.1);
+  border-color: #ef4444;
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .choice-card {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .choice-card:hover {
+  border-color: rgba(217,119,6,0.4);
+  background: rgba(217,119,6,0.06);
+}
+
+[data-theme="light"] .choice-card.selected {
+  border-color: #d97706;
+  background: rgba(217,119,6,0.1);
+}
+
+[data-theme="light"] .sim-input {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .sim-input:focus {
+  border-color: #d97706;
+  background: rgba(217,119,6,0.08);
+}
+
+[data-theme="light"] .sim-input::placeholder {
+  color: rgba(26,26,46,0.3);
+}
+
+[data-theme="light"] .founder-desc {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .radar-container {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .founder-types-all {
+  background: #f0f4f9;
+  border-color: rgba(8,145,178,0.1);
+}
+
+[data-theme="light"] .type-mini {
+  background: white;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .type-mini:hover {
+  border-color: #ef4444;
+  background: rgba(239,68,68,0.08);
+}
+
+[data-theme="light"] .type-mini.current {
+  border-color: #ef4444;
+  background: rgba(239,68,68,0.12);
+}
+
+[data-theme="light"] .survival-dial {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .scenario-card.optimistic {
+  background: rgba(22,163,74,0.08);
+  border-color: rgba(22,163,74,0.3);
+}
+
+[data-theme="light"] .scenario-card.base {
+  background: rgba(8,145,178,0.08);
+  border-color: rgba(8,145,178,0.3);
+}
+
+[data-theme="light"] .scenario-card.pessimistic {
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.3);
+}
+
+[data-theme="light"] .risk-factors {
+  background: #f0f4f9;
+  border-color: rgba(8,145,178,0.1);
+}
+
+[data-theme="light"] .risk-bar-track {
+  background: rgba(8,145,178,0.06);
+}
+
+[data-theme="light"] .report-section {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .final-score-card {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .rec-item {
+  background: #f8f9fc;
+  border-color: rgba(8,145,178,0.12);
+}
+
+[data-theme="light"] .dl-btn {
+  border-color: rgba(8,145,178,0.2);
+  background: rgba(8,145,178,0.08);
+  color: #0891b2;
+}
+
+[data-theme="light"] .dl-btn:hover {
+  background: rgba(8,145,178,0.15);
+}
+
+[data-theme="light"] .dl-btn.purple {
+  border-color: rgba(147,51,234,0.3);
+  background: rgba(147,51,234,0.08);
+  color: #9333ea;
+}
+
+[data-theme="light"] .dl-btn.purple:hover {
+  background: rgba(147,51,234,0.15);
+}
+
+[data-theme="light"] .zep-intro {
+  background: linear-gradient(135deg, rgba(147,51,234,0.08), rgba(8,145,178,0.06));
+  border-color: rgba(147,51,234,0.25);
+}
+
+[data-theme="light"] .zep-feature {
+  background: rgba(147,51,234,0.08);
+  border-color: rgba(147,51,234,0.2);
+}
+
+[data-theme="light"] .zep-mock {
+  background: #f0f4f9;
+  border-color: rgba(147,51,234,0.2);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f8f9fc;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(8,145,178,0.2);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(8,145,178,0.4);
+}
+
+[data-theme="light"] .tooltip:hover::after {
+  background: rgba(255,255,255,0.95);
+  border-color: rgba(8,145,178,0.2);
+  color: #1a1a2e;
+}
+
+[data-theme="light"] .report-header {
+  background: linear-gradient(135deg, rgba(8,145,178,0.08), rgba(147,51,234,0.08));
+  border-color: rgba(8,145,178,0.2);
+}
+
+
+/* Theme Toggle Button */
+.theme-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--cyan);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 1rem;
+}
+
+.theme-toggle:hover {
+  background: rgba(0,245,255,0.1);
+  border-color: var(--cyan);
+}
+
+[data-theme="light"] .theme-toggle {
+  color: #0891b2;
+  border-color: rgba(8,145,178,0.3);
+}
+
+[data-theme="light"] .theme-toggle:hover {
+  background: rgba(8,145,178,0.1);
+  border-color: #0891b2;
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ASN<span>M</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('home')">홈</button>
+    <button class="nav-btn" onclick="showPage('m1')">시장트렌드</button>
+    <button class="nav-btn" onclick="showPage('m2')">창업자DNA</button>
+    <button class="nav-btn" onclick="showPage('m3a')">스타트업 시뮬레이터</button>
+    <button class="nav-btn" onclick="showPage('m3b')">메타버스</button>
+    <button class="nav-btn" onclick="showPage('result')">결과보고서</button>
+  </div>
+  <button id="theme-toggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">🌙</button>
+  
+</nav>
+
+<!-- ===== PAGE 0: HOME ===== -->
+<div id="page-home" class="page active">
+  <div style="padding:80px 2rem 4rem;max-width:1200px;margin:0 auto;text-align:center;">
+    <div class="hero-badge">ADAPTIVE STARTUP NAVIGATION MODEL · v2.0</div>
+    <h1 class="hero-title">당신의 창업을<br>데이터로 설계하라</h1>
+    <p class="hero-sub">AI 에이전트와 디지털 트윈 기술을 결합한<br>차세대 창업 의사결정 지원 시스템</p>
+    <p class="hero-sub2">SolBridge MSTM · ASNM Research · 2025</p>
+
+    <div class="module-cards">
+      <div class="module-card" onclick="showPage('m1')">
+        <div class="card-num">MODULE 01</div>
+        <div class="card-icon">📡</div>
+        <div class="card-title">미래 수요 기반<br>트렌드 발굴</div>
+        <div class="card-desc">실시간 시장 트렌드를 탐색하고, 관심 분야 5가지를 선택해 관련 뉴스와 시장 규모를 시각화합니다.</div>
+        <div class="card-arrow">탐색 시작 →</div>
+      </div>
+      <div class="module-card m2" onclick="showPage('m2')">
+        <div class="card-num">MODULE 02</div>
+        <div class="card-icon">🧬</div>
+        <div class="card-title">창업자 역량 &<br>DNA 진단</div>
+        <div class="card-desc">10가지 문항으로 나의 창업자 유형을 진단합니다. 6가지 창업자 DNA 중 어떤 타입인지 발견하세요.</div>
+        <div class="card-arrow">진단 시작 →</div>
+      </div>
+      <div class="module-card m3" onclick="showPage('m3a')">
+        <div class="card-num">MODULE 03</div>
+        <div class="card-icon">🚀</div>
+        <div class="card-title">리스크 시나리오<br>시뮬레이션</div>
+        <div class="card-desc">가상 스타트업을 설계하고 생존 확률을 시뮬레이션합니다. 또는 메타버스 공간에서 체험하세요.</div>
+        <div class="card-arrow">시뮬레이션 →</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">36.4%</div>
+        <div class="stat-label">한국 스타트업 5년 생존율</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">43.7%</div>
+        <div class="stat-label">시장 수요 오판 실패 비율</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">β=.831</div>
+        <div class="stat-label">지각된 유용성 채택 예측력</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1,240억</div>
+        <div class="stat-label">SAM 추정 시장 규모 (KRW)</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE M1: TRENDS ===== -->
+<div id="page-m1" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag">MODULE 01 · TREND DISCOVERY</div>
+        <h2 class="page-title">미래 수요 기반 트렌드 발굴</h2>
+        <p class="page-desc">관심 있는 트렌드 블록을 5개 선택하세요. 선택한 분야의 최신 뉴스와 시장 가치를 분석해 드립니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" id="m1-content">
+    <div style="padding:0 2rem 4rem;max-width:1200px;margin:0 auto;">
+      <div class="trend-instruction">
+        <span style="font-size:1.2rem;">💡</span>
+        <span>관심 트렌드 블록을 <strong style="color:var(--cyan);">5개</strong> 선택하면 맞춤 분석이 시작됩니다. &nbsp;|&nbsp; 현재 선택: <span class="selected-count" id="trend-count">0</span>/5</span>
+      </div>
+
+      <div class="result-section-title" style="margin-bottom:1rem;">🔥 AI / 기술 트렌드</div>
+      <div class="trend-grid" id="trend-grid-ai"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">📈 시장 / 비즈니스 트렌드</div>
+      <div class="trend-grid" id="trend-grid-market"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">🌍 사회 / 소비자 트렌드</div>
+      <div class="trend-grid" id="trend-grid-social"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">💰 핀테크 / 금융 트렌드</div>
+      <div class="trend-grid" id="trend-grid-finance"></div>
+
+      <div id="trend-result" class="trend-result" style="margin-top:2rem;">
+        <div class="result-section-title coral">📰 선택 트렌드 관련 최신 뉴스</div>
+        <div class="news-grid" id="news-grid"></div>
+        <div class="result-section-title gold" style="margin-top:2rem;">📊 선택 분야 시장 규모 & 성장률</div>
+        <div class="market-grid">
+          <div class="market-chart-card">
+            <div class="chart-title">글로벌 시장 규모 추이 (단위: 조 KRW)</div>
+            <canvas id="marketBarChart" class="chart"></canvas>
+          </div>
+          <div class="market-chart-card">
+            <div class="chart-title">연평균 성장률 비교 (CAGR %)</div>
+            <canvas id="marketLineChart" class="chart"></canvas>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+          <button class="btn-primary btn-coral" onclick="showPage('m2')">창업자 DNA 진단하러 가기 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE M2: FOUNDER DNA ===== -->
+<div id="page-m2" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(255,107,107,0.4);color:var(--coral);background:rgba(255,107,107,0.08);">MODULE 02 · FOUNDER DNA</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">창업자 역량 & DNA 진단</h2>
+        <p class="page-desc">10가지 질문으로 나만의 창업자 유형을 발견하세요. 어떤 사업이 적합한지, 어떤 강점이 있는지 알아봅니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:800px;margin:0 auto;">
+    <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
+
+    <!-- Quiz Steps -->
+    <div id="quiz-container">
+      <!-- Q1 -->
+      <div class="quiz-step active" data-q="0">
+        <div class="question-num">QUESTION 01 / 10</div>
+        <div class="question-text">새로운 아이디어를 실행할 때 당신은 어떤 방식을 선호하나요?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>직관적으로 빠르게 시작하고 나중에 수정한다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>데이터를 충분히 분석하고 계획을 세운 후 실행한다</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">C</span>팀원들과 충분히 논의하고 합의를 이끌어낸다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술적 완성도를 높인 다음에 공개한다</button>
+        </div>
+      </div>
+      <!-- Q2 -->
+      <div class="quiz-step" data-q="1">
+        <div class="question-num">QUESTION 02 / 10</div>
+        <div class="question-text">사업에서 가장 중요하다고 생각하는 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">A</span>정확한 시장 데이터와 수치 기반의 의사결정</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>고객과의 깊은 신뢰 관계 형성</button>
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">C</span>큰 비전과 시장을 변화시키는 혁신</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>지속 가능한 수익 구조와 안정적 성장</button>
+        </div>
+      </div>
+      <!-- Q3 -->
+      <div class="quiz-step" data-q="2">
+        <div class="question-num">QUESTION 03 / 10</div>
+        <div class="question-text">팀을 구성할 때 당신이 가장 먼저 찾는 사람은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">A</span>뛰어난 기술력을 가진 개발자/엔지니어</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>나와 비전을 공유하는 열정적인 동료</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">C</span>비즈니스 경험이 풍부한 운영/재무 전문가</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>고객과 시장을 잘 아는 영업/마케팅 전문가</button>
+        </div>
+      </div>
+      <!-- Q4 -->
+      <div class="quiz-step" data-q="3">
+        <div class="question-num">QUESTION 04 / 10</div>
+        <div class="question-text">실패를 경험했을 때 당신의 반응은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>빠르게 털어내고 새로운 방향으로 피벗한다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>원인을 철저히 분석하고 데이터로 학습한다</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>실패를 성장의 연료로 삼아 더 도전한다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>리스크를 줄이기 위한 안전망을 구축한다</button>
+        </div>
+      </div>
+      <!-- Q5 -->
+      <div class="quiz-step" data-q="4">
+        <div class="question-num">QUESTION 05 / 10</div>
+        <div class="question-text">비즈니스 아이디어의 원천이 주로 어디에서 오나요?</div>
+        <div class="options">
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">A</span>기술 발전이나 새로운 기술의 응용 가능성</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>사람들과의 대화와 관계에서 발견한 문제</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">C</span>시장 조사와 경쟁사 분석을 통한 기회 발견</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">D</span>개인적으로 겪은 불편함이나 사회적 문제</button>
+        </div>
+      </div>
+      <!-- Q6 -->
+      <div class="quiz-step" data-q="5">
+        <div class="question-num">QUESTION 06 / 10</div>
+        <div class="question-text">투자 유치에 대한 나의 생각은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>크게 성장하려면 과감한 투자 유치가 필수다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>자체 수익으로 성장하는 부트스트래핑을 선호</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회적 가치를 인정받는 임팩트 투자를 원한다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술력으로 정부 R&D 과제나 그랜트를 활용한다</button>
+        </div>
+      </div>
+      <!-- Q7 -->
+      <div class="quiz-step" data-q="6">
+        <div class="question-num">QUESTION 07 / 10</div>
+        <div class="question-text">고객과의 관계에서 가장 중요하게 생각하는 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">A</span>장기적인 신뢰와 로열티 형성</button>
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">B</span>빠른 사용자 확보와 바이럴 성장</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>고객이 실질적으로 변화를 느끼는 임팩트</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">D</span>데이터 기반의 고객 행동 최적화</button>
+        </div>
+      </div>
+      <!-- Q8 -->
+      <div class="quiz-step" data-q="7">
+        <div class="question-num">QUESTION 08 / 10</div>
+        <div class="question-text">10년 후 내 회사의 모습을 상상하면?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>글로벌 유니콘으로 세상을 바꾸고 있다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>탄탄한 수익 구조의 강소기업으로 성장해 있다</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회 문제를 해결하는 임팩트 기업으로 인정받는다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>특정 기술 분야의 글로벌 전문 기업이 되어 있다</button>
+        </div>
+      </div>
+      <!-- Q9 -->
+      <div class="quiz-step" data-q="8">
+        <div class="question-num">QUESTION 09 / 10</div>
+        <div class="question-text">경쟁사가 유사한 제품을 출시했을 때 당신의 대응은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>더 빠르게 다음 버전을 출시하고 앞서 나간다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>데이터로 차별점을 분석하고 포지셔닝을 강화한다</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">C</span>파트너십을 제안하거나 커뮤니티 충성도를 강화한다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술 특허와 IP를 강화해 진입장벽을 높인다</button>
+        </div>
+      </div>
+      <!-- Q10 -->
+      <div class="quiz-step" data-q="9">
+        <div class="question-num">QUESTION 10 / 10</div>
+        <div class="question-text">창업을 통해 가장 얻고 싶은 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>세상을 변화시키고 역사에 남는 임팩트</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>경제적 자유와 내 삶을 스스로 설계하는 것</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회에 긍정적 변화를 만드는 가치 창출</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>내가 가진 전문 기술을 세상에 적용하는 것</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:1.5rem;" id="quiz-nav">
+      <button class="btn-primary btn-coral" id="quiz-prev-btn" onclick="quizPrev()" style="opacity:0.3;pointer-events:none;">← 이전</button>
+      <button class="btn-primary btn-coral" id="quiz-next-btn" onclick="quizNext()" disabled style="opacity:0.4;">다음 →</button>
+    </div>
+
+    <!-- Result -->
+    <div class="founder-result" id="founder-result">
+      <div class="founder-type-header glass-card" style="padding:2rem;text-align:center;">
+        <div class="founder-type-badge" id="result-code">VSAI</div>
+        <div class="founder-type-name" id="result-name">비전형 창업가</div>
+        <div class="founder-type-eng" id="result-eng">The Visionary Pioneer</div>
+      </div>
+      <div class="radar-container glass-card">
+        <div class="result-section-title" style="align-self:flex-start;">📊 나의 창업자 역량 레이더</div>
+        <canvas id="radarCanvas" height="300"></canvas>
+      </div>
+      <div class="founder-desc glass-card" id="founder-desc-card">
+        <div class="result-section-title coral">✨ 이런 특징을 가지고 있어요</div>
+        <div class="founder-traits" id="founder-traits"></div>
+        <div class="result-section-title coral" style="margin-top:1.5rem;">💼 이런 사업이 잘 맞아요</div>
+        <div class="suitable-biz" id="suitable-biz"></div>
+        <div class="result-section-title coral" style="margin-top:1.5rem;">⚡ 주의해야 할 점</div>
+        <div id="founder-warnings" style="font-size:0.85rem;color:var(--text2);line-height:1.8;"></div>
+      </div>
+      <div class="founder-types-all glass-card" style="padding:1.5rem;">
+        <div class="result-section-title">🗺️ 6가지 창업자 DNA 유형</div>
+        <div class="types-grid" id="types-grid"></div>
+      </div>
+      <div style="text-align:center;">
+        <button class="btn-primary btn-coral" onclick="showPage('m3a')" style="margin-right:1rem;">스타트업 시뮬레이터 →</button>
+        <button class="btn-primary" onclick="retakeQuiz()">다시 테스트하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE M3A: SIMULATOR ===== -->
+<div id="page-m3a" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(255,215,0,0.4);color:var(--gold);background:rgba(255,215,0,0.08);">MODULE 03A · STARTUP SIMULATOR</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">가상 스타트업 시뮬레이터</h2>
+        <p class="page-desc">내 스타트업을 직접 설계하고 AI가 생존 확률을 시뮬레이션합니다.</p>
+      </div>
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+        <button class="back-btn" onclick="showPage('m3b')" style="border-color:rgba(168,85,247,0.4);color:var(--purple);">메타버스 체험 →</button>
+        <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+      </div>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:900px;margin:0 auto;">
+    <!-- Step Progress -->
+    <div class="sim-steps" id="sim-steps"></div>
+
+    <!-- Step 0: Company Info -->
+    <div class="sim-panel active" id="sim-0">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🏢 Step 1. 회사 기본 정보</div>
+        <div class="sim-field">
+          <label class="sim-label">회사명 (Company Name)</label>
+          <input class="sim-input" id="s-name" placeholder="예: NexAI Labs, 그린플로우, TechBridge..." oninput="updateSimPreview()">
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">비전 슬로건 (Vision Slogan)</label>
+          <input class="sim-input" id="s-vision" placeholder="예: AI로 모든 창업가의 성공을 돕는다" oninput="updateSimPreview()">
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">초기 자본금</label>
+          <input type="range" id="s-capital" min="1" max="100" value="10" class="capital-slider" oninput="updateCapital()">
+          <div class="capital-display" id="capital-display">1억 원</div>
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">창업 지역</label>
+          <div class="choice-grid">
+            <div class="choice-card" onclick="selectSim(this,'region','서울')"><div class="choice-icon">🗼</div><div class="choice-name">서울</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','판교')"><div class="choice-icon">💻</div><div class="choice-name">판교</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','부산')"><div class="choice-icon">🌊</div><div class="choice-name">부산</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','해외')"><div class="choice-icon">🌍</div><div class="choice-name">해외 진출</div></div>
+          </div>
+        </div>
+        <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+      </div>
+    </div>
+
+    <!-- Step 1: Item -->
+    <div class="sim-panel" id="sim-1">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">💡 Step 2. 사업 아이템 선택</div>
+        <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));">
+          <div class="choice-card" onclick="selectSim(this,'item','AI SaaS')"><div class="choice-icon">🤖</div><div class="choice-name">AI SaaS</div><div class="choice-desc">AI 기반 소프트웨어 서비스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','헬스케어')"><div class="choice-icon">🏥</div><div class="choice-name">헬스케어</div><div class="choice-desc">디지털 헬스·의료 AI</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','에듀테크')"><div class="choice-icon">📚</div><div class="choice-name">에듀테크</div><div class="choice-desc">교육 혁신 플랫폼</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','핀테크')"><div class="choice-icon">💳</div><div class="choice-name">핀테크</div><div class="choice-desc">금융 기술 서비스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','커머스')"><div class="choice-icon">🛒</div><div class="choice-name">커머스</div><div class="choice-desc">이커머스·D2C</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','모빌리티')"><div class="choice-icon">🚗</div><div class="choice-name">모빌리티</div><div class="choice-desc">이동 수단·물류</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','기후테크')"><div class="choice-icon">🌱</div><div class="choice-name">기후테크</div><div class="choice-desc">ESG·지속가능성</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','메타버스')"><div class="choice-icon">🌐</div><div class="choice-name">메타버스</div><div class="choice-desc">XR·가상현실</div></div>
+        </div>
+        <div style="margin-top:1rem;">
+          <label class="sim-label">페르소나 타겟 고객</label>
+          <input class="sim-input" id="s-persona" placeholder="예: 30대 직장인, 소규모 자영업자, MZ세대 여성..." oninput="updateSimPreview()">
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Tech -->
+    <div class="sim-panel" id="sim-2">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🔬 Step 3. 핵심 기술 스택 (최대 3개)</div>
+        <div class="choice-grid" id="tech-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+          <div class="choice-card" onclick="selectMulti(this,'tech','LLM/생성AI')"><div class="choice-icon">🧠</div><div class="choice-name">LLM/생성AI</div><div class="choice-desc">GPT·Claude 응용</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','컴퓨터비전')"><div class="choice-icon">👁</div><div class="choice-name">컴퓨터비전</div><div class="choice-desc">영상·이미지 AI</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','블록체인')"><div class="choice-icon">⛓</div><div class="choice-name">블록체인</div><div class="choice-desc">Web3·NFT·DeFi</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','IoT')"><div class="choice-icon">📡</div><div class="choice-name">IoT</div><div class="choice-desc">센서·스마트기기</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','클라우드')"><div class="choice-icon">☁️</div><div class="choice-name">클라우드</div><div class="choice-desc">AWS·GCP 인프라</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','모바일앱')"><div class="choice-icon">📱</div><div class="choice-name">모바일앱</div><div class="choice-desc">iOS·Android</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','로보틱스')"><div class="choice-icon">🤖</div><div class="choice-name">로보틱스</div><div class="choice-desc">자동화·로봇</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','빅데이터')"><div class="choice-icon">📊</div><div class="choice-name">빅데이터</div><div class="choice-desc">데이터 분석·BI</div></div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Talent -->
+    <div class="sim-panel" id="sim-3">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">👥 Step 4. 핵심 인재 영입 (최대 4명)</div>
+        <div class="choice-grid" id="talent-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));">
+          <div class="choice-card" onclick="selectMulti(this,'talent','CTO')"><div class="choice-icon">💻</div><div class="choice-name">CTO</div><div class="choice-desc">기술총괄 책임자</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CMO')"><div class="choice-icon">📣</div><div class="choice-name">CMO</div><div class="choice-desc">마케팅총괄</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CFO')"><div class="choice-icon">💰</div><div class="choice-name">CFO</div><div class="choice-desc">재무총괄</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CPO')"><div class="choice-icon">🎯</div><div class="choice-name">CPO</div><div class="choice-desc">제품총괄</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','AI 리드')"><div class="choice-icon">🧬</div><div class="choice-name">AI 리드</div><div class="choice-desc">AI/ML 전문가</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','세일즈 헤드')"><div class="choice-icon">🤝</div><div class="choice-name">세일즈 헤드</div><div class="choice-desc">영업·파트너십</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','UX 디자이너')"><div class="choice-icon">🎨</div><div class="choice-name">UX 디자이너</div><div class="choice-desc">사용자 경험 설계</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','해외 어드바이저')"><div class="choice-icon">🌍</div><div class="choice-name">해외 어드바이저</div><div class="choice-desc">글로벌 네트워크</div></div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Welfare -->
+    <div class="sim-panel" id="sim-4">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🎁 Step 5. 복지 & 문화 (최대 3개)</div>
+        <div class="choice-grid" id="welfare-grid">
+          <div class="choice-card" onclick="selectMulti(this,'welfare','자율출퇴근')"><div class="choice-icon">⏰</div><div class="choice-name">자율출퇴근</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','원격근무')"><div class="choice-icon">🏠</div><div class="choice-name">원격근무</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','스톡옵션')"><div class="choice-icon">📈</div><div class="choice-name">스톡옵션</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','교육지원')"><div class="choice-icon">📚</div><div class="choice-name">교육비 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','건강관리')"><div class="choice-icon">🏋️</div><div class="choice-name">건강관리</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','반려동물')"><div class="choice-icon">🐾</div><div class="choice-name">반려동물 출근</div></div>
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="runSimulation()">🚀 시뮬레이션 실행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="sim-result-container" id="sim-result">
+      <div class="survival-dial glass-card">
+        <div class="result-section-title gold" style="align-self:flex-start;">⚡ AI 생존 확률 분석 결과</div>
+        <canvas id="dialCanvas" width="280" height="200"></canvas>
+        <div class="survival-score" id="survival-pct" style="color:var(--green);">72%</div>
+        <div class="survival-label">5년 생존 가능성 (Base Case)</div>
+        <div style="font-size:0.8rem;color:var(--text2);margin-top:0.5rem;" id="sim-company-name"></div>
+      </div>
+
+      <div class="scenario-cards">
+        <div class="scenario-card optimistic">
+          <div class="scenario-label">OPTIMISTIC</div>
+          <div class="scenario-pct" id="opt-pct">84%</div>
+          <div class="scenario-desc">모든 조건 유리, 시장 빠른 반응</div>
+        </div>
+        <div class="scenario-card base">
+          <div class="scenario-label">BASE CASE</div>
+          <div class="scenario-pct" id="base-pct">72%</div>
+          <div class="scenario-desc">현재 설정 기준 시뮬레이션</div>
+        </div>
+        <div class="scenario-card pessimistic">
+          <div class="scenario-label">PESSIMISTIC</div>
+          <div class="scenario-pct" id="pes-pct">51%</div>
+          <div class="scenario-desc">시장 경쟁 심화, 자금 소진 위험</div>
+        </div>
+      </div>
+
+      <div class="risk-factors glass-card" style="padding:1.5rem;">
+        <div class="result-section-title gold">📊 리스크 요인 분석</div>
+        <div id="risk-bars"></div>
+      </div>
+
+      <div class="glass-card" style="padding:1.5rem;margin-bottom:1.5rem;">
+        <div class="result-section-title gold">💡 AI 전략 추천</div>
+        <div id="sim-recommendations" class="recommendations"></div>
+      </div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <button class="btn-primary btn-gold" onclick="showPage('result')">📋 최종 보고서 보기</button>
+        <button class="back-btn" onclick="resetSimulator()">↺ 다시 설계하기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE M3B: ZEP ===== -->
+<div id="page-m3b" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(168,85,247,0.4);color:var(--purple);background:rgba(168,85,247,0.08);">MODULE 03B · METAVERSE</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">메타버스 창업 체험관</h2>
+        <p class="page-desc">ZEP 기반 가상 창업 공간에서 동료 창업가들과 실시간으로 소통하고 창업 시뮬레이션을 체험하세요.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:1000px;margin:0 auto;">
+    <div class="zep-intro">
+      <div class="zep-logo-area">
+        <div class="zep-logo">ZEP</div>
+        <div class="zep-badge">× ASNM WORLD</div>
+      </div>
+      <div class="zep-desc">
+        <strong style="color:white;">ASNM 메타버스 창업 캠퍼스</strong>에 오신 것을 환영합니다.<br><br>
+        ZEP 기반의 가상 공간에서 다른 창업가들과 실시간으로 네트워킹하고, ASNM 모듈을 체험하며, 멘토와 1:1 상담을 진행할 수 있습니다. 아바타를 선택하고 지금 바로 입장하세요.
+      </div>
+    </div>
+
+    <div class="zep-features">
+      <div class="zep-feature">
+        <div class="zep-feature-icon">🏛️</div>
+        <div class="zep-feature-title">창업 아이디어 피칭룸</div>
+        <div class="zep-feature-desc">다른 창업가들 앞에서 3분 피칭을 연습하고 즉각적인 피드백을 받아보세요.</div>
+      </div>
+      <div class="zep-feature">
+        <div class="zep-feature-icon">🔬</div>
+        <div class="zep-feature-title">ASNM 인터랙티브 랩</div>
+        <div class="zep-feature-desc">가상 실험실에서 AI 에이전트와 대화하며 시장 분석을 체험합니다.</div>
+      </div>
+      <div class="zep-feature">
+        <div class="zep-feature-icon">🎓</div>
+        <div class="zep-feature-title">멘토 오피스</div>
+        <div class="zep-feature-desc">VC, 시리얼 창업가, 교수 멘토와 가상 공간에서 실시간 상담을 진행합니다.</div>
+      </div>
+      <div class="zep-feature">
+        <div class="zep-feature-icon">🤝</div>
+        <div class="zep-feature-title">코파운더 매칭존</div>
+        <div class="zep-feature-desc">DNA 진단 결과를 기반으로 서로 보완되는 창업 파트너를 찾아드립니다.</div>
+      </div>
+      <div class="zep-feature">
+        <div class="zep-feature-icon">📊</div>
+        <div class="zep-feature-title">리더보드 홀</div>
+        <div class="zep-feature-desc">시뮬레이션 생존 확률 순위를 경쟁하고 상위 팀에게 멘토링 기회를 드립니다.</div>
+      </div>
+      <div class="zep-feature">
+        <div class="zep-feature-icon">🎮</div>
+        <div class="zep-feature-title">창업 퀘스트 게임</div>
+        <div class="zep-feature-desc">게임 형식으로 창업의 각 단계를 미션으로 수행하며 배울 수 있습니다.</div>
+      </div>
+    </div>
+
+    <div class="zep-mock">
+      <div class="zep-world">
+        <div class="pixel-grid"></div>
+        <div class="zep-label">ASNM CAMPUS · FLOOR 1</div>
+        <div class="zep-buildings">
+          <div class="zep-building" style="height:80px;"></div>
+          <div class="zep-building" style="height:120px;"></div>
+          <div class="zep-building" style="height:60px;"></div>
+          <div class="zep-building" style="height:100px;"></div>
+          <div class="zep-building" style="height:70px;"></div>
+        </div>
+        <div class="zep-character">🧑‍💻</div>
+        <div style="position:absolute;bottom:70px;left:30%;font-size:1.2rem;animation:float 2.5s ease-in-out infinite 0.5s;">👩‍💼</div>
+        <div style="position:absolute;bottom:70px;right:25%;font-size:1.2rem;animation:float 2.2s ease-in-out infinite 1s;">👨‍🔬</div>
+      </div>
+      <div style="margin-top:1.5rem;font-size:0.82rem;color:var(--text2);">현재 <strong style="color:var(--purple);">24명</strong>이 캠퍼스에 접속 중입니다</div>
+    </div>
+
+    <div style="display:flex;gap:1rem;margin-top:2rem;flex-wrap:wrap;">
+      <button class="zep-enter-btn" style="flex:2;" onclick="enterZep()">🚀 ASNM 메타버스 캠퍼스 입장</button>
+      <button class="back-btn" style="flex:1;min-width:150px;" onclick="showPage('m3a')">← 시뮬레이터로</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== PAGE RESULT ===== -->
+<div id="page-result" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag">FINAL REPORT · ASNM ANALYSIS</div>
+        <h2 class="page-title">종합 분석 보고서</h2>
+        <p class="page-desc">ASNM 세 가지 모듈의 분석 결과를 종합한 맞춤형 창업 전략 보고서입니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:1000px;margin:0 auto;">
+    <div class="report-header">
+      <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:var(--cyan2);margin-bottom:0.5rem;">ASNM COMPREHENSIVE REPORT</div>
+      <div class="report-title" id="report-company-title">창업 전략 분석 보고서</div>
+      <div class="report-meta" id="report-meta">생성일: <span id="report-date"></span> &nbsp;|&nbsp; ASNM v2.0 · SolBridge MSTM</div>
+    </div>
+
+    <div class="final-score-row">
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-survival" style="color:var(--green);">—</div>
+        <div class="final-score-label">생존 확률 (Base)</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-type" style="color:var(--coral);">—</div>
+        <div class="final-score-label">창업자 DNA 유형</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-trends" style="color:var(--cyan);">—</div>
+        <div class="final-score-label">선택 트렌드 수</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-item" style="color:var(--gold);">—</div>
+        <div class="final-score-label">선택 사업 아이템</div>
+      </div>
+    </div>
+
+    <div class="report-sections">
+      <div class="report-section">
+        <div class="report-section-title">📡 모듈 1 · 트렌드 분석 요약</div>
+        <div id="report-trends-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">
+          모듈 1을 먼저 완료해주세요.
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--coral);">🧬 모듈 2 · 창업자 DNA 요약</div>
+        <div id="report-dna-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">
+          모듈 2를 먼저 완료해주세요.
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--gold);">🚀 모듈 3 · 스타트업 시뮬레이션 요약</div>
+        <div id="report-sim-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">
+          모듈 3 시뮬레이션을 먼저 완료해주세요.
+        </div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--purple);">⚡ 종합 전략 추천</div>
+        <div class="recommendations" id="final-recommendations">
+          <div class="rec-item"><div class="rec-icon">💡</div><div class="rec-text">모든 모듈을 완료하면 맞춤형 전략 추천이 제공됩니다.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="download-row">
+      <button class="dl-btn" onclick="downloadReport()">⬇ PDF 보고서 다운로드</button>
+      <button class="dl-btn purple" onclick="downloadJSON()">⬇ 데이터 JSON 내보내기</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js">
+
+// Theme Toggle
+function toggleTheme() {
+  const html = document.documentElement;
+  const currentTheme = html.getAttribute('data-theme');
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  
+  html.setAttribute('data-theme', newTheme);
+  localStorage.setItem('asnm-theme', newTheme);
+  
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = newTheme === 'light' ? '☀️' : '🌙';
+  
+  // Update canvas particles for new theme
+  if (window.particleSystem) {
+    window.particleSystem.updateForTheme(newTheme);
+  }
+}
+
+// Load theme preference on page load
+function loadThemePreference() {
+  const saved = localStorage.getItem('asnm-theme');
+  const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
+}
+
+// Load theme immediately
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadThemePreference);
+} else {
+  loadThemePreference();
+}
+
+</script>
+<script>
+// ====== CANVAS BG PARTICLES ======
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resizeCanvas();window.addEventListener('resize',resizeCanvas);
+class Particle{
+  constructor(){this.reset();}
+  reset(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.vx=(Math.random()-0.5)*0.3;
+    this.vy=(Math.random()-0.5)*0.3;
+    this.r=Math.random()*1.5+0.3;
+    this.alpha=Math.random()*0.5+0.1;
+    this.color=Math.random()>0.7?'0,245,255':'100,150,255';
+  }
+  update(){
+    this.x+=this.vx;this.y+=this.vy;
+    if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.reset();
+  }
+  draw(){
+    ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${this.color},${this.alpha})`;ctx.fill();
+  }
+}
+for(let i=0;i<120;i++)particles.push(new Particle());
+function animParticles(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p=>{p.update();p.draw();});
+  // Connect nearby
+  for(let i=0;i<particles.length;i++){
+    for(let j=i+1;j<particles.length;j++){
+      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<100){
+        ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
+        ctx.strokeStyle=`rgba(0,245,255,${0.05*(1-d/100)})`;ctx.lineWidth=0.5;ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ====== PAGE NAVIGATION ======
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  window.scrollTo(0,0);
+  if(id==='result')updateReport();
+}
+
+// ====== MODULE 1: TRENDS ======
+const trendsData = {
+  ai:[
+    {name:'생성 AI·LLM',tag:'ai',size:'$1,300B',hot:true},
+    {name:'AI 에이전트',tag:'ai',size:'$250B',hot:true},
+    {name:'엣지 AI',tag:'tech',size:'$380B'},
+    {name:'AI 반도체',tag:'tech',size:'$500B',hot:true},
+    {name:'멀티모달 AI',tag:'ai',size:'$180B'},
+    {name:'디지털 트윈',tag:'tech',size:'$130B',hot:true},
+    {name:'양자컴퓨팅',tag:'tech',size:'$90B'},
+    {name:'로봇공학 AI',tag:'ai',size:'$220B'},
+    {name:'AI 보안',tag:'tech',size:'$160B'},
+  ],
+  market:[
+    {name:'SaaS B2B',tag:'market',size:'$900B',hot:true},
+    {name:'헬스케어 AI',tag:'market',size:'$320B',hot:true},
+    {name:'에듀테크',tag:'market',size:'$440B'},
+    {name:'기후테크',tag:'market',size:'$600B',hot:true},
+    {name:'스페이스테크',tag:'market',size:'$1,000B'},
+    {name:'커머스 AI',tag:'market',size:'$280B'},
+    {name:'물류 자동화',tag:'market',size:'$190B'},
+    {name:'푸드테크',tag:'market',size:'$250B'},
+    {name:'시니어테크',tag:'market',size:'$120B'},
+  ],
+  social:[
+    {name:'1인 경제',tag:'social',size:'$340B',hot:true},
+    {name:'MZ 소비 트렌드',tag:'social',size:'$280B'},
+    {name:'메타버스',tag:'social',size:'$800B'},
+    {name:'웰니스·마인드',tag:'social',size:'$150B',hot:true},
+    {name:'지속가능 소비',tag:'social',size:'$200B'},
+    {name:'K-컬처 글로벌',tag:'social',size:'$180B',hot:true},
+    {name:'펫 이코노미',tag:'social',size:'$90B'},
+    {name:'숏폼 커머스',tag:'social',size:'$160B',hot:true},
+  ],
+  finance:[
+    {name:'임베디드 핀테크',tag:'finance',size:'$300B',hot:true},
+    {name:'토큰증권(STO)',tag:'finance',size:'$180B'},
+    {name:'CBDC',tag:'finance',size:'$500B'},
+    {name:'리워드 플랫폼',tag:'finance',size:'$120B'},
+    {name:'인슈어테크',tag:'finance',size:'$150B'},
+    {name:'오픈뱅킹',tag:'finance',size:'$95B'},
+    {name:'크립토 DeFi',tag:'finance',size:'$200B'},
+    {name:'ESG 투자',tag:'finance',size:'$400B',hot:true},
+  ]
+};
+const tagColors={ai:'tag-ai',market:'tag-market',tech:'tag-tech',social:'tag-social',finance:'tag-finance'};
+const tagLabels={ai:'AI',market:'시장',tech:'기술',social:'사회',finance:'핀테크'};
+let selectedTrends=[];
+
+function renderTrends(){
+  ['ai','market','social','finance'].forEach(cat=>{
+    const grid=document.getElementById('trend-grid-'+cat);
+    grid.innerHTML='';
+    trendsData[cat].forEach(t=>{
+      const div=document.createElement('div');
+      div.className='trend-block'+(t.hot?' hot':'');
+      div.dataset.name=t.name;
+      div.innerHTML=`<span class="trend-tag ${tagColors[t.tag]}">${tagLabels[t.tag]}</span><span>${t.name}</span><span class="trend-size">${t.size}</span>`;
+      div.onclick=()=>toggleTrend(div,t);
+      grid.appendChild(div);
+    });
+  });
+}
+renderTrends();
+
+function toggleTrend(el,t){
+  const already=el.classList.contains('selected');
+  if(!already && selectedTrends.length>=5)return;
+  if(already){
+    el.classList.remove('selected');
+    selectedTrends=selectedTrends.filter(x=>x.name!==t.name);
+  } else {
+    el.classList.add('selected');
+    selectedTrends.push(t);
+  }
+  document.getElementById('trend-count').textContent=selectedTrends.length;
+  if(selectedTrends.length===5)showTrendResult();
+  else document.getElementById('trend-result').classList.remove('show');
+}
+
+const newsDB=[
+  {source:'TECHCRUNCH',title:'AI 에이전트 시장, 2025년 250억 달러 돌파 전망',desc:'자율 AI 에이전트 기술이 B2B SaaS 시장을 빠르게 대체하고 있습니다.',tag:'AI',date:'2025.03'},
+  {source:'BLOOMBERG',title:'한국 스타트업 생태계, K-AI 열풍으로 투자 급증',desc:'국내 AI 스타트업 투자가 전년 대비 280% 증가하며 글로벌 이목 집중.',tag:'투자',date:'2025.03'},
+  {source:'FORBES',title:'디지털 트윈 기술, 제조업 넘어 창업 지원 도구로 진화',desc:'스타트업 의사결정 지원에 디지털 트윈을 접목한 새로운 솔루션들이 등장하고 있습니다.',tag:'기술',date:'2025.02'},
+  {source:'MIT TECH REVIEW',title:'LLM 기반 창업 코치, 인간 멘토 성과에 근접',desc:'AI 기반 창업 지도 솔루션의 효과성이 실험적으로 검증되고 있습니다.',tag:'AI',date:'2025.03'},
+  {source:'WSJ',title:'기후테크 스타트업, 2025년 최대 VC 투자 분야로 부상',desc:'넷제로 목표와 탄소 감축 규제가 기후테크 생태계 성장을 촉진합니다.',tag:'ESG',date:'2025.03'},
+  {source:'THE ECONOMIST',title:'MZ 세대 창업 트렌드: 임팩트 비즈니스의 부상',desc:'수익과 사회적 가치를 동시에 추구하는 임팩트 스타트업이 MZ 세대를 중심으로 급증.',tag:'트렌드',date:'2025.02'},
+  {source:'VENTUREBEAT',title:'한국 헬스케어 AI, 글로벌 시장 공략 가속화',desc:'K-헬스케어 AI 스타트업들이 동남아·중동 시장으로 빠르게 확장하고 있습니다.',tag:'헬스',date:'2025.03'},
+  {source:'NIKKEI',title:'핀테크 토큰증권(STO), 2025년 제도권 진입 완료',desc:'국내 토큰증권 발행 규제 정비가 완료되며 새로운 투자 상품 시장이 열립니다.',tag:'핀테크',date:'2025.03'},
+  {source:'WIRED',title:'1인 크리에이터 경제, $340B 규모로 성장',desc:'콘텐츠 기반의 1인 비즈니스가 새로운 경제 패러다임을 만들고 있습니다.',tag:'경제',date:'2025.02'},
+  {source:'CB INSIGHTS',title:'AI SaaS 기업 투자, 전통 소프트웨어 추월',desc:'2024년 AI SaaS 투자 규모가 처음으로 전통 SaaS를 넘어섰습니다.',tag:'투자',date:'2025.03'},
+];
+
+function showTrendResult(){
+  const result=document.getElementById('trend-result');
+  result.classList.add('show');
+  // News
+  const grid=document.getElementById('news-grid');
+  grid.innerHTML='';
+  const shuffled=newsDB.sort(()=>0.5-Math.random()).slice(0,6);
+  shuffled.forEach(n=>{
+    grid.innerHTML+=`<div class="news-card"><div class="news-source">${n.source}</div><div class="news-title">${n.title}</div><div class="news-desc">${n.desc}</div><div class="news-meta"><span>${n.date}</span><span class="news-trend-tag">${n.tag}</span></div></div>`;
+  });
+  renderMarketCharts();
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+let barChart,lineChart;
+function renderMarketCharts(){
+  const names=selectedTrends.map(t=>t.name.substring(0,6));
+  const sizes=selectedTrends.map(()=>Math.floor(Math.random()*800+100));
+  const cagrs=selectedTrends.map(()=>(Math.random()*30+10).toFixed(1));
+
+  if(barChart)barChart.destroy();
+  if(lineChart)lineChart.destroy();
+
+  const bCtx=document.getElementById('marketBarChart').getContext('2d');
+  barChart=new Chart(bCtx,{
+    type:'bar',
+    data:{labels:names,datasets:[{label:'시장 규모 (조KRW)',data:sizes,backgroundColor:['rgba(0,245,255,0.6)','rgba(255,107,107,0.6)','rgba(255,215,0,0.6)','rgba(0,255,136,0.6)','rgba(168,85,247,0.6)'],borderRadius:6}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}
+  });
+
+  const lCtx=document.getElementById('marketLineChart').getContext('2d');
+  lineChart=new Chart(lCtx,{
+    type:'radar',
+    data:{labels:names,datasets:[{label:'CAGR%',data:cagrs,fill:true,backgroundColor:'rgba(0,245,255,0.1)',borderColor:'rgba(0,245,255,0.6)',pointBackgroundColor:'rgba(0,245,255,0.8)',pointRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8ba8cc',font:{size:10}}}}}
+  });
+}
+
+// ====== MODULE 2: FOUNDER DNA ======
+const founderTypes={
+  V:{code:'V',name:'비전형 창업가',eng:'The Visionary Pioneer',emoji:'🚀',
+    traits:['빅픽처 사고','리스크 감수','카리스마 리더십','성장 지향','빠른 피벗'],
+    biz:['플랫폼 비즈니스','소셜 미디어','글로벌 SaaS','시장 파괴형 서비스','VC 백드 스케일업'],
+    warning:'실행 세부 사항을 놓치는 경향이 있습니다. CFO와 COO 영입이 필수적입니다.',
+    scores:[90,55,80,70,60,75]},
+  A:{code:'A',name:'분석형 창업가',eng:'The Data-Driven Strategist',emoji:'📊',
+    traits:['데이터 중심 사고','리스크 최소화','체계적 계획','정확한 실행','냉철한 판단'],
+    biz:['B2B SaaS','핀테크','헬스케어 데이터','비즈니스 인텔리전스','컨설팅 플랫폼'],
+    warning:'과분석으로 실행이 늦어질 수 있습니다. 완벽한 데이터보다 빠른 실행을 연습하세요.',
+    scores:[60,90,65,85,75,80]},
+  C:{code:'C',name:'커뮤니티형 창업가',eng:'The Community Builder',emoji:'🤝',
+    traits:['관계 중심','높은 공감 능력','신뢰 구축','팀워크 강조','네트워크 활용'],
+    biz:['커뮤니티 플랫폼','소셜커머스','구독 서비스','에듀테크','B2B 파트너십'],
+    warning:'수익화 구조 설계에 어려움을 겪을 수 있습니다. 비즈니스 모델 전문가와 협업하세요.',
+    scores:[70,65,90,60,80,85]},
+  T:{code:'T',name:'기술형 창업가',eng:'The Deep Tech Innovator',emoji:'🔬',
+    traits:['기술 전문성','디테일 집착','IP 중심','연구 개발 지향','문제 해결사'],
+    biz:['딥테크 스타트업','AI 솔루션','바이오테크','반도체·하드웨어','R&D 라이선싱'],
+    warning:'고객과의 소통과 마케팅이 약점이 될 수 있습니다. CMO 또는 비즈니스 파트너를 찾으세요.',
+    scores:[65,80,60,95,70,65]},
+  I:{code:'I',name:'임팩트형 창업가',eng:'The Impact Entrepreneur',emoji:'🌱',
+    traits:['사회적 가치 추구','강한 사명감','임팩트 측정','지속가능 성장','ESG 친화적'],
+    biz:['소셜벤처','기후테크','헬스케어 접근성','교육 격차 해소','임팩트 투자'],
+    warning:'수익성과 임팩트 사이의 균형이 핵심 도전입니다. BM 검증을 일찍 시작하세요.',
+    scores:[75,70,75,65,90,70]},
+  S:{code:'S',name:'실용형 창업가',eng:'The Pragmatic Builder',emoji:'💪',
+    traits:['실행력','현실적 계획','수익 중심','부트스트래핑 능력','빠른 PMF'],
+    biz:['이커머스','로컬 서비스','SaaS 틈새 시장','프랜차이즈 혁신','B2B 운영 솔루션'],
+    warning:'큰 그림을 놓치고 소규모에 머물 수 있습니다. 확장 가능한 비즈니스 모델을 고민하세요.',
+    scores:[80,75,70,70,65,90]},
+};
+
+let currentQ=0,answers=[],typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
+const questions=document.querySelectorAll('.quiz-step');
+
+function selectOption(el,type){
+  const parent=el.closest('.quiz-step');
+  parent.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  answers[currentQ]=type;
+  document.getElementById('quiz-next-btn').disabled=false;
+  document.getElementById('quiz-next-btn').style.opacity='1';
+}
+
+function quizNext(){
+  if(answers[currentQ]===undefined)return;
+  if(currentQ<questions.length-1){
+    questions[currentQ].classList.remove('active');
+    currentQ++;
+    questions[currentQ].classList.add('active');
+    document.getElementById('quiz-progress-bar').style.width=((currentQ)/10*100)+'%';
+    document.getElementById('quiz-prev-btn').style.opacity='1';
+    document.getElementById('quiz-prev-btn').style.pointerEvents='auto';
+    if(answers[currentQ]===undefined){
+      document.getElementById('quiz-next-btn').disabled=true;
+      document.getElementById('quiz-next-btn').style.opacity='0.4';
+    }
+    if(currentQ===questions.length-1){
+      document.getElementById('quiz-next-btn').textContent='결과 보기 →';
+      document.getElementById('quiz-next-btn').onclick=showFounderResult;
+    }
+  }
+}
+
+function quizPrev(){
+  if(currentQ>0){
+    questions[currentQ].classList.remove('active');
+    currentQ--;
+    questions[currentQ].classList.add('active');
+    document.getElementById('quiz-progress-bar').style.width=((currentQ)/10*100)+'%';
+    document.getElementById('quiz-next-btn').disabled=false;
+    document.getElementById('quiz-next-btn').style.opacity='1';
+    if(currentQ===0){document.getElementById('quiz-prev-btn').style.opacity='0.3';document.getElementById('quiz-prev-btn').style.pointerEvents='none';}
+  }
+}
+
+function showFounderResult(){
+  typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
+  answers.forEach(a=>{if(typeCounts[a]!==undefined)typeCounts[a]++;});
+  const topType=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0][0];
+  const type=founderTypes[topType];
+  window._founderType=type;
+
+  document.getElementById('quiz-container').style.display='none';
+  document.getElementById('quiz-nav').style.display='none';
+  document.getElementById('quiz-progress-bar').style.width='100%';
+
+  const result=document.getElementById('founder-result');
+  result.classList.add('show');
+
+  document.getElementById('result-code').textContent=type.emoji+' '+type.code;
+  document.getElementById('result-name').textContent=type.name;
+  document.getElementById('result-eng').textContent=type.eng;
+
+  // Traits
+  const traits=document.getElementById('founder-traits');
+  traits.innerHTML=type.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('');
+
+  // Biz
+  const biz=document.getElementById('suitable-biz');
+  biz.innerHTML=type.biz.map(b=>`<div class="biz-chip">💼 ${b}</div>`).join('');
+
+  // Warning
+  document.getElementById('founder-warnings').textContent=type.warning;
+
+  // Radar
+  drawRadar(type.scores);
+
+  // All types grid
+  const grid=document.getElementById('types-grid');
+  grid.innerHTML=Object.values(founderTypes).map(t=>`
+    <div class="type-mini ${t.code===topType?'current':''}" onclick="showTypeDetail('${t.code}')">
+      <div class="type-mini-emoji">${t.emoji}</div>
+      <div class="type-mini-code">${t.code}</div>
+      <div class="type-mini-name">${t.name}</div>
+    </div>`).join('');
+}
+
+function showTypeDetail(code){
+  const type=founderTypes[code];
+  document.getElementById('result-code').textContent=type.emoji+' '+type.code;
+  document.getElementById('result-name').textContent=type.name;
+  document.getElementById('result-eng').textContent=type.eng;
+  document.getElementById('founder-traits').innerHTML=type.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('');
+  document.getElementById('suitable-biz').innerHTML=type.biz.map(b=>`<div class="biz-chip">💼 ${b}</div>`).join('');
+  document.getElementById('founder-warnings').textContent=type.warning;
+  drawRadar(type.scores);
+  document.querySelectorAll('.type-mini').forEach(el=>el.classList.remove('current'));
+  document.querySelectorAll('.type-mini').forEach(el=>{if(el.querySelector('.type-mini-code').textContent===code)el.classList.add('current');});
+}
+
+function drawRadar(scores){
+  const canvas=document.getElementById('radarCanvas');
+  if(!canvas)return;
+  const ctx2=canvas.getContext('2d');
+  const cx=canvas.width/2,cy=canvas.height/2,r=Math.min(cx,cy)-40;
+  const labels=['비전력','분석력','커뮤니티','기술력','임팩트','실행력'];
+  const n=6,angle=Math.PI*2/n;
+
+  ctx2.clearRect(0,0,canvas.width,canvas.height);
+
+  // Grid
+  for(let level=1;level<=5;level++){
+    ctx2.beginPath();
+    for(let i=0;i<n;i++){
+      const a=angle*i-Math.PI/2;
+      const x=cx+Math.cos(a)*r*(level/5);
+      const y=cy+Math.sin(a)*r*(level/5);
+      if(i===0)ctx2.moveTo(x,y);else ctx2.lineTo(x,y);
+    }
+    ctx2.closePath();ctx2.strokeStyle='rgba(255,255,255,0.08)';ctx2.lineWidth=1;ctx2.stroke();
+  }
+
+  // Axes
+  for(let i=0;i<n;i++){
+    const a=angle*i-Math.PI/2;
+    ctx2.beginPath();ctx2.moveTo(cx,cy);ctx2.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);
+    ctx2.strokeStyle='rgba(255,255,255,0.1)';ctx2.lineWidth=1;ctx2.stroke();
+  }
+
+  // Data
+  ctx2.beginPath();
+  scores.forEach((s,i)=>{
+    const a=angle*i-Math.PI/2;
+    const x=cx+Math.cos(a)*r*(s/100);
+    const y=cy+Math.sin(a)*r*(s/100);
+    if(i===0)ctx2.moveTo(x,y);else ctx2.lineTo(x,y);
+  });
+  ctx2.closePath();
+  ctx2.fillStyle='rgba(255,107,107,0.2)';ctx2.fill();
+  ctx2.strokeStyle='rgba(255,107,107,0.8)';ctx2.lineWidth=2;ctx2.stroke();
+
+  // Labels
+  for(let i=0;i<n;i++){
+    const a=angle*i-Math.PI/2;
+    const x=cx+Math.cos(a)*(r+28);
+    const y=cy+Math.sin(a)*(r+28);
+    ctx2.fillStyle='#8ba8cc';ctx2.font='11px Noto Sans KR';ctx2.textAlign='center';ctx2.textBaseline='middle';
+    ctx2.fillText(labels[i],x,y);
+  }
+
+  // Dots
+  scores.forEach((s,i)=>{
+    const a=angle*i-Math.PI/2;
+    const x=cx+Math.cos(a)*r*(s/100);
+    const y=cy+Math.sin(a)*r*(s/100);
+    ctx2.beginPath();ctx2.arc(x,y,4,0,Math.PI*2);
+    ctx2.fillStyle='rgba(255,107,107,1)';ctx2.fill();
+  });
+}
+
+function retakeQuiz(){
+  currentQ=0;answers=[];typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
+  questions.forEach((q,i)=>{q.classList.remove('active');if(i===0)q.classList.add('active');});
+  questions.forEach(q=>q.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected')));
+  document.getElementById('quiz-container').style.display='block';
+  document.getElementById('quiz-nav').style.display='flex';
+  document.getElementById('founder-result').classList.remove('show');
+  document.getElementById('quiz-progress-bar').style.width='0%';
+  document.getElementById('quiz-next-btn').textContent='다음 →';
+  document.getElementById('quiz-next-btn').onclick=quizNext;
+  document.getElementById('quiz-next-btn').disabled=true;
+  document.getElementById('quiz-next-btn').style.opacity='0.4';
+  window._founderType=null;
+}
+
+// ====== MODULE 3A: SIMULATOR ======
+const simStepLabels=['기본정보','아이템','기술스택','인재영입','복지문화'];
+let simCurrentStep=0;
+let simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
+let simMultiMax={tech:3,talent:4,welfare:3};
+
+function initSimSteps(){
+  const container=document.getElementById('sim-steps');
+  container.innerHTML='';
+  simStepLabels.forEach((label,i)=>{
+    if(i>0){const conn=document.createElement('div');conn.className='sim-connector';conn.id='conn-'+i;container.appendChild(conn);}
+    const wrap=document.createElement('div');wrap.className='sim-step-dot';
+    const dot=document.createElement('div');dot.className='sim-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=i+1;
+    const lbl=document.createElement('div');lbl.className='sim-step-label';lbl.textContent=label;
+    wrap.appendChild(dot);wrap.appendChild(lbl);container.appendChild(wrap);
+  });
+}
+initSimSteps();
+
+function updateCapital(){
+  const v=parseInt(document.getElementById('s-capital').value);
+  simData.capital=v;
+  let disp=v<=10?v+'억 원':v<=50?(v*1000/10000).toFixed(1)+'억 원':Math.floor(v/10)+'0억 원';
+  if(v===100)disp='100억 원 이상';
+  document.getElementById('capital-display').textContent=disp;
+}
+
+function selectSim(el,field,val){
+  const parent=el.closest('.sim-panel,.glass-card');
+  parent.querySelectorAll('.choice-card').forEach(c=>{
+    if(c.closest('[onclick*="\''+field+'\'"]')===el.parentElement||c.parentElement===el.parentElement){
+      // same group
+    }
+  });
+  // Find all siblings with same field
+  document.querySelectorAll(`[onclick*="selectSim(this,'${field}'"]`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  simData[field]=val;
+}
+
+function selectMulti(el,field,val){
+  const already=el.classList.contains('selected');
+  const arr=simData[field];
+  if(already){
+    el.classList.remove('selected');
+    simData[field]=arr.filter(x=>x!==val);
+  } else {
+    if(arr.length>=simMultiMax[field]){alert(`최대 ${simMultiMax[field]}개까지 선택 가능합니다.`);return;}
+    el.classList.add('selected');
+    simData[field]=[...arr,val];
+  }
+}
+
+function simNext(){
+  document.getElementById('sim-'+simCurrentStep).classList.remove('active');
+  document.getElementById('dot-'+simCurrentStep).classList.remove('active');
+  document.getElementById('dot-'+simCurrentStep).classList.add('done');
+  if(simCurrentStep>0)document.getElementById('conn-'+simCurrentStep).classList.add('done');
+  simCurrentStep++;
+  document.getElementById('sim-'+simCurrentStep).classList.add('active');
+  document.getElementById('dot-'+simCurrentStep).classList.add('active');
+  window.scrollTo(0,200);
+}
+
+function simPrev(){
+  document.getElementById('sim-'+simCurrentStep).classList.remove('active');
+  document.getElementById('dot-'+simCurrentStep).classList.remove('active');
+  simCurrentStep--;
+  document.getElementById('sim-'+simCurrentStep).classList.add('active');
+  document.getElementById('dot-'+simCurrentStep).classList.remove('done');
+  document.getElementById('dot-'+simCurrentStep).classList.add('active');
+  if(simCurrentStep>0)document.getElementById('conn-'+(simCurrentStep+1)).classList.remove('done');
+}
+
+function updateSimPreview(){
+  simData.name=document.getElementById('s-name').value;
+  simData.vision=document.getElementById('s-vision').value;
+}
+
+function runSimulation(){
+  updateSimPreview();
+  if(document.getElementById('s-persona'))simData.persona=document.getElementById('s-persona').value;
+
+  document.getElementById('sim-4').classList.remove('active');
+  document.getElementById('dot-4').classList.remove('active');
+  document.getElementById('dot-4').classList.add('done');
+  document.getElementById('conn-4').classList.add('done');
+
+  // Calculate survival
+  let score=45;
+  score+=Math.min(simData.capital,30)*0.6;
+  if(simData.item)score+=8;
+  if(simData.persona)score+=5;
+  score+=simData.tech.length*4;
+  score+=simData.talent.length*3;
+  score+=simData.welfare.length*2;
+  if(simData.region==='판교')score+=5;
+  if(simData.region==='서울')score+=3;
+  if(simData.tech.includes('LLM/생성AI')||simData.tech.includes('AI 에이전트'))score+=6;
+  score=Math.min(92,Math.max(28,Math.round(score)));
+
+  const base=score,opt=Math.min(95,score+12),pes=Math.max(20,score-21);
+  window._simResult={base,opt,pes,data:{...simData}};
+
+  document.getElementById('survival-pct').textContent=base+'%';
+  document.getElementById('survival-pct').style.color=base>=70?'var(--green)':base>=50?'var(--gold)':'var(--coral)';
+  document.getElementById('opt-pct').textContent=opt+'%';
+  document.getElementById('base-pct').textContent=base+'%';
+  document.getElementById('pes-pct').textContent=pes+'%';
+  document.getElementById('sim-company-name').textContent=simData.name||(simData.item||'가상 스타트업');
+
+  // Risk bars
+  const risks=[
+    {label:'시장 수요 검증',val:simData.item?72:35,color:'var(--green)'},
+    {label:'팀 역량',val:40+simData.talent.length*10,color:'var(--cyan)'},
+    {label:'기술 경쟁력',val:30+simData.tech.length*13,color:'var(--purple)'},
+    {label:'자금 지속성',val:Math.min(90,20+simData.capital*0.7),color:'var(--gold)'},
+    {label:'운영 리스크',val:Math.max(20,70-simData.welfare.length*8),color:'var(--coral)'},
+  ];
+  document.getElementById('risk-bars').innerHTML=risks.map(r=>`
+    <div class="risk-bar-row">
+      <div class="risk-bar-label">${r.label}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:${r.val}%;background:${r.color};"></div></div>
+      <div class="risk-bar-val" style="color:${r.color}">${r.val}%</div>
+    </div>`).join('');
+
+  // Recommendations
+  const recs=[];
+  if(simData.talent.length<2)recs.push({type:'warn',icon:'⚠️',text:'핵심 인재 영입이 부족합니다. CTO 또는 CMO 영입을 최우선으로 고려하세요.'});
+  if(simData.tech.length<2)recs.push({type:'warn',icon:'⚠️',text:'기술 스택 다양성이 낮습니다. 핵심 기술 2개 이상을 확보해야 경쟁력이 강화됩니다.'});
+  if(simData.capital<5)recs.push({type:'warn',icon:'💰',text:'초기 자본금이 낮아 런웨이가 짧습니다. 정부 지원 과제(TIPS, KISED)를 적극 활용하세요.'});
+  if(simData.item==='AI SaaS'||simData.item==='헬스케어')recs.push({type:'info',icon:'🚀',text:`${simData.item} 분야는 현재 투자 유치 가능성이 높습니다. Series A 이전 VC 접촉을 추천합니다.`});
+  recs.push({type:'ok',icon:'✅',text:'ASNM 리스크 예측 모델(Module 3) 기준, 초기 MVP 출시 전 시장 검증 3회 이상을 권장합니다.'});
+  recs.push({type:'ok',icon:'📊',text:'디지털 트윈 시뮬레이션 결과: 선택하신 사업 아이템의 3년 내 시장 진입 성공 확률은 '+base+'%입니다.'});
+
+  document.getElementById('sim-recommendations').innerHTML=recs.map(r=>`
+    <div class="rec-item ${r.type==='warn'?'warn':r.type==='info'?'info':''}">
+      <div class="rec-icon">${r.icon}</div>
+      <div class="rec-text">${r.text}</div>
+    </div>`).join('');
+
+  drawDial(base);
+
+  const resultEl=document.getElementById('sim-result');
+  resultEl.classList.add('show');
+  resultEl.scrollIntoView({behavior:'smooth'});
+}
+
+function drawDial(pct){
+  const c=document.getElementById('dialCanvas');
+  if(!c)return;
+  const cx2=c.width/2,cy2=c.height-20,R=110;
+  const ctx3=c.getContext('2d');
+  ctx3.clearRect(0,0,c.width,c.height);
+
+  // Track
+  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,0);
+  ctx3.strokeStyle='rgba(255,255,255,0.08)';ctx3.lineWidth=18;ctx3.lineCap='round';ctx3.stroke();
+
+  // Fill
+  const color=pct>=70?'rgba(0,255,136,0.9)':pct>=50?'rgba(255,215,0,0.9)':'rgba(255,107,107,0.9)';
+  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,Math.PI+(Math.PI*pct/100));
+  ctx3.strokeStyle=color;ctx3.lineWidth=18;ctx3.lineCap='round';ctx3.stroke();
+
+  // Glow
+  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,Math.PI+(Math.PI*pct/100));
+  ctx3.strokeStyle=color.replace('0.9','0.3');ctx3.lineWidth=30;ctx3.stroke();
+
+  // Labels
+  ctx3.fillStyle='rgba(255,255,255,0.3)';ctx3.font='11px Space Mono';ctx3.textAlign='center';
+  ctx3.fillText('0%',cx2-R-5,cy2+15);ctx3.fillText('100%',cx2+R+5,cy2+15);
+}
+
+function resetSimulator(){
+  simCurrentStep=0;simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
+  document.querySelectorAll('.sim-panel').forEach((p,i)=>{p.classList.remove('active');if(i===0)p.classList.add('active');});
+  document.getElementById('sim-result').classList.remove('show');
+  document.querySelectorAll('.sim-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i===0)d.classList.add('active');});
+  document.querySelectorAll('.sim-connector').forEach(c=>c.classList.remove('done'));
+  document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('s-name').value='';document.getElementById('s-vision').value='';
+  document.getElementById('s-capital').value=1;updateCapital();
+  window._simResult=null;
+  window.scrollTo(0,300);
+}
+
+// ====== ZEP ======
+function enterZep(){
+  // ZEP link
+  const url='https://zep.us';
+  const win=window.open(url,'_blank');
+  if(!win){alert('팝업이 차단되었습니다. 브라우저 설정에서 팝업을 허용해주세요.\n\nZEP 접속: https://zep.us');}
+}
+
+// ====== FINAL REPORT ======
+function updateReport(){
+  document.getElementById('report-date').textContent=new Date().toLocaleDateString('ko-KR');
+
+  // Trends
+  if(selectedTrends.length>0){
+    document.getElementById('fr-trends').textContent=selectedTrends.length+'개';
+    document.getElementById('report-trends-content').innerHTML=`
+      <div class="report-row"><span class="report-row-label">선택한 트렌드</span><span class="report-row-val">${selectedTrends.map(t=>t.name).join(', ')}</span></div>
+      <div class="report-row"><span class="report-row-label">주요 시장 규모</span><span class="report-row-val">${selectedTrends[0]?.size||'—'} (1위 분야)</span></div>
+      <div class="report-row"><span class="report-row-label">추천 진입 분야</span><span class="report-row-val">${selectedTrends[0]?.name||'—'}</span></div>`;
+  }
+
+  // DNA
+  if(window._founderType){
+    const t=window._founderType;
+    document.getElementById('fr-type').textContent=t.code;
+    document.getElementById('report-dna-content').innerHTML=`
+      <div class="report-row"><span class="report-row-label">창업자 유형</span><span class="report-row-val" style="color:var(--coral)">${t.emoji} ${t.name}</span></div>
+      <div class="report-row"><span class="report-row-label">핵심 강점</span><span class="report-row-val">${t.traits.slice(0,3).join(' · ')}</span></div>
+      <div class="report-row"><span class="report-row-label">적합 사업</span><span class="report-row-val">${t.biz[0]}, ${t.biz[1]}</span></div>
+      <div class="report-row"><span class="report-row-label">주의 사항</span><span class="report-row-val" style="color:var(--coral);font-size:0.75rem;">${t.warning.substring(0,40)}...</span></div>`;
+  }
+
+  // Simulator
+  if(window._simResult){
+    const s=window._simResult;
+    document.getElementById('fr-survival').textContent=s.base+'%';
+    document.getElementById('fr-item').textContent=s.data.item||'—';
+    document.getElementById('report-company-title').textContent=(s.data.name||'가상 스타트업')+' · 창업 전략 분석 보고서';
+    document.getElementById('report-sim-content').innerHTML=`
+      <div class="report-row"><span class="report-row-label">회사명</span><span class="report-row-val">${s.data.name||'미입력'}</span></div>
+      <div class="report-row"><span class="report-row-label">비전</span><span class="report-row-val">${s.data.vision||'미입력'}</span></div>
+      <div class="report-row"><span class="report-row-label">사업 아이템</span><span class="report-row-val">${s.data.item||'미선택'}</span></div>
+      <div class="report-row"><span class="report-row-label">핵심 기술</span><span class="report-row-val">${s.data.tech.join(', ')||'미선택'}</span></div>
+      <div class="report-row"><span class="report-row-label">인재 구성</span><span class="report-row-val">${s.data.talent.join(', ')||'미선택'}</span></div>
+      <div class="report-row"><span class="report-row-label">생존 확률</span><span class="report-row-val" style="color:var(--green)">${s.base}% (Base) / ${s.opt}% (Opt.) / ${s.pes}% (Pes.)</span></div>`;
+
+    // Final recommendations
+    const recs=[];
+    if(window._founderType&&s.data.item){
+      recs.push({type:'ok',icon:'🎯',text:`${window._founderType.name} 유형은 ${s.data.item} 사업과 높은 적합도를 보입니다. ${window._founderType.biz.includes(s.data.item)?'최적 조합입니다!':'역량 간극을 줄이기 위한 보완 전략이 필요합니다.'}`});
+    }
+    if(s.base>=70)recs.push({type:'ok',icon:'✅',text:'현재 설계된 스타트업은 5년 생존 확률이 높습니다. TIPS 프로그램 신청과 함께 MVP를 빠르게 출시하세요.'});
+    else if(s.base>=50)recs.push({type:'info',icon:'⚡',text:'생존 확률이 중간 수준입니다. 팀 강화와 기술 스택 보완으로 확률을 높일 수 있습니다.'});
+    else recs.push({type:'warn',icon:'⚠️',text:'생존 확률이 낮습니다. 비즈니스 모델을 재검토하고 시장 검증을 선행하세요.'});
+
+    if(selectedTrends.length>0){
+      recs.push({type:'info',icon:'📡',text:`선택하신 트렌드(${selectedTrends.slice(0,2).map(t=>t.name).join(', ')})와 사업 아이템의 연계 전략을 수립하면 시장 진입 속도를 높일 수 있습니다.`});
+    }
+    recs.push({type:'ok',icon:'🌏',text:'한국 창업 생태계 분석: KISED, 중소벤처기업부 지원 프로그램과 연계한 단계적 성장 로드맵을 추천합니다.'});
+
+    document.getElementById('final-recommendations').innerHTML=recs.map(r=>`
+      <div class="rec-item ${r.type==='warn'?'warn':r.type==='info'?'info':''}">
+        <div class="rec-icon">${r.icon}</div>
+        <div class="rec-text">${r.text}</div>
+      </div>`).join('');
+  }
+}
+
+function downloadReport(){
+  const lines=[];
+  lines.push('ASNM 종합 분석 보고서');
+  lines.push('생성일: '+new Date().toLocaleDateString('ko-KR'));
+  lines.push('────────────────────────────────');
+  if(window._simResult){
+    const s=window._simResult;
+    lines.push('\n[기업 정보]');
+    lines.push('회사명: '+(s.data.name||'미입력'));
+    lines.push('비전: '+(s.data.vision||'미입력'));
+    lines.push('사업 아이템: '+(s.data.item||'미선택'));
+    lines.push('핵심 기술: '+s.data.tech.join(', '));
+    lines.push('핵심 인재: '+s.data.talent.join(', '));
+    lines.push('복지 제도: '+s.data.welfare.join(', '));
+    lines.push('\n[생존 확률 시뮬레이션]');
+    lines.push('낙관 시나리오: '+s.opt+'%');
+    lines.push('기본 시나리오: '+s.base+'%');
+    lines.push('비관 시나리오: '+s.pes+'%');
+  }
+  if(window._founderType){
+    const t=window._founderType;
+    lines.push('\n[창업자 DNA 진단]');
+    lines.push('유형: '+t.name+' ('+t.eng+')');
+    lines.push('핵심 강점: '+t.traits.join(', '));
+    lines.push('적합 사업: '+t.biz.join(', '));
+  }
+  if(selectedTrends.length>0){
+    lines.push('\n[트렌드 분석]');
+    lines.push('선택 트렌드: '+selectedTrends.map(t=>t.name).join(', '));
+  }
+  lines.push('\n────────────────────────────────');
+  lines.push('Powered by ASNM · SolBridge MSTM · 2025');
+
+  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ASNM_Report_'+(window._simResult?.data?.name||'StartupAnalysis')+'_'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+}
+
+function downloadJSON(){
+  const data={
+    generated:new Date().toISOString(),
+    version:'ASNM v2.0',
+    trends:selectedTrends,
+    founderType:window._founderType?{code:window._founderType.code,name:window._founderType.name,eng:window._founderType.eng}:null,
+    simulation:window._simResult||null,
+  };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ASNM_Data_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+}
+
+// Init
+window._founderType=null;
+window._simResult=null;
+document.getElementById('report-date').textContent=new Date().toLocaleDateString('ko-KR');
+</script>
+</body>
+</html>
