@@ -503,7 +503,240 @@ canvas.chart{width:100%!important;height:180px!important;}
 }
 canvas.ai-chart{width:100%!important;height:160px!important;}
 
-/* === M2 DNA === */
+/* === M2 인트로 페이지 (원형 배치) === */
+.dna-intro{
+  display:block;
+  animation:fadeInUp 0.5s ease;
+}
+.dna-intro.hidden{display:none;}
+.dna-intro-header{
+  text-align:center;
+  margin-bottom:3rem;
+}
+.dna-intro-title{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:800;
+  margin-bottom:0.8rem;
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.dna-intro-sub{
+  color:var(--text2);
+  font-size:0.95rem;
+  line-height:1.7;
+  margin-bottom:1.5rem;
+}
+.dna-intro-question{
+  font-family:'Orbitron',monospace;
+  font-size:1.8rem;font-weight:700;
+  background:linear-gradient(90deg,var(--cyan),var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:0 0 30px rgba(255,107,107,0.2);
+  animation:glow 2.5s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100%{opacity:1;}
+  50%{opacity:0.7;}
+}
+
+/* 원형 배치 컨테이너 */
+.dna-circle-container{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  margin:0 auto 3rem;
+  aspect-ratio:1/1;
+}
+
+/* 중앙 원 (장식) */
+.dna-circle-center{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:180px;height:180px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,107,0.1) 0%,rgba(255,215,0,0.05) 50%,transparent 80%);
+  border:2px dashed rgba(255,107,107,0.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  animation:rotate 30s linear infinite;
+}
+@keyframes rotate{
+  from{transform:translate(-50%,-50%) rotate(0deg);}
+  to{transform:translate(-50%,-50%) rotate(360deg);}
+}
+.dna-circle-center-content{
+  animation:rotate 30s linear infinite reverse;
+  text-align:center;
+}
+.dna-circle-center-icon{
+  font-size:2.5rem;
+  margin-bottom:0.5rem;
+}
+.dna-circle-center-text{
+  font-family:'Orbitron',monospace;
+  font-size:0.7rem;
+  color:var(--text2);
+  letter-spacing:2px;
+}
+
+/* 6개 캐릭터 원형 배치 */
+.dna-circle-char{
+  position:absolute;
+  width:130px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.3s;
+  z-index:2;
+}
+.dna-circle-char:hover{
+  transform:scale(1.1) translateY(-5px);
+  z-index:10;
+}
+.dna-circle-char:hover .dna-char-circle-svg{
+  filter:drop-shadow(0 0 25px var(--char-glow,rgba(255,107,107,0.6)));
+}
+.dna-char-circle-svg{
+  width:100px;height:100px;
+  margin:0 auto 0.5rem;
+  filter:drop-shadow(0 0 12px var(--char-glow,rgba(255,107,107,0.3)));
+  transition:filter 0.3s;
+}
+.dna-char-circle-code{
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem;font-weight:900;
+  line-height:1;
+  margin-bottom:0.2rem;
+}
+.dna-char-circle-name{
+  font-size:0.78rem;font-weight:600;
+  color:var(--text);
+}
+
+/* 6개 캐릭터 위치 (12시 방향부터 시계방향) */
+.dna-circle-char:nth-child(2){ top:0;left:50%;transform:translateX(-50%); }
+.dna-circle-char:nth-child(3){ top:25%;right:0;transform:translate(15%,-10%); }
+.dna-circle-char:nth-child(4){ bottom:25%;right:0;transform:translate(15%,10%); }
+.dna-circle-char:nth-child(5){ bottom:0;left:50%;transform:translateX(-50%); }
+.dna-circle-char:nth-child(6){ bottom:25%;left:0;transform:translate(-15%,10%); }
+.dna-circle-char:nth-child(7){ top:25%;left:0;transform:translate(-15%,-10%); }
+
+.dna-circle-char:nth-child(2):hover{ transform:translateX(-50%) scale(1.1) translateY(-5px); }
+.dna-circle-char:nth-child(3):hover{ transform:translate(15%,-10%) scale(1.1); }
+.dna-circle-char:nth-child(4):hover{ transform:translate(15%,10%) scale(1.1); }
+.dna-circle-char:nth-child(5):hover{ transform:translateX(-50%) scale(1.1) translateY(5px); }
+.dna-circle-char:nth-child(6):hover{ transform:translate(-15%,10%) scale(1.1); }
+.dna-circle-char:nth-child(7):hover{ transform:translate(-15%,-10%) scale(1.1); }
+
+/* 명시적 클래스 (브라우저 호환성 보강) */
+.dna-pos-12{ top:0 !important;left:50% !important;transform:translateX(-50%); }
+.dna-pos-2{ top:25% !important;right:0 !important;left:auto !important;transform:translate(15%,-10%); }
+.dna-pos-4{ bottom:25% !important;right:0 !important;left:auto !important;top:auto !important;transform:translate(15%,10%); }
+.dna-pos-6{ bottom:0 !important;left:50% !important;top:auto !important;transform:translateX(-50%); }
+.dna-pos-8{ bottom:25% !important;left:0 !important;top:auto !important;transform:translate(-15%,10%); }
+.dna-pos-10{ top:25% !important;left:0 !important;transform:translate(-15%,-10%); }
+
+.dna-pos-12:hover{ transform:translateX(-50%) scale(1.1) translateY(-5px) !important; }
+.dna-pos-2:hover{ transform:translate(15%,-10%) scale(1.1) !important; }
+.dna-pos-4:hover{ transform:translate(15%,10%) scale(1.1) !important; }
+.dna-pos-6:hover{ transform:translateX(-50%) scale(1.1) translateY(5px) !important; }
+.dna-pos-8:hover{ transform:translate(-15%,10%) scale(1.1) !important; }
+.dna-pos-10:hover{ transform:translate(-15%,-10%) scale(1.1) !important; }
+
+/* 연결선 (장식) */
+.dna-circle-lines{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+}
+
+/* 모바일: 그리드로 폴백 */
+@media(max-width:600px){
+  .dna-circle-container{
+    aspect-ratio:auto;
+    max-width:100%;
+    height:auto;
+  }
+  .dna-circle-center{
+    position:relative;
+    top:auto;left:auto;
+    transform:none;
+    margin:0 auto 1.5rem;
+    width:120px;height:120px;
+  }
+  .dna-circle-char,
+  .dna-circle-char:nth-child(2),
+  .dna-circle-char:nth-child(3),
+  .dna-circle-char:nth-child(4),
+  .dna-circle-char:nth-child(5),
+  .dna-circle-char:nth-child(6),
+  .dna-circle-char:nth-child(7),
+  .dna-pos-12, .dna-pos-2, .dna-pos-4, .dna-pos-6, .dna-pos-8, .dna-pos-10{
+    position:relative !important;
+    top:auto !important;left:auto !important;right:auto !important;bottom:auto !important;
+    transform:none !important;
+    display:inline-block;
+    width:45%;
+    margin:0.5rem;
+    vertical-align:top;
+  }
+  .dna-circle-char:hover,
+  .dna-pos-12:hover, .dna-pos-2:hover, .dna-pos-4:hover, 
+  .dna-pos-6:hover, .dna-pos-8:hover, .dna-pos-10:hover{
+    transform:scale(1.05) !important;
+  }
+}
+
+.dna-start-btn-wrap{
+  text-align:center;
+  margin-top:2rem;
+}
+.dna-start-btn{
+  padding:1.3rem 3.5rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  border:none;border-radius:14px;
+  color:#000;
+  font-family:'Orbitron',monospace;
+  font-size:1.1rem;font-weight:800;
+  cursor:pointer;
+  letter-spacing:3px;
+  transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(255,107,107,0.3);
+  position:relative;
+  overflow:hidden;
+}
+.dna-start-btn::before{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  animation:shimmer 2s infinite;
+}
+@keyframes shimmer{
+  100%{left:100%;}
+}
+.dna-start-btn:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 50px rgba(255,107,107,0.5);
+}
+
+.dna-quiz-wrap{display:none;}
+.dna-quiz-wrap.active{display:block;animation:fadeInUp 0.4s ease;}
+
+/* 기존 카드 그리드 (사용 안 함) */
+.dna-characters-grid{display:none;}
+
+/* === 결과 이미지 (큰 캐릭터) === */
+.founder-result-character{
+  width:140px;height:140px;
+  margin:0 auto 1rem;
+  position:relative;
+}
+.founder-result-character svg{
+  width:100%;height:100%;
+  filter:drop-shadow(0 0 20px rgba(255,107,107,0.4));
+}
 #page-m2 .content{padding:0 2rem 4rem;max-width:800px;margin:0 auto;}
 .quiz-progress{
   background:rgba(255,255,255,0.05);
@@ -633,7 +866,159 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
 .btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:white;}
 .btn-purple:hover{box-shadow:0 8px 30px rgba(168,85,247,0.3);}
 
-/* === M3 시뮬레이터 === */
+/* === M3 시뮬레이터 (좌측 본문 + 우측 AI 사이드바) === */
+.sim-layout{
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:1.5rem;
+  align-items:flex-start;
+}
+@media(max-width:1100px){
+  .sim-layout{
+    grid-template-columns:1fr;
+  }
+  .sim-ai-sidebar{
+    position:relative !important;
+    top:auto !important;
+    max-height:none !important;
+    order: -1; /* 모바일에서는 사이드바를 본문 위로 */
+    margin-bottom: 1.5rem;
+  }
+  .sim-chat-history{
+    max-height: 250px !important;
+  }
+}
+
+.sim-main{
+  min-width:0;
+}
+
+.sim-ai-sidebar{
+  position:sticky;
+  top:80px;
+  background:linear-gradient(135deg,rgba(255,107,107,0.06),rgba(255,215,0,0.06));
+  border:1px solid rgba(255,107,107,0.3);
+  border-radius:16px;
+  padding:1.2rem;
+  max-height:calc(100vh - 100px);
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+.sim-ai-sidebar::-webkit-scrollbar{width:4px;}
+.sim-ai-sidebar::-webkit-scrollbar-thumb{background:rgba(255,107,107,0.4);border-radius:2px;}
+
+.sim-ai-sidebar-header{
+  display:flex;align-items:center;gap:0.6rem;
+  margin-bottom:0.8rem;
+}
+.sim-ai-sidebar-title{
+  font-family:'Orbitron',monospace;
+  font-size:0.9rem;font-weight:700;
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sim-ai-sidebar-desc{
+  font-size:0.75rem;
+  color:var(--text2);
+  margin-bottom:0.8rem;
+  line-height:1.6;
+}
+
+.sim-ai-context-info{
+  background:rgba(0,0,0,0.2);
+  border:1px solid rgba(255,215,0,0.2);
+  border-radius:8px;
+  padding:0.7rem;
+  margin-bottom:0.8rem;
+  font-size:0.72rem;
+  color:var(--text2);
+  line-height:1.5;
+}
+.sim-ai-context-info strong{color:var(--gold);}
+
+.sim-chat-history{
+  flex:1;
+  min-height:200px;
+  max-height:340px;
+  overflow-y:auto;
+  padding:0.7rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:8px;
+  margin-bottom:0.7rem;
+}
+.sim-chat-history::-webkit-scrollbar{width:3px;}
+.sim-chat-history::-webkit-scrollbar-thumb{background:rgba(255,107,107,0.4);border-radius:2px;}
+.sim-chat-msg{
+  padding:0.6rem 0.7rem;
+  border-radius:8px;
+  margin-bottom:0.5rem;
+  font-size:0.78rem;
+  line-height:1.6;
+  animation:fadeInUp 0.3s ease;
+}
+.sim-chat-msg.ai{
+  background:rgba(255,107,107,0.08);
+  border:1px solid rgba(255,107,107,0.2);
+  color:var(--text);
+}
+.sim-chat-msg.user{
+  background:rgba(0,245,255,0.08);
+  border:1px solid rgba(0,245,255,0.2);
+  margin-left:0.8rem;
+  color:var(--text);
+}
+.sim-chat-msg-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;letter-spacing:1px;
+  margin-bottom:0.3rem;display:block;
+}
+.sim-chat-msg.ai .sim-chat-msg-label{color:var(--coral);}
+.sim-chat-msg.user .sim-chat-msg-label{color:var(--cyan);}
+
+.sim-quick-chat-qs{
+  display:flex;gap:0.3rem;flex-wrap:wrap;
+  margin-bottom:0.6rem;
+}
+.sim-quick-chat-q{
+  padding:0.3rem 0.6rem;
+  background:rgba(255,107,107,0.08);
+  border:1px solid rgba(255,107,107,0.2);
+  border-radius:14px;
+  color:var(--coral);
+  font-size:0.68rem;cursor:pointer;
+  transition:all 0.3s;
+}
+.sim-quick-chat-q:hover{background:rgba(255,107,107,0.15);border-color:var(--coral);}
+
+.sim-chat-input-row{
+  display:flex;gap:0.4rem;
+}
+.sim-chat-input{
+  flex:1;min-width:0;
+  padding:0.6rem 0.7rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,107,107,0.2);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.78rem;
+}
+.sim-chat-input:focus{outline:none;border-color:var(--coral);}
+.sim-chat-send-btn{
+  padding:0.6rem 0.8rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  border:none;border-radius:8px;
+  color:#000;font-weight:700;
+  cursor:pointer;transition:all 0.3s;
+  font-size:0.75rem;
+  white-space:nowrap;
+}
+.sim-chat-send-btn:hover:not(:disabled){box-shadow:0 4px 15px rgba(255,107,107,0.3);}
+.sim-chat-send-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+
 #page-m3a .content{padding:0 2rem 4rem;max-width:900px;margin:0 auto;}
 .sim-steps{display:flex;gap:0.3rem;margin-bottom:2rem;overflow-x:auto;padding-bottom:0.5rem;}
 .sim-step-dot{display:flex;flex-direction:column;align-items:center;gap:0.3rem;min-width:70px;flex:1;}
@@ -1163,7 +1548,7 @@ input[type=range]::-webkit-slider-thumb{
 <nav>
   <div class="nav-logo">ASN<span>M</span></div>
   <div class="nav-links">
-    <button class="nav-btn active" onclick="showPage('home')">홈</button>
+    <button class="nav-btn active" onclick="goHome()">홈</button>
     <button class="nav-btn" onclick="showPage('m1')">시장트렌드</button>
     <button class="nav-btn" onclick="showPage('m2')">창업자DNA</button>
     <button class="nav-btn" onclick="showPage('m3a')">스타트업 시뮬레이터</button>
@@ -1243,7 +1628,7 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title">트렌드 기반 기회 탐색</h2>
         <p class="page-desc">AI 자연어 검색으로 산업 트렌드를 분석하거나, 트렌드 블록을 선택해 시장 기회를 탐색하세요.</p>
       </div>
-      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+      <button class="back-btn" onclick="goHome()">← 홈으로</button>
     </div>
   </div>
   <div class="content">
@@ -1256,7 +1641,6 @@ input[type=range]::-webkit-slider-thumb{
         <div class="ai-search-header">
           <span style="font-size:1.4rem;">🤖</span>
           <span class="ai-search-title">AI 트렌드 검색 대화</span>
-          <span class="ai-search-badge">POWERED BY GPT-4o</span>
         </div>
         <p class="ai-search-desc">관심 산업이나 주제를 자연어로 입력하면 AI가 시장 동향, 성장률, 진입 기회를 실시간으로 분석합니다.</p>
         
@@ -1344,10 +1728,93 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">창업자 유형 진단 & 적합성 평가</h2>
         <p class="page-desc">10가지 질문으로 V/A/C/T/I/S 6가지 창업자 DNA를 진단합니다.</p>
       </div>
-      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+      <button class="back-btn" onclick="goHome()">← 홈으로</button>
     </div>
   </div>
-  <div class="content" style="padding:0 2rem 4rem;max-width:800px;margin:0 auto;">
+  <div class="content" style="padding:0 2rem 4rem;max-width:900px;margin:0 auto;">
+    
+    <!-- ========================================== -->
+    <!-- 🧬 인트로 화면: 6명 창업자 캐릭터 원형 배치 -->
+    <!-- ========================================== -->
+    <div class="dna-intro" id="dna-intro">
+      <div class="dna-intro-header">
+        <div class="dna-intro-title">6가지 창업자 DNA</div>
+        <div class="dna-intro-sub">
+          모든 창업가는 고유한 강점과 성향을 가지고 있습니다.<br>
+          ASNM은 10년간의 창업 연구를 바탕으로 6가지 핵심 유형을 정의했습니다.
+        </div>
+        <div class="dna-intro-question">나는 어떤 유형일까? 🤔</div>
+      </div>
+
+      <!-- 원형 배치 (6명 캐릭터가 원을 이룸) -->
+      <div class="dna-circle-container">
+
+        <!-- 중앙 -->
+        <div class="dna-circle-center">
+          <div class="dna-circle-center-content">
+            <div class="dna-circle-center-icon">🧬</div>
+            <div class="dna-circle-center-text">ASNM<br>DNA</div>
+          </div>
+        </div>
+
+        <!-- V: Visionary (12시 - 상단) -->
+        <div class="dna-circle-char dna-pos-12" style="--char-glow:rgba(255,107,107,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-V"></div>
+          <div class="dna-char-circle-code" style="color:var(--coral);">V</div>
+          <div class="dna-char-circle-name">비전형</div>
+        </div>
+
+        <!-- A: Analytical (2시 - 우상) -->
+        <div class="dna-circle-char dna-pos-2" style="--char-glow:rgba(0,245,255,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-A"></div>
+          <div class="dna-char-circle-code" style="color:var(--cyan);">A</div>
+          <div class="dna-char-circle-name">분석형</div>
+        </div>
+
+        <!-- C: Community (4시 - 우하) -->
+        <div class="dna-circle-char dna-pos-4" style="--char-glow:rgba(0,255,136,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-C"></div>
+          <div class="dna-char-circle-code" style="color:var(--green);">C</div>
+          <div class="dna-char-circle-name">커뮤니티형</div>
+        </div>
+
+        <!-- T: Technical (6시 - 하단) -->
+        <div class="dna-circle-char dna-pos-6" style="--char-glow:rgba(168,85,247,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-T"></div>
+          <div class="dna-char-circle-code" style="color:var(--purple);">T</div>
+          <div class="dna-char-circle-name">기술형</div>
+        </div>
+
+        <!-- I: Impact (8시 - 좌하) -->
+        <div class="dna-circle-char dna-pos-8" style="--char-glow:rgba(52,211,153,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-I"></div>
+          <div class="dna-char-circle-code" style="color:#34d399;">I</div>
+          <div class="dna-char-circle-name">임팩트형</div>
+        </div>
+
+        <!-- S: Scaler (10시 - 좌상) -->
+        <div class="dna-circle-char dna-pos-10" style="--char-glow:rgba(255,215,0,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-S"></div>
+          <div class="dna-char-circle-code" style="color:var(--gold);">S</div>
+          <div class="dna-char-circle-name">스케일러형</div>
+        </div>
+      </div>
+
+      <!-- 시작 버튼 -->
+      <div class="dna-start-btn-wrap">
+        <button class="dna-start-btn" onclick="startDnaQuiz()">
+          🧬 나의 유형 찾기 →
+        </button>
+        <p style="margin-top:1.2rem;color:var(--text2);font-size:0.82rem;">
+          10가지 질문 · 약 2분 소요
+        </p>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 퀴즈 영역 (시작 버튼 클릭 시 활성화) -->
+    <!-- ========================================== -->
+    <div class="dna-quiz-wrap" id="dna-quiz-wrap">
     <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
 
     <div id="quiz-container">
@@ -1459,6 +1926,7 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="founder-result" id="founder-result">
       <div class="founder-type-header glass-card" style="padding:2rem;text-align:center;">
+        <div class="founder-result-character" id="result-character-svg"></div>
         <div class="founder-type-badge" id="result-code">V</div>
         <div class="founder-type-name" id="result-name">비전형 창업가</div>
         <div class="founder-type-eng" id="result-eng">The Visionary Pioneer</div>
@@ -1484,6 +1952,7 @@ input[type=range]::-webkit-slider-thumb{
         <button class="btn-primary" onclick="retakeQuiz()">다시 테스트하기</button>
       </div>
     </div>
+    </div><!-- /.dna-quiz-wrap -->
   </div>
 </div>
 
@@ -1496,10 +1965,13 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">가상 창업 시뮬레이션 & 실패 위험 예측</h2>
         <p class="page-desc">내 스타트업을 직접 설계하고 AI가 생존 확률을 시뮬레이션합니다. 결과 후 AI 컨설턴트와 전략을 논의하세요.</p>
       </div>
-      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+      <button class="back-btn" onclick="goHome()">← 홈으로</button>
     </div>
   </div>
-  <div class="content" style="padding:0 2rem 4rem;max-width:900px;margin:0 auto;">
+  <div class="content" style="padding:0 2rem 4rem;max-width:1400px;margin:0 auto;">
+    <div class="sim-layout">
+      <!-- 좌측: 시뮬레이터 본문 -->
+      <div class="sim-main">
     <div class="sim-steps" id="sim-steps"></div>
 
     <div class="sim-panel active" id="sim-0">
@@ -1520,12 +1992,21 @@ input[type=range]::-webkit-slider-thumb{
         </div>
         <div class="sim-field">
           <label class="sim-label">창업 지역</label>
-          <div class="choice-grid">
+          <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">
             <div class="choice-card" onclick="selectSim(this,'region','서울')"><div class="choice-icon">🗼</div><div class="choice-name">서울</div></div>
             <div class="choice-card" onclick="selectSim(this,'region','판교')"><div class="choice-icon">💻</div><div class="choice-name">판교</div></div>
             <div class="choice-card" onclick="selectSim(this,'region','부산')"><div class="choice-icon">🌊</div><div class="choice-name">부산</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','인천')"><div class="choice-icon">✈️</div><div class="choice-name">인천</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','대전')"><div class="choice-icon">🔬</div><div class="choice-name">대전</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','대구')"><div class="choice-icon">🏭</div><div class="choice-name">대구</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','광주')"><div class="choice-icon">🎨</div><div class="choice-name">광주</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','울산')"><div class="choice-icon">⚙️</div><div class="choice-name">울산</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','세종')"><div class="choice-icon">🏛️</div><div class="choice-name">세종</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','제주')"><div class="choice-icon">🌴</div><div class="choice-name">제주</div></div>
             <div class="choice-card" onclick="selectSim(this,'region','해외')"><div class="choice-icon">🌍</div><div class="choice-name">해외 진출</div></div>
+            <div class="choice-card" onclick="toggleCustomRegion(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
           </div>
+          <input class="sim-input" id="s-region-custom" placeholder="지역명을 직접 입력하세요 (예: 강원도 춘천)" style="display:none;margin-top:0.8rem;" oninput="setCustomRegion(this.value)">
         </div>
         <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
       </div>
@@ -1534,16 +2015,34 @@ input[type=range]::-webkit-slider-thumb{
     <div class="sim-panel" id="sim-1">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">💡 Step 2. 사업 아이템 & 타겟 페르소나</div>
-        <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));">
-          <div class="choice-card" onclick="selectSim(this,'item','AI SaaS')"><div class="choice-icon">🤖</div><div class="choice-name">AI SaaS</div><div class="choice-desc">AI 기반 SaaS</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','헬스케어')"><div class="choice-icon">🏥</div><div class="choice-name">헬스케어</div><div class="choice-desc">디지털 헬스</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','에듀테크')"><div class="choice-icon">📚</div><div class="choice-name">에듀테크</div><div class="choice-desc">교육 혁신</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','핀테크')"><div class="choice-icon">💳</div><div class="choice-name">핀테크</div><div class="choice-desc">금융 기술</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','커머스')"><div class="choice-icon">🛒</div><div class="choice-name">커머스</div><div class="choice-desc">이커머스</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','모빌리티')"><div class="choice-icon">🚗</div><div class="choice-name">모빌리티</div><div class="choice-desc">이동·물류</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','기후테크')"><div class="choice-icon">🌱</div><div class="choice-name">기후테크</div><div class="choice-desc">ESG</div></div>
-          <div class="choice-card" onclick="selectSim(this,'item','메타버스')"><div class="choice-icon">🌐</div><div class="choice-name">메타버스</div><div class="choice-desc">XR·VR</div></div>
+        <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+          <div class="choice-card" onclick="selectSim(this,'item','AI SaaS')"><div class="choice-icon">🤖</div><div class="choice-name">AI SaaS</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','헬스케어')"><div class="choice-icon">🏥</div><div class="choice-name">헬스케어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','에듀테크')"><div class="choice-icon">📚</div><div class="choice-name">에듀테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','핀테크')"><div class="choice-icon">💳</div><div class="choice-name">핀테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','커머스/D2C')"><div class="choice-icon">🛒</div><div class="choice-name">커머스/D2C</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','모빌리티')"><div class="choice-icon">🚗</div><div class="choice-name">모빌리티</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','기후테크/ESG')"><div class="choice-icon">🌱</div><div class="choice-name">기후테크/ESG</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','메타버스/XR')"><div class="choice-icon">🌐</div><div class="choice-name">메타버스/XR</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','푸드테크')"><div class="choice-icon">🍱</div><div class="choice-name">푸드테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','애그테크')"><div class="choice-icon">🌾</div><div class="choice-name">애그테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','바이오/제약')"><div class="choice-icon">🧬</div><div class="choice-name">바이오/제약</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','뷰티/코스메틱')"><div class="choice-icon">💄</div><div class="choice-name">뷰티/코스메틱</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','콘텐츠/미디어')"><div class="choice-icon">🎬</div><div class="choice-name">콘텐츠/미디어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','게임/엔터')"><div class="choice-icon">🎮</div><div class="choice-name">게임/엔터</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','HR테크')"><div class="choice-icon">👔</div><div class="choice-name">HR테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','프롭테크')"><div class="choice-icon">🏘️</div><div class="choice-name">프롭테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','리걸테크')"><div class="choice-icon">⚖️</div><div class="choice-name">리걸테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','펫테크')"><div class="choice-icon">🐾</div><div class="choice-name">펫테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','시니어케어')"><div class="choice-icon">👴</div><div class="choice-name">시니어케어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','육아/키즈')"><div class="choice-icon">👶</div><div class="choice-name">육아/키즈</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','피트니스')"><div class="choice-icon">💪</div><div class="choice-name">피트니스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','여행/트래블')"><div class="choice-icon">✈️</div><div class="choice-name">여행/트래블</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','로보틱스')"><div class="choice-icon">🦾</div><div class="choice-name">로보틱스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','우주/항공')"><div class="choice-icon">🚀</div><div class="choice-name">우주/항공</div></div>
+          <div class="choice-card" onclick="toggleCustomItem(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
+        <input class="sim-input" id="s-item-custom" placeholder="사업 아이템을 직접 입력하세요 (예: 반려식물 관리 SaaS)" style="display:none;margin-top:0.8rem;" oninput="setCustomItem(this.value)">
         <div style="margin-top:1rem;">
           <label class="sim-label">타겟 페르소나</label>
           <input class="sim-input" id="s-persona" placeholder="예: 30대 직장인, 소규모 자영업자, MZ세대 여성..." oninput="updateSimPreview()">
@@ -1557,17 +2056,32 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="sim-panel" id="sim-2">
       <div class="glass-card" style="padding:2rem;">
-        <div class="result-section-title gold">🔬 Step 3. 핵심 기술 요구사항 (최대 3개)</div>
-        <div class="choice-grid" id="tech-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+        <div class="result-section-title gold">🔬 Step 3. 핵심 기술 요구사항 (최대 5개)</div>
+        <div class="choice-grid" id="tech-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
           <div class="choice-card" onclick="selectMulti(this,'tech','LLM/생성AI')"><div class="choice-icon">🧠</div><div class="choice-name">LLM/생성AI</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','AI 에이전트')"><div class="choice-icon">🤖</div><div class="choice-name">AI 에이전트</div></div>
           <div class="choice-card" onclick="selectMulti(this,'tech','컴퓨터비전')"><div class="choice-icon">👁</div><div class="choice-name">컴퓨터비전</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','음성AI/STT')"><div class="choice-icon">🎙️</div><div class="choice-name">음성AI/STT</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','NLP/번역')"><div class="choice-icon">💬</div><div class="choice-name">NLP/번역</div></div>
           <div class="choice-card" onclick="selectMulti(this,'tech','블록체인')"><div class="choice-icon">⛓</div><div class="choice-name">블록체인</div></div>
-          <div class="choice-card" onclick="selectMulti(this,'tech','IoT')"><div class="choice-icon">📡</div><div class="choice-name">IoT</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','IoT/센서')"><div class="choice-icon">📡</div><div class="choice-name">IoT/센서</div></div>
           <div class="choice-card" onclick="selectMulti(this,'tech','클라우드')"><div class="choice-icon">☁️</div><div class="choice-name">클라우드</div></div>
           <div class="choice-card" onclick="selectMulti(this,'tech','모바일앱')"><div class="choice-icon">📱</div><div class="choice-name">모바일앱</div></div>
-          <div class="choice-card" onclick="selectMulti(this,'tech','로보틱스')"><div class="choice-icon">🤖</div><div class="choice-name">로보틱스</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','웹 풀스택')"><div class="choice-icon">💻</div><div class="choice-name">웹 풀스택</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','로보틱스')"><div class="choice-icon">🦾</div><div class="choice-name">로보틱스</div></div>
           <div class="choice-card" onclick="selectMulti(this,'tech','빅데이터')"><div class="choice-icon">📊</div><div class="choice-name">빅데이터</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','AR/VR/XR')"><div class="choice-icon">🥽</div><div class="choice-name">AR/VR/XR</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','보안/암호')"><div class="choice-icon">🔐</div><div class="choice-name">보안/암호</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','3D프린팅')"><div class="choice-icon">🖨️</div><div class="choice-name">3D프린팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','드론/자율비행')"><div class="choice-icon">🚁</div><div class="choice-name">드론</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','반도체')"><div class="choice-icon">💾</div><div class="choice-name">반도체</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','바이오/유전자')"><div class="choice-icon">🧬</div><div class="choice-name">바이오/유전자</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','양자컴퓨팅')"><div class="choice-icon">⚛️</div><div class="choice-name">양자컴퓨팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','엣지컴퓨팅')"><div class="choice-icon">⚡</div><div class="choice-name">엣지컴퓨팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','디지털트윈')"><div class="choice-icon">🌀</div><div class="choice-name">디지털트윈</div></div>
+          <div class="choice-card" onclick="toggleCustomTech(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
+        <input class="sim-input" id="s-tech-custom" placeholder="기술을 직접 입력하세요 (쉼표로 구분, 예: WebRTC, GraphQL)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('tech',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
@@ -1577,17 +2091,32 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="sim-panel" id="sim-3">
       <div class="glass-card" style="padding:2rem;">
-        <div class="result-section-title gold">👥 Step 4. 인재 영입 계획 (최대 4명)</div>
-        <div class="choice-grid" id="talent-grid" style="grid-template-columns:repeat(auto-fill,minmax(170px,1fr));">
+        <div class="result-section-title gold">👥 Step 4. 인재 영입 계획 (최대 6명)</div>
+        <div class="choice-grid" id="talent-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
           <div class="choice-card" onclick="selectMulti(this,'talent','CTO')"><div class="choice-icon">💻</div><div class="choice-name">CTO</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','CMO')"><div class="choice-icon">📣</div><div class="choice-name">CMO</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','CFO')"><div class="choice-icon">💰</div><div class="choice-name">CFO</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','CPO')"><div class="choice-icon">🎯</div><div class="choice-name">CPO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','COO')"><div class="choice-icon">⚙️</div><div class="choice-name">COO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CSO')"><div class="choice-icon">📈</div><div class="choice-name">CSO 전략</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','AI 리드')"><div class="choice-icon">🧬</div><div class="choice-name">AI 리드</div></div>
-          <div class="choice-card" onclick="selectMulti(this,'talent','세일즈 헤드')"><div class="choice-icon">🤝</div><div class="choice-name">세일즈 헤드</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','데이터 사이언티스트')"><div class="choice-icon">📊</div><div class="choice-name">데이터 사이언티스트</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','풀스택 개발자')"><div class="choice-icon">⌨️</div><div class="choice-name">풀스택 개발자</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','UX 디자이너')"><div class="choice-icon">🎨</div><div class="choice-name">UX 디자이너</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','UI 디자이너')"><div class="choice-icon">🖌️</div><div class="choice-name">UI 디자이너</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','세일즈 헤드')"><div class="choice-icon">🤝</div><div class="choice-name">세일즈 헤드</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','그로스 해커')"><div class="choice-icon">📡</div><div class="choice-name">그로스 해커</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','콘텐츠 마케터')"><div class="choice-icon">✍️</div><div class="choice-name">콘텐츠 마케터</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','PR/홍보')"><div class="choice-icon">📰</div><div class="choice-name">PR/홍보</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','법무/특허')"><div class="choice-icon">⚖️</div><div class="choice-name">법무/특허</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','회계/재무')"><div class="choice-icon">💼</div><div class="choice-name">회계/재무</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','HR 담당')"><div class="choice-icon">👥</div><div class="choice-name">HR 담당</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CS/고객지원')"><div class="choice-icon">📞</div><div class="choice-name">CS/고객지원</div></div>
           <div class="choice-card" onclick="selectMulti(this,'talent','해외 어드바이저')"><div class="choice-icon">🌍</div><div class="choice-name">해외 어드바이저</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','업계 멘토')"><div class="choice-icon">👨‍🏫</div><div class="choice-name">업계 멘토</div></div>
+          <div class="choice-card" onclick="toggleCustomTalent(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
+        <input class="sim-input" id="s-talent-custom" placeholder="인재 역할을 직접 입력하세요 (쉼표로 구분, 예: 의료 전문 자문, 약사)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('talent',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
@@ -1597,15 +2126,31 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="sim-panel" id="sim-4">
       <div class="glass-card" style="padding:2rem;">
-        <div class="result-section-title gold">🎁 Step 5. 복지 & 문화 (최대 3개)</div>
-        <div class="choice-grid" id="welfare-grid">
+        <div class="result-section-title gold">🎁 Step 5. 복지 & 문화 (최대 5개)</div>
+        <div class="choice-grid" id="welfare-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
           <div class="choice-card" onclick="selectMulti(this,'welfare','자율출퇴근')"><div class="choice-icon">⏰</div><div class="choice-name">자율출퇴근</div></div>
           <div class="choice-card" onclick="selectMulti(this,'welfare','원격근무')"><div class="choice-icon">🏠</div><div class="choice-name">원격근무</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','주4일제')"><div class="choice-icon">📅</div><div class="choice-name">주4일제</div></div>
           <div class="choice-card" onclick="selectMulti(this,'welfare','스톡옵션')"><div class="choice-icon">📈</div><div class="choice-name">스톡옵션</div></div>
-          <div class="choice-card" onclick="selectMulti(this,'welfare','교육지원')"><div class="choice-icon">📚</div><div class="choice-name">교육비 지원</div></div>
-          <div class="choice-card" onclick="selectMulti(this,'welfare','건강관리')"><div class="choice-icon">🏋️</div><div class="choice-name">건강관리</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','성과급')"><div class="choice-icon">💵</div><div class="choice-name">성과급</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','교육비지원')"><div class="choice-icon">📚</div><div class="choice-name">교육비 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','컨퍼런스지원')"><div class="choice-icon">🎤</div><div class="choice-name">컨퍼런스 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','도서구입')"><div class="choice-icon">📖</div><div class="choice-name">도서구입비</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','건강검진')"><div class="choice-icon">🏥</div><div class="choice-name">건강검진</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','피트니스')"><div class="choice-icon">🏋️</div><div class="choice-name">피트니스 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','심리상담')"><div class="choice-icon">🧘</div><div class="choice-name">심리상담</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','식사제공')"><div class="choice-icon">🍱</div><div class="choice-name">식사 제공</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','간식/카페')"><div class="choice-icon">☕</div><div class="choice-name">간식/사내카페</div></div>
           <div class="choice-card" onclick="selectMulti(this,'welfare','반려동물')"><div class="choice-icon">🐾</div><div class="choice-name">반려동물 출근</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','육아휴직')"><div class="choice-icon">👶</div><div class="choice-name">육아휴직</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','경조사지원')"><div class="choice-icon">💐</div><div class="choice-name">경조사 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','워크샵/MT')"><div class="choice-icon">🏖️</div><div class="choice-name">워크샵/MT</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','장비지원')"><div class="choice-icon">💻</div><div class="choice-name">장비지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','동호회')"><div class="choice-icon">⚽</div><div class="choice-name">사내 동호회</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','해외근무')"><div class="choice-icon">✈️</div><div class="choice-name">해외근무 기회</div></div>
+          <div class="choice-card" onclick="toggleCustomWelfare(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
+        <input class="sim-input" id="s-welfare-custom" placeholder="복지 제도를 직접 입력하세요 (쉼표로 구분, 예: 명상룸, 신혼여행비)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('welfare',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="runSimulation()">🚀 시뮬레이션 실행</button>
@@ -1650,45 +2195,54 @@ input[type=range]::-webkit-slider-thumb{
         <div id="sim-recommendations" class="recommendations"></div>
       </div>
 
-      <!-- =================================== -->
-      <!-- 💬 AI 컨설턴트 대화 (NEW) -->
-      <!-- =================================== -->
-      <div class="ai-chat-section">
-        <div class="ai-chat-header">
-          <span style="font-size:1.4rem;">💬</span>
-          <span class="ai-chat-title">실시간 AI 전략 컨설턴트</span>
-          <span class="ai-chat-badge">POWERED BY GPT-4o</span>
-        </div>
-        <p class="ai-search-desc">시뮬레이션 결과를 바탕으로 AI 컨설턴트와 대화하며 맞춤형 전략을 받아보세요. 위험 완화, 자본 배분, 인재 영입 등 무엇이든 질문하세요.</p>
-
-        <div id="chat-history" class="chat-history">
-          <div class="chat-msg ai">
-            <span class="chat-msg-label">🤖 AI 컨설턴트</span>
-            안녕하세요! 시뮬레이션 결과를 확인했습니다. 본인의 가상 스타트업에 대해 궁금한 점이 있으시면 무엇이든 물어보세요. 실패 위험 완화 전략, 자본 배분, 인재 영입, 시장 검증 등 다양한 주제로 상담 가능합니다.
-          </div>
-        </div>
-
-        <div class="quick-chat-qs">
-          <span class="quick-chat-q" onclick="sendQuickQ('이 시뮬레이션 결과에서 가장 큰 실패 위험은 무엇인가요?')">⚠️ 최대 위험 분석</span>
-          <span class="quick-chat-q" onclick="sendQuickQ('자본을 어떻게 배분해야 효율적인가요?')">💰 자본 배분 전략</span>
-          <span class="quick-chat-q" onclick="sendQuickQ('지금 가장 시급한 인재 영입은?')">👥 인재 우선순위</span>
-          <span class="quick-chat-q" onclick="sendQuickQ('시장 검증을 어떻게 시작해야 하나요?')">📊 시장 검증 방법</span>
-          <span class="quick-chat-q" onclick="sendQuickQ('한국 정부 지원 프로그램 추천')">🇰🇷 정부 지원</span>
-        </div>
-
-        <div class="chat-input-row">
-          <input type="text" id="chat-input" class="chat-input" placeholder="AI 컨설턴트에게 질문하세요...">
-          <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">
-            전송 →
-          </button>
-        </div>
-      </div>
-
       <div style="display:flex;gap:1rem;flex-wrap:wrap;">
         <button class="btn-primary btn-gold" onclick="showPage('result')">📋 최종 보고서 보기</button>
         <button class="back-btn" onclick="resetSimulator()">↺ 다시 설계하기</button>
       </div>
     </div>
+      </div><!-- /.sim-main -->
+
+      <!-- ============================================ -->
+      <!-- 우측: AI 컨설턴트 사이드바 (모든 단계에서 표시) -->
+      <!-- ============================================ -->
+      <aside class="sim-ai-sidebar">
+        <div class="sim-ai-sidebar-header">
+          <span style="font-size:1.2rem;">💬</span>
+          <span class="sim-ai-sidebar-title">실시간 AI 전략 컨설턴트</span>
+          <span style="display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 10px #00ff88;animation:btn-pulse 1.5s ease-in-out infinite;"></span>
+        </div>
+        <p class="sim-ai-sidebar-desc">단계별로 입력하시는 정보를 AI가 실시간으로 분석합니다. 궁금한 점을 자유롭게 물어보세요.</p>
+
+        <!-- 현재 입력 정보 컨텍스트 -->
+        <div class="sim-ai-context-info" id="sim-ai-context">
+          <strong>📍 현재 입력 정보:</strong><br>
+          <span id="sim-context-display">아직 입력된 정보가 없습니다. 단계별로 입력을 시작해 주세요.</span>
+        </div>
+
+        <!-- 대화 기록 -->
+        <div class="sim-chat-history" id="chat-history">
+          <div class="sim-chat-msg ai">
+            <span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>
+            안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.
+          </div>
+        </div>
+
+        <!-- 빠른 질문 -->
+        <div class="sim-quick-chat-qs">
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('지금 입력한 정보로 가장 큰 위험은?')">⚠️ 현재 위험</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('이 사업 아이템의 시장 전망은?')">📊 시장 전망</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('어떤 인재를 우선 영입해야 하나요?')">👥 인재 추천</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('한국 정부 지원 프로그램 알려줘')">🇰🇷 정부 지원</span>
+        </div>
+
+        <!-- 입력창 -->
+        <div class="sim-chat-input-row">
+          <input type="text" id="chat-input" class="sim-chat-input" placeholder="질문을 입력하세요...">
+          <button class="sim-chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">전송</button>
+        </div>
+      </aside>
+
+    </div><!-- /.sim-layout -->
   </div>
 </div>
 
@@ -1763,19 +2317,19 @@ input[type=range]::-webkit-slider-thumb{
         </div>
         <div class="roadmap-phase phase2">
           <div class="roadmap-phase-label">Phase 2</div>
-          <div class="roadmap-phase-date">2026 Q4</div>
+          <div class="roadmap-phase-date">2026.06</div>
           <div class="roadmap-phase-dot">○</div>
           <div class="roadmap-phase-desc">Digital-Twin<br>메타버스 프로토타입</div>
         </div>
         <div class="roadmap-phase phase3">
           <div class="roadmap-phase-label">Phase 3</div>
-          <div class="roadmap-phase-date">2027 Q2</div>
+          <div class="roadmap-phase-date">2026.12</div>
           <div class="roadmap-phase-dot">○</div>
           <div class="roadmap-phase-desc">전체 메타버스<br>환경 완성</div>
         </div>
         <div class="roadmap-phase phase4">
           <div class="roadmap-phase-label">Phase 4</div>
-          <div class="roadmap-phase-date">2027 Q4</div>
+          <div class="roadmap-phase-date">2027.06</div>
           <div class="roadmap-phase-dot">○</div>
           <div class="roadmap-phase-desc">글로벌 확장<br>& AI 고도화</div>
         </div>
@@ -1794,7 +2348,7 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title">종합 분석 보고서</h2>
         <p class="page-desc">ASNM 모듈의 분석 결과를 종합한 맞춤형 창업 전략 보고서입니다.</p>
       </div>
-      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+      <button class="back-btn" onclick="goHome()">← 홈으로</button>
     </div>
   </div>
   <div class="content" style="padding:0 2rem 4rem;max-width:1000px;margin:0 auto;">
@@ -1921,12 +2475,54 @@ loadTheme();
 // =============================================
 // 📄 PAGE NAVIGATION
 // =============================================
-function showPage(id){
+// =============================================
+// 페이지별 스크롤 위치 저장 (탭 전환 시 그 자리에서 이어보기)
+// =============================================
+const pageScrollPositions = {
+  home: 0, m1: 0, m2: 0, m3a: 0, m4: 0, result: 0
+};
+let currentPageId = 'home';
+
+function showPage(id, resetScroll){
+  // 1. 현재 페이지의 스크롤 위치 저장
+  if(currentPageId){
+    pageScrollPositions[currentPageId] = window.pageYOffset || document.documentElement.scrollTop || 0;
+  }
+  
+  // 2. 페이지 전환
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  window.scrollTo(0,0);
+  
+  // 3. 스크롤 위치 복원 (resetScroll=true이면 0)
+  if(resetScroll){
+    pageScrollPositions[id] = 0;
+    window.scrollTo(0, 0);
+  } else {
+    setTimeout(function(){
+      window.scrollTo(0, pageScrollPositions[id] || 0);
+    }, 10);
+  }
+  
+  // 4. 현재 페이지 ID 업데이트
+  currentPageId = id;
+  
+  // 5. 페이지별 추가 로직
   if(id==='result')updateReport();
+  if(id==='m2' && !window._founderType){
+    const intro = document.getElementById('dna-intro');
+    const quizWrap = document.getElementById('dna-quiz-wrap');
+    if(intro && quizWrap){
+      intro.classList.remove('hidden');
+      quizWrap.classList.remove('active');
+    }
+  }
+}
+
+// 홈으로 가는 경우 모든 스크롤 초기화 (홈/이전 버튼용)
+function goHome(){
+  Object.keys(pageScrollPositions).forEach(function(k){ pageScrollPositions[k]=0; });
+  showPage('home', true);
 }
 
 // =============================================
@@ -2236,6 +2832,122 @@ function renderMarketCharts(){
 // =============================================
 // 🧬 M2: FOUNDER DNA (6 TYPES)
 // =============================================
+
+// 6명 창업자 SVG (결과 화면에서도 사용)
+const founderSVGs = {
+  V: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-v-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff9500"/></linearGradient></defs>
+    <circle cx="15" cy="20" r="1.5" fill="#ffd700" opacity="0.8"/><circle cx="85" cy="15" r="2" fill="#ffd700" opacity="0.9"/>
+    <circle cx="80" cy="40" r="1" fill="#ffd700" opacity="0.6"/><circle cx="20" cy="65" r="1.5" fill="#ffd700" opacity="0.7"/>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-v-r)" stroke-width="2"/>
+    <path d="M 36 32 Q 50 18, 64 32 L 62 38 Q 50 26, 38 38 Z" fill="#3a2818"/>
+    <circle cx="44" cy="38" r="1.5" fill="#1a1a2e"/><circle cx="56" cy="38" r="1.5" fill="#1a1a2e"/>
+    <path d="M 44 45 Q 50 49, 56 45" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 38 55 L 50 75 L 62 55 Z" fill="url(#g-v-r)"/><rect x="44" y="55" width="12" height="22" rx="2" fill="url(#g-v-r)"/>
+    <path d="M 46 77 L 50 88 L 54 77 Z" fill="#ffd700"><animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/></path>
+    <path d="M 38 62 L 30 70 L 38 70 Z" fill="#ff9500"/><path d="M 62 62 L 70 70 L 62 70 Z" fill="#ff9500"/>
+  </svg>`,
+  A: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-a-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f5ff"/><stop offset="100%" stop-color="#00bcd4"/></linearGradient></defs>
+    <rect x="10" y="70" width="6" height="15" fill="#00f5ff" opacity="0.4"/><rect x="18" y="65" width="6" height="20" fill="#00f5ff" opacity="0.5"/>
+    <rect x="76" y="68" width="6" height="17" fill="#00f5ff" opacity="0.4"/><rect x="84" y="62" width="6" height="23" fill="#00f5ff" opacity="0.5"/>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-a-r)" stroke-width="2"/>
+    <path d="M 36 30 Q 50 20, 64 30 L 64 38 L 62 35 Q 50 28, 38 35 L 36 38 Z" fill="#1a1a2e"/>
+    <circle cx="44" cy="39" r="4" fill="none" stroke="#1a1a2e" stroke-width="1.5"/><circle cx="56" cy="39" r="4" fill="none" stroke="#1a1a2e" stroke-width="1.5"/>
+    <line x1="48" y1="39" x2="52" y2="39" stroke="#1a1a2e" stroke-width="1.5"/>
+    <circle cx="44" cy="39" r="1" fill="#1a1a2e"/><circle cx="56" cy="39" r="1" fill="#1a1a2e"/>
+    <line x1="46" y1="46" x2="54" y2="46" stroke="#1a1a2e" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-a-r)"/>
+    <path d="M 48 55 L 52 55 L 53 75 L 50 80 L 47 75 Z" fill="#1a1a2e"/>
+    <rect x="22" y="50" width="14" height="10" rx="1" fill="white" stroke="url(#g-a-r)" stroke-width="1.5"/>
+    <polyline points="24,58 27,54 30,56 33,52" stroke="url(#g-a-r)" stroke-width="1.2" fill="none"/>
+  </svg>`,
+  C: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-c-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00ff88"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
+    <circle cx="18" cy="40" r="7" fill="#00ff88" opacity="0.3"/>
+    <path d="M 11 50 Q 11 60, 18 60 Q 25 60, 25 50 Z" fill="#00ff88" opacity="0.3"/>
+    <circle cx="82" cy="40" r="7" fill="#00ff88" opacity="0.3"/>
+    <path d="M 75 50 Q 75 60, 82 60 Q 89 60, 89 50 Z" fill="#00ff88" opacity="0.3"/>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-c-r)" stroke-width="2"/>
+    <path d="M 36 32 Q 50 22, 64 32 Q 62 28, 50 26 Q 38 28, 36 32 Z" fill="#5d4037"/>
+    <circle cx="44" cy="38" r="2" fill="#1a1a2e"/><circle cx="56" cy="38" r="2" fill="#1a1a2e"/>
+    <circle cx="44.5" cy="37.5" r="0.5" fill="white"/><circle cx="56.5" cy="37.5" r="0.5" fill="white"/>
+    <path d="M 42 45 Q 50 52, 58 45" stroke="#1a1a2e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <ellipse cx="40" cy="42" rx="2" ry="1.5" fill="#ff6b6b" opacity="0.3"/><ellipse cx="60" cy="42" rx="2" ry="1.5" fill="#ff6b6b" opacity="0.3"/>
+    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-c-r)"/>
+    <path d="M 50 65 C 45 60, 40 65, 45 72 C 47 75, 50 78, 50 78 C 50 78, 53 75, 55 72 C 60 65, 55 60, 50 65 Z" fill="white"/>
+    <line x1="28" y1="65" x2="36" y2="62" stroke="url(#g-c-r)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="72" y1="65" x2="64" y2="62" stroke="url(#g-c-r)" stroke-width="3" stroke-linecap="round"/>
+  </svg>`,
+  T: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-t-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
+    <text x="10" y="20" font-family="monospace" font-size="6" fill="#a855f7" opacity="0.5">&lt;/&gt;</text>
+    <text x="82" y="20" font-family="monospace" font-size="6" fill="#a855f7" opacity="0.5">{ }</text>
+    <text x="12" y="92" font-family="monospace" font-size="5" fill="#a855f7" opacity="0.4">01010</text>
+    <text x="78" y="92" font-family="monospace" font-size="5" fill="#a855f7" opacity="0.4">10101</text>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-t-r)" stroke-width="2"/>
+    <path d="M 36 30 Q 40 22, 45 26 Q 50 18, 55 26 Q 60 22, 64 30 L 62 35 Q 50 30, 38 35 Z" fill="#2c1810"/>
+    <rect x="40" y="35" width="8" height="8" rx="1" fill="rgba(168,85,247,0.2)" stroke="#1a1a2e" stroke-width="1.5"/>
+    <rect x="52" y="35" width="8" height="8" rx="1" fill="rgba(168,85,247,0.2)" stroke="#1a1a2e" stroke-width="1.5"/>
+    <line x1="48" y1="39" x2="52" y2="39" stroke="#1a1a2e" stroke-width="1.5"/>
+    <circle cx="44" cy="39" r="1" fill="#1a1a2e"/><circle cx="56" cy="39" r="1" fill="#1a1a2e"/>
+    <path d="M 46 46 Q 50 48, 54 46" stroke="#1a1a2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-t-r)"/>
+    <line x1="46" y1="55" x2="46" y2="68" stroke="white" stroke-width="1"/>
+    <line x1="54" y1="55" x2="54" y2="68" stroke="white" stroke-width="1"/>
+    <rect x="38" y="60" width="24" height="14" rx="1" fill="#1a1a2e" stroke="white" stroke-width="0.5"/>
+    <text x="40" y="68" font-family="monospace" font-size="5" fill="#00ff88">code</text>
+    <text x="40" y="73" font-family="monospace" font-size="3" fill="#a855f7">func()</text>
+  </svg>`,
+  I: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-i-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
+    <path d="M 12 25 Q 15 15, 22 18 Q 18 25, 12 25" fill="#34d399" opacity="0.4"/>
+    <path d="M 78 18 Q 85 15, 88 25 Q 82 25, 78 18" fill="#34d399" opacity="0.4"/>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-i-r)" stroke-width="2"/>
+    <path d="M 36 30 Q 50 22, 64 30 L 62 32 Q 50 26, 38 32 Z" fill="#8d6e63"/>
+    <circle cx="38" cy="30" r="2" fill="#ffd700"/><circle cx="50" cy="25" r="2.5" fill="#ff6b6b"/><circle cx="62" cy="30" r="2" fill="#34d399"/>
+    <path d="M 42 38 Q 44 36, 46 38" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 54 38 Q 56 36, 58 38" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 44 45 Q 50 48, 56 45" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-i-r)"/>
+    <circle cx="50" cy="68" r="9" fill="#06b6d4"/>
+    <path d="M 43 65 Q 47 63, 50 65 Q 53 67, 57 65 Q 55 70, 50 71 Q 45 70, 43 65 Z" fill="#34d399"/>
+    <path d="M 42 70 Q 48 72, 54 70 L 53 73 Q 48 74, 43 73 Z" fill="#34d399"/>
+    <path d="M 50 58 Q 53 55, 55 58 Q 53 60, 50 58" fill="#10b981"/>
+  </svg>`,
+  S: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="g-s-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffd700"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs>
+    <polyline points="8,82 20,75 32,68 44,60 56,52 68,44 80,36 92,28" stroke="#ffd700" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="2,2"/>
+    <polygon points="88,28 92,28 92,32" fill="#ffd700" opacity="0.4"/>
+    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-s-r)" stroke-width="2"/>
+    <path d="M 36 30 Q 50 22, 64 30 L 62 35 Q 50 26, 38 35 Z" fill="#4a3220"/>
+    <circle cx="63" cy="32" r="3" fill="#4a3220"/>
+    <path d="M 42 37 Q 44 39, 46 37" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 54 37 Q 56 39, 58 37" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 44 44 Q 50 47, 56 44" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-s-r)"/>
+    <path d="M 50 55 L 42 65 L 50 75 L 58 65 Z" fill="#1a1a2e" opacity="0.5"/>
+    <circle cx="50" cy="68" r="6" fill="#ffd700" stroke="white" stroke-width="1"/>
+    <text x="50" y="71" font-family="Arial" font-size="6" fill="#1a1a2e" text-anchor="middle" font-weight="bold">★</text>
+    <path d="M 78 60 L 82 56 L 86 60 M 82 56 L 82 70" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </svg>`
+};
+
+// 인트로에서 퀴즈로 전환
+function startDnaQuiz(){
+  document.getElementById('dna-intro').classList.add('hidden');
+  document.getElementById('dna-quiz-wrap').classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+// 페이지 로드 시 원형 배치에 SVG 주입
+function initDnaCircleSvgs(){
+  ['V','A','C','T','I','S'].forEach(code=>{
+    const el = document.getElementById('circle-svg-'+code);
+    if(el) el.innerHTML = founderSVGs[code];
+  });
+}
+
 const founderTypes={
   V:{code:'V',name:'비전형 창업가',eng:'The Visionary Pioneer',emoji:'🚀',
     traits:['빅픽처 사고','리스크 감수','카리스마 리더십','성장 지향','빠른 피벗'],
@@ -2324,6 +3036,8 @@ function showFounderResult(){
   document.getElementById('quiz-progress-bar').style.width='100%';
   const result=document.getElementById('founder-result');
   result.classList.add('show');
+  // 결과 캐릭터 SVG 표시 (NEW)
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[topType];
   document.getElementById('result-code').textContent=type.emoji+' '+type.code;
   document.getElementById('result-name').textContent=type.name;
   document.getElementById('result-eng').textContent=type.eng;
@@ -2332,11 +3046,13 @@ function showFounderResult(){
   document.getElementById('founder-warnings').textContent=type.warning;
   drawRadar(type.scores);
   const grid=document.getElementById('types-grid');
-  grid.innerHTML=Object.values(founderTypes).map(t=>`<div class="type-mini ${t.code===topType?'current':''}" onclick="showTypeDetail('${t.code}')"><div class="type-mini-emoji">${t.emoji}</div><div class="type-mini-code">${t.code}</div><div class="type-mini-name">${t.name}</div></div>`).join('');
+  // 미니 타입 grid에 SVG 추가
+  grid.innerHTML=Object.values(founderTypes).map(t=>`<div class="type-mini ${t.code===topType?'current':''}" onclick="showTypeDetail('${t.code}')"><div style="width:50px;height:50px;margin:0 auto 0.3rem;">${founderSVGs[t.code]}</div><div class="type-mini-code">${t.code}</div><div class="type-mini-name">${t.name}</div></div>`).join('');
 }
 
 function showTypeDetail(code){
   const type=founderTypes[code];
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[code];
   document.getElementById('result-code').textContent=type.emoji+' '+type.code;
   document.getElementById('result-name').textContent=type.name;
   document.getElementById('result-eng').textContent=type.eng;
@@ -2383,6 +3099,10 @@ function retakeQuiz(){
   document.getElementById('quiz-next-btn').disabled=true;
   document.getElementById('quiz-next-btn').style.opacity='0.4';
   window._founderType=null;
+  // 인트로 페이지로 다시 돌아가기 (NEW)
+  document.getElementById('dna-intro').classList.remove('hidden');
+  document.getElementById('dna-quiz-wrap').classList.remove('active');
+  window.scrollTo({top:0, behavior:'smooth'});
 }
 
 // =============================================
@@ -2391,7 +3111,77 @@ function retakeQuiz(){
 const simStepLabels=['기본정보','아이템','기술','인재','복지'];
 let simCurrentStep=0;
 let simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
-let simMultiMax={tech:3,talent:4,welfare:3};
+let simMultiMax={tech:5,talent:6,welfare:5};
+let customMultiValues={tech:[],talent:[],welfare:[]}; // 직접 입력 값 저장
+
+// 사업 아이템 직접 입력 토글
+function toggleCustomItem(el){
+  document.querySelectorAll(`[onclick*="selectSim(this,'item'"]`).forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll(`[onclick*="toggleCustomItem"]`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const customInput = document.getElementById('s-item-custom');
+  customInput.style.display='block';
+  customInput.focus();
+  simData.item = customInput.value || '';
+}
+function setCustomItem(val){
+  simData.item = val;
+  updateSidebarContext();
+}
+
+// 멀티 선택 항목 직접 입력 토글
+function toggleCustomTech(el){
+  el.classList.toggle('selected');
+  const customInput = document.getElementById('s-tech-custom');
+  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
+  if(el.classList.contains('selected')) customInput.focus();
+  else {
+    customInput.value='';
+    customMultiValues.tech=[];
+    rebuildMultiData('tech');
+  }
+}
+function toggleCustomTalent(el){
+  el.classList.toggle('selected');
+  const customInput = document.getElementById('s-talent-custom');
+  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
+  if(el.classList.contains('selected')) customInput.focus();
+  else {
+    customInput.value='';
+    customMultiValues.talent=[];
+    rebuildMultiData('talent');
+  }
+}
+function toggleCustomWelfare(el){
+  el.classList.toggle('selected');
+  const customInput = document.getElementById('s-welfare-custom');
+  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
+  if(el.classList.contains('selected')) customInput.focus();
+  else {
+    customInput.value='';
+    customMultiValues.welfare=[];
+    rebuildMultiData('welfare');
+  }
+}
+
+// 직접 입력 값을 멀티 데이터에 병합
+function setCustomMulti(field, val){
+  customMultiValues[field] = val.split(',').map(s=>s.trim()).filter(s=>s.length>0);
+  rebuildMultiData(field);
+}
+function rebuildMultiData(field){
+  // 기존 선택 항목 (카드로 선택된 것) + 커스텀 입력 항목
+  const cards = document.querySelectorAll(`[onclick*="selectMulti(this,'${field}'"]`);
+  const selectedCards = [];
+  cards.forEach(c=>{
+    if(c.classList.contains('selected')){
+      const match = c.getAttribute('onclick').match(/'([^']+)','([^']+)'\)/);
+      if(match) selectedCards.push(match[2]);
+    }
+  });
+  simData[field] = [...selectedCards, ...customMultiValues[field]];
+  updateSidebarContext();
+}
 
 function initSimSteps(){
   const container=document.getElementById('sim-steps');
@@ -2412,12 +3202,38 @@ function updateCapital(){
   let disp=v<=10?v+'억 원':v<=50?(v*1000/10000).toFixed(1)+'억 원':Math.floor(v/10)+'0억 원';
   if(v===100)disp='100억 원 이상';
   document.getElementById('capital-display').textContent=disp;
+  updateSidebarContext();
 }
 
 function selectSim(el,field,val){
   document.querySelectorAll(`[onclick*="selectSim(this,'${field}'"]`).forEach(c=>c.classList.remove('selected'));
   el.classList.add('selected');
   simData[field]=val;
+  // 직접 입력 칸 숨기기 (region/item일 때)
+  if(field==='region'){
+    const customInput = document.getElementById('s-region-custom');
+    if(customInput){customInput.style.display='none';customInput.value='';}
+  }
+  if(field==='item'){
+    const customInput = document.getElementById('s-item-custom');
+    if(customInput){customInput.style.display='none';customInput.value='';}
+  }
+  updateSidebarContext();
+}
+
+function toggleCustomRegion(el){
+  document.querySelectorAll(`[onclick*="selectSim(this,'region'"]`).forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll(`[onclick*="toggleCustomRegion"]`).forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  const customInput = document.getElementById('s-region-custom');
+  customInput.style.display='block';
+  customInput.focus();
+  simData.region = customInput.value || '';
+}
+
+function setCustomRegion(val){
+  simData.region = val;
+  updateSidebarContext();
 }
 
 function selectMulti(el,field,val){
@@ -2425,6 +3241,7 @@ function selectMulti(el,field,val){
   const arr=simData[field];
   if(already){el.classList.remove('selected');simData[field]=arr.filter(x=>x!==val);}
   else {if(arr.length>=simMultiMax[field]){alert(`최대 ${simMultiMax[field]}개까지 선택 가능합니다.`);return;}el.classList.add('selected');simData[field]=[...arr,val];}
+  updateSidebarContext();
 }
 
 function simNext(){
@@ -2451,11 +3268,12 @@ function simPrev(){
 function updateSimPreview(){
   simData.name=document.getElementById('s-name').value;
   simData.vision=document.getElementById('s-vision').value;
+  if(document.getElementById('s-persona'))simData.persona=document.getElementById('s-persona').value;
+  updateSidebarContext();
 }
 
 function runSimulation(){
   updateSimPreview();
-  if(document.getElementById('s-persona'))simData.persona=document.getElementById('s-persona').value;
   document.getElementById('sim-4').classList.remove('active');
   document.getElementById('dot-4').classList.remove('active');
   document.getElementById('dot-4').classList.add('done');
@@ -2503,7 +3321,13 @@ function runSimulation(){
 
   drawDial(base);
   
-  // AI Chat 초기화
+  // 사이드바 컨텍스트 + AI Chat 환영 메시지 갱신
+  updateSidebarContext();
+  const history = document.getElementById('chat-history');
+  if(history){
+    history.innerHTML += `<div class="sim-chat-msg ai" style="border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.05);"><span class="sim-chat-msg-label" style="color:var(--green)">✅ 시뮬레이션 완료</span>5년 생존 확률 ${base}% 분석을 완료했습니다. 결과에 대해 무엇이든 물어보세요!</div>`;
+    history.scrollTop = history.scrollHeight;
+  }
   resetAiChat();
 
   const resultEl=document.getElementById('sim-result');
@@ -2527,52 +3351,81 @@ function drawDial(pct){
 
 function resetSimulator(){
   simCurrentStep=0;simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
+  customMultiValues={tech:[],talent:[],welfare:[]};
   document.querySelectorAll('.sim-panel').forEach((p,i)=>{p.classList.remove('active');if(i===0)p.classList.add('active');});
   document.getElementById('sim-result').classList.remove('show');
   document.querySelectorAll('.sim-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i===0)d.classList.add('active');});
   document.querySelectorAll('.sim-connector').forEach(c=>c.classList.remove('done'));
   document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('s-name').value='';document.getElementById('s-vision').value='';
+  if(document.getElementById('s-persona'))document.getElementById('s-persona').value='';
   document.getElementById('s-capital').value=1;updateCapital();
+  // 직접 입력 input 모두 숨기기 & 초기화
+  ['s-region-custom','s-item-custom','s-tech-custom','s-talent-custom','s-welfare-custom'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){el.style.display='none';el.value='';}
+  });
   window._simResult=null;
+  // 사이드바 초기화
+  updateSidebarContext();
+  const history = document.getElementById('chat-history');
+  if(history){
+    history.innerHTML = `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.</div>`;
+  }
   window.scrollTo(0,300);
 }
 
 // =============================================
-// 💬 M3: AI CONSULTANT CHAT (NEW)
+// 💬 M3: AI CONSULTANT CHAT (사이드바)
 // =============================================
 let chatMessages = [];
 
-function resetAiChat(){
-  const sim = window._simResult;
-  if(!sim) return;
-  
-  // 시스템 프롬프트에 시뮬레이션 결과 컨텍스트 포함
-  const context = `사용자의 가상 스타트업 시뮬레이션 결과:
-- 회사명: ${sim.data.name || '(미입력)'}
-- 비전: ${sim.data.vision || '(미입력)'}
-- 자본: ${sim.data.capital}억 원
-- 지역: ${sim.data.region || '(미선택)'}
-- 사업 아이템: ${sim.data.item || '(미선택)'}
-- 타겟 페르소나: ${sim.data.persona || '(미입력)'}
-- 핵심 기술: ${sim.data.tech.join(', ') || '(없음)'}
-- 인재 영입: ${sim.data.talent.join(', ') || '(없음)'}
-- 복지: ${sim.data.welfare.join(', ') || '(없음)'}
-- 5년 생존 확률: Base ${sim.base}% / Optimistic ${sim.opt}% / Pessimistic ${sim.pes}%
-${window._founderType ? `- 창업자 DNA: ${window._founderType.name} (${window._founderType.code})` : ''}`;
+// 현재 simData를 자연어 컨텍스트로 변환
+function buildSimContextText(){
+  const d = simData;
+  const parts = [];
+  if(d.name) parts.push(`회사명: ${d.name}`);
+  if(d.vision) parts.push(`비전: ${d.vision}`);
+  if(d.capital) parts.push(`자본: ${d.capital}억 원`);
+  if(d.region) parts.push(`지역: ${d.region}`);
+  if(d.item) parts.push(`사업 아이템: ${d.item}`);
+  if(d.persona) parts.push(`타겟: ${d.persona}`);
+  if(d.tech && d.tech.length) parts.push(`기술: ${d.tech.join(', ')}`);
+  if(d.talent && d.talent.length) parts.push(`인재: ${d.talent.join(', ')}`);
+  if(d.welfare && d.welfare.length) parts.push(`복지: ${d.welfare.join(', ')}`);
+  if(window._simResult) parts.push(`5년 생존 확률: ${window._simResult.base}%`);
+  if(window._founderType) parts.push(`창업자 DNA: ${window._founderType.name} (${window._founderType.code})`);
+  return parts.join(' / ');
+}
 
+// 사이드바 컨텍스트 정보 업데이트
+function updateSidebarContext(){
+  const ctx = buildSimContextText();
+  const display = document.getElementById('sim-context-display');
+  if(!display) return;
+  if(ctx){
+    display.innerHTML = ctx.split(' / ').map(s=>`• ${s}`).join('<br>');
+  } else {
+    display.textContent = '아직 입력된 정보가 없습니다. 단계별로 입력을 시작해 주세요.';
+  }
+}
+
+function resetAiChat(){
+  // 항상 호출 가능 (시뮬 결과 전/후 모두)
+  const ctx = buildSimContextText();
+  
   chatMessages = [{
     role:'system',
-    content:`당신은 한국 창업 시장 전문 AI 컨설턴트입니다. 사용자의 시뮬레이션 결과를 바탕으로 실패 위험 완화 전략을 추천합니다.
+    content:`당신은 한국 창업 시장 전문 AI 컨설턴트입니다. 예비창업자가 가상 스타트업을 설계하는 동안 실시간으로 조언을 제공합니다.
 
-${context}
+${ctx ? `사용자의 현재 입력 상태:\n${ctx}` : '사용자가 아직 입력을 시작하지 않았습니다.'}
 
 답변 원칙:
 1. **핵심 권고**: 한 줄로 결론
-2. **우선순위 액션**: 3가지 구체적 행동
+2. **우선순위 액션**: 2-3가지 구체적 행동
 3. **주의사항**: 빠지기 쉬운 함정
 
-답변은 행동경제학 기반 편향 자각(planning fallacy, overconfidence, optimism bias)을 적극 활용하여 한국어로 500자 이내로 작성하세요. **굵게 표시할 핵심은 **단어** 형식 사용.`
+답변은 행동경제학 기반 편향 자각(planning fallacy, overconfidence, optimism bias)을 활용하여 한국어로 400자 이내로 작성하세요. **굵게 표시할 핵심은 **단어** 형식 사용. 사용자가 아직 입력 정보가 부족하면, 그 단계에서 일반적으로 고려해야 할 사항을 안내하세요.`
   }];
 }
 
@@ -2584,33 +3437,33 @@ async function sendChatMessage(){
   const history = document.getElementById('chat-history');
   const btn = document.getElementById('chat-send-btn');
   
-  // 사용자 메시지 표시
-  history.innerHTML += `<div class="chat-msg user"><span class="chat-msg-label">👤 You</span>${msg}</div>`;
+  // 사용자 메시지 표시 (사이드바 CSS 클래스 사용)
+  history.innerHTML += `<div class="sim-chat-msg user"><span class="sim-chat-msg-label">👤 You</span>${msg}</div>`;
   
   input.value = '';
   btn.disabled = true;
   
   // 로딩 표시
   const loadingId = 'load-'+Date.now();
-  history.innerHTML += `<div id="${loadingId}" class="chat-msg ai"><span class="chat-msg-label">🤖 AI 컨설턴트</span><div class="ai-loading"><div class="loading-spinner"></div><span>분석 중...</span></div></div>`;
+  history.innerHTML += `<div id="${loadingId}" class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span><div class="ai-loading"><div class="loading-spinner"></div><span>분석 중...</span></div></div>`;
   history.scrollTop = history.scrollHeight;
   
-  // 메시지 추가
-  if(chatMessages.length === 0) resetAiChat();
+  // 매번 최신 컨텍스트로 시스템 프롬프트 갱신
+  resetAiChat();
   chatMessages.push({role:'user', content:msg});
   
   try {
-    const response = await callOpenAI(chatMessages, 800);
+    const response = await callOpenAI(chatMessages, 600);
     chatMessages.push({role:'assistant', content:response});
     
     document.getElementById(loadingId).remove();
     const formatted = response
       .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--coral)">$1</strong>')
       .replace(/\n/g, '<br>');
-    history.innerHTML += `<div class="chat-msg ai"><span class="chat-msg-label">🤖 AI 컨설턴트</span>${formatted}</div>`;
+    history.innerHTML += `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>${formatted}</div>`;
   } catch(err){
     document.getElementById(loadingId).remove();
-    history.innerHTML += `<div class="chat-msg ai" style="border-color:var(--coral);"><span class="chat-msg-label" style="color:var(--coral)">❌ 오류</span>${err.message}</div>`;
+    history.innerHTML += `<div class="sim-chat-msg ai" style="border-color:var(--coral);"><span class="sim-chat-msg-label" style="color:var(--coral)">❌ 오류</span>${err.message}</div>`;
   } finally {
     btn.disabled = false;
     history.scrollTop = history.scrollHeight;
@@ -2734,6 +3587,8 @@ function downloadJSON(){
 window._founderType=null;
 window._simResult=null;
 document.getElementById('report-date').textContent=new Date().toLocaleDateString('ko-KR');
+initDnaCircleSvgs(); // 6명 원형 배치 SVG 주입
+updateSidebarContext(); // M3 사이드바 초기 상태
 </script>
 </body>
 </html>
