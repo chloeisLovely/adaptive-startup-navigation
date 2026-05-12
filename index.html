@@ -3016,7 +3016,7 @@ function checkApiKey(){
 // =============================================
 async function callOpenAI(messages, maxTokens=800){
   if(!checkApiKey()){
-    throw new Error('API Key가 설정되지 않았습니다. HTML 파일 상단의 OPENAI_API_KEY를 본인의 키로 교체해주세요.');
+    throw new Error('API Key가 설정되지 않았습니다. API_KEY를 설정해주세요.');
   }
   
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
