@@ -4184,7 +4184,7 @@ async function submitNotify(){
   };
   
   // Google Sheets로 전송 시도
-  if(NOTIFY_WEBHOOK_URL && NOTIFY_WEBHOOK_URL !== 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec'){
+  if(NOTIFY_WEBHOOK_URL && NOTIFY_WEBHOOK_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
     try {
       // Apps Script는 CORS 이슈가 있을 수 있으므로 no-cors 모드 사용
       await fetch(NOTIFY_WEBHOOK_URL, {
