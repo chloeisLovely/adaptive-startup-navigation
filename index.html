@@ -866,6 +866,187 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
 .btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:white;}
 .btn-purple:hover{box-shadow:0 8px 30px rgba(168,85,247,0.3);}
 
+
+/* ===== 🛡️ BARL (편향 자각 반영층) CSS ===== */
+.barl-intro-box{
+  background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(0,245,255,0.05));
+  border:2px solid var(--purple);
+  border-radius:16px;
+  padding:1.5rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.barl-intro-box::before{
+  content:'';
+  position:absolute;
+  top:0;right:0;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(168,85,247,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.barl-badge{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.3rem 0.8rem;
+  background:rgba(168,85,247,0.2);
+  border:1px solid var(--purple);
+  border-radius:20px;
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;letter-spacing:2px;
+  color:var(--purple);
+  font-weight:700;
+  margin-bottom:1rem;
+}
+.barl-badge::before{
+  content:'🛡️';
+  font-size:0.9rem;
+}
+.barl-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem;
+  font-weight:800;
+  color:var(--purple);
+  margin-bottom:0.5rem;
+}
+.barl-subtitle{
+  font-size:0.88rem;
+  color:var(--text2);
+  line-height:1.7;
+  margin-bottom:0.5rem;
+}
+.barl-citation{
+  font-size:0.72rem;
+  color:var(--text2);
+  font-style:italic;
+  opacity:0.7;
+}
+.barl-section{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(168,85,247,0.2);
+  border-radius:12px;
+  padding:1.2rem;
+  margin-bottom:1rem;
+}
+.barl-section-title{
+  display:flex;align-items:center;gap:0.5rem;
+  font-family:'Orbitron',monospace;
+  font-size:0.95rem;
+  font-weight:700;
+  color:var(--purple);
+  margin-bottom:0.4rem;
+}
+.barl-section-desc{
+  font-size:0.78rem;
+  color:var(--text2);
+  margin-bottom:1rem;
+  line-height:1.6;
+  padding-left:1.8rem;
+}
+.barl-question{
+  margin-bottom:1rem;
+}
+.barl-question-label{
+  display:block;
+  font-size:0.85rem;
+  color:var(--text);
+  margin-bottom:0.4rem;
+  font-weight:500;
+  line-height:1.6;
+}
+.barl-question-label .req{
+  color:var(--coral);
+  margin-left:0.3rem;
+}
+.barl-input-row{
+  display:flex;align-items:center;gap:0.5rem;
+}
+.barl-input{
+  flex:1;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+}
+.barl-input:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.barl-input::placeholder{
+  color:rgba(255,255,255,0.25);
+  font-size:0.85rem;
+}
+.barl-input-suffix{
+  font-size:0.85rem;
+  color:var(--text2);
+  font-weight:600;
+  white-space:nowrap;
+}
+.barl-textarea{
+  width:100%;
+  min-height:80px;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  resize:vertical;
+  line-height:1.6;
+  transition:all 0.3s;
+}
+.barl-textarea:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.barl-warning{
+  background:rgba(255,107,107,0.08);
+  border-left:3px solid var(--coral);
+  border-radius:6px;
+  padding:0.8rem 1rem;
+  font-size:0.8rem;
+  color:var(--text2);
+  margin-top:1rem;
+  line-height:1.6;
+}
+.barl-warning strong{color:var(--coral);}
+.barl-required-msg{
+  display:none;
+  color:var(--coral);
+  font-size:0.78rem;
+  margin-top:0.4rem;
+  padding:0.5rem 0.8rem;
+  background:rgba(255,107,107,0.08);
+  border-radius:6px;
+  border-left:3px solid var(--coral);
+}
+.barl-required-msg.show{display:block;animation:fadeInUp 0.3s ease;}
+.btn-purple-barl{
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  color:white;
+}
+.btn-purple-barl:hover{box-shadow:0 8px 30px rgba(168,85,247,0.3);}
+
+/* === BARL 단계 표시 (점 색상) === */
+.sim-dot.barl-step.active{
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.15);
+  color:var(--purple);
+}
+.sim-dot.barl-step.done{
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.25);
+  color:var(--purple);
+}
+
 /* === M3 시뮬레이터 (좌측 본문 + 우측 AI 사이드바) === */
 .sim-layout{
   display:grid;
@@ -1335,6 +1516,135 @@ input[type=range]::-webkit-slider-thumb{
 .metaverse-feature-desc{
   color:var(--text2);
   font-size:0.85rem;line-height:1.7;
+}
+
+
+/* ===== 🌐 알림 신청 모달 ===== */
+.notify-modal{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:none;
+  align-items:center;justify-content:center;
+  z-index:10000;
+  padding:1rem;
+  animation:fadeIn 0.2s ease;
+}
+.notify-modal.show{display:flex;}
+.notify-modal-inner{
+  max-width:500px;width:100%;
+  background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(0,245,255,0.05)),var(--bg2,#0a0e1e);
+  border:2px solid var(--purple);
+  border-radius:20px;
+  padding:2rem;
+  position:relative;
+  box-shadow:0 30px 80px rgba(168,85,247,0.3);
+  max-height:90vh;
+  overflow-y:auto;
+}
+.notify-modal-close{
+  position:absolute;top:1rem;right:1rem;
+  width:36px;height:36px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);
+  cursor:pointer;
+  font-size:1.2rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;
+}
+.notify-modal-close:hover{background:rgba(255,255,255,0.1);transform:rotate(90deg);}
+.notify-modal-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.4rem;
+  font-weight:800;
+  color:var(--purple);
+  margin-bottom:0.5rem;
+}
+.notify-modal-subtitle{
+  font-size:0.88rem;
+  color:var(--text2);
+  margin-bottom:1.5rem;
+  line-height:1.6;
+}
+.notify-field{
+  margin-bottom:1rem;
+}
+.notify-field label{
+  display:block;
+  font-size:0.85rem;
+  color:var(--text);
+  margin-bottom:0.4rem;
+  font-weight:500;
+}
+.notify-field label .req{color:var(--coral);margin-left:0.2rem;}
+.notify-field input,
+.notify-field select,
+.notify-field textarea{
+  width:100%;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+  box-sizing:border-box;
+}
+.notify-field input:focus,
+.notify-field select:focus,
+.notify-field textarea:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.notify-field textarea{min-height:60px;resize:vertical;}
+.notify-field input::placeholder,
+.notify-field textarea::placeholder{color:rgba(255,255,255,0.25);}
+.notify-status{
+  margin:1rem 0;
+  padding:0.8rem 1rem;
+  border-radius:8px;
+  font-size:0.85rem;
+  text-align:center;
+  line-height:1.6;
+}
+.notify-status.ok{
+  background:rgba(0,255,136,0.1);
+  border:1px solid var(--green,#00ff88);
+  color:var(--green,#00ff88);
+}
+.notify-status.err{
+  background:rgba(255,107,107,0.1);
+  border:1px solid var(--coral);
+  color:var(--coral);
+}
+.notify-submit-btn{
+  width:100%;
+  padding:0.9rem;
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:1rem;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:0.5rem;
+  transition:all 0.3s;
+}
+.notify-submit-btn:hover:not(:disabled){
+  box-shadow:0 8px 30px rgba(168,85,247,0.4);
+  transform:translateY(-2px);
+}
+.notify-submit-btn:disabled{opacity:0.6;cursor:not-allowed;}
+
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
 }
 
 /* 알림 신청 버튼 */
@@ -1974,7 +2284,171 @@ input[type=range]::-webkit-slider-thumb{
       <div class="sim-main">
     <div class="sim-steps" id="sim-steps"></div>
 
-    <div class="sim-panel active" id="sim-0">
+    <!-- ========================================== -->
+    <!-- 🛡️ Step 0: BARL (편향 자각 반영층) - 시뮬레이션 시작 전 의사결정 가정 점검 -->
+    <!-- ========================================== -->
+    <div class="sim-panel active" id="sim-barl">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="barl-intro-box">
+          <div class="barl-badge">잠깐, 시작 전에</div>
+          <div class="barl-title">🛡️ 잠깐 멈춰서 생각해볼까요?</div>
+          <div class="barl-subtitle">
+            시뮬레이션을 돌리기 전에, 본인의 머릿속 가정을 살짝 꺼내볼게요.<br>
+            대단한 거 아니에요. 그냥 평소에 막연하게 생각하던 걸 글로 적어보는 것뿐이에요. 🙂
+          </div>
+          <div class="barl-citation">
+            ✨ 이 과정만 거쳐도 결정 품질이 눈에 띄게 좋아진다고 해요
+          </div>
+        </div>
+
+        <!-- 섹션 1: 가정 명시화 -->
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>📝</span>
+            <span>1. 머릿속 숫자 꺼내보기</span>
+          </div>
+          <div class="barl-section-desc">
+            지금 생각나는 대로 편하게 적어주세요. 정답은 없어요!
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ① 솔직히, 내 사업이 5년 뒤에도 살아있을 확률은 몇 %일 것 같아요?<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q1" min="0" max="100" placeholder="예: 70">
+              <span class="barl-input-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ② 우리 시장이 매년 얼마나 클 거라고 보세요?<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q2" min="0" max="100" placeholder="예: 15">
+              <span class="barl-input-suffix">%/년</span>
+            </div>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ③ 첫 매출이 언제쯤 나올 거 같으세요? (창업 후 몇 개월?)<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q3" min="0" max="60" placeholder="예: 6">
+              <span class="barl-input-suffix">개월</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 섹션 2: 사전 부검 -->
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>🔮</span>
+            <span>2. 만약에... 망했다면?</span>
+          </div>
+          <div class="barl-section-desc">
+            1년 뒤, 이 사업이 망했다고 상상해볼게요. 무서운 게 아니라 미리 대비하려는 거예요!<br>
+            평소엔 안 보이던 위험이 신기하게 보이거든요. ✨
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ① 가장 결정적인 이유는 뭐였을 것 같아요?<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q4" placeholder="편하게 적어주세요. 예: 자금이 너무 빨리 떨어졌어요, 핵심 멤버가 떠났어요..."></textarea>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ② 두 번째 이유는요?<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q5" placeholder="예: 경쟁사가 너무 빨리 따라왔어요, 마케팅이 잘 안 먹혔어요..."></textarea>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ③ 마지막으로 하나 더!<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q6" placeholder="예: 고객들이 우리 생각만큼 안 좋아했어요, 팀 분위기가 안 좋아졌어요..."></textarea>
+          </div>
+        </div>
+
+        <!-- 섹션 3: 편향 자각 -->
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>🧠</span>
+            <span>3. 나는 어떤 함정에 빠지기 쉬울까?</span>
+          </div>
+          <div class="barl-section-desc">
+            누구나 한두 개씩은 빠지기 쉬운 생각의 함정이 있어요.<br>
+            본인이 자주 빠질 것 같은 걸 골라주세요 (여러 개 가능!) 🎯
+          </div>
+
+          <div id="barl-bias-checks" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.6rem;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="과신" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">😎 너무 자신만만</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"내 사업은 무조건 대박날 거야!"</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="계획오류" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">⏰ 일정 욕심쟁이</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"3개월이면 충분해!" (실제 9개월)</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="확증편향" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">👂 듣고 싶은 말만</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">긍정 피드백만 기억나요</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="매몰비용" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">💸 그만두기 어려워</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"여기까지 쓴 돈이 아까워..."</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="가용성편향" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">🌟 성공담만 떠올라</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">실패 사례는 잘 기억 안 나요</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+              <input type="checkbox" class="barl-bias" value="오만" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">🏆 한번 성공해본 사람</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"이전엔 됐으니 이번도 OK!"</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div id="barl-required-msg" class="barl-required-msg">
+          🙏 모든 항목을 채워주셔야 다음으로 넘어가요! <br>
+          <span style="font-size:0.72rem;">5분만 투자하면 훨씬 더 정확한 결과를 받으실 수 있어요 😊</span>
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
+          <button class="btn-primary btn-purple-barl" onclick="completeBarl()">
+            ✨ 다 됐어요! 시뮬레이션 시작 →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- Step 1: 회사 기본 정보 (BARL 완료 후 활성화) -->
+    <!-- ========================================== -->
+    <div class="sim-panel" id="sim-0">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">🏢 Step 1. 회사 기본 정보</div>
         <div class="sim-field">
@@ -3108,9 +3582,9 @@ function retakeQuiz(){
 // =============================================
 // 🚀 M3: SIMULATOR
 // =============================================
-const simStepLabels=['기본정보','아이템','기술','인재','복지'];
-let simCurrentStep=0;
-let simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
+const simStepLabels=['BARL','기본정보','아이템','기술','인재','복지'];
+let simCurrentStep=-1; // -1 = BARL 단계 (sim-barl 활성), completeBarl() 호출 시 0 (sim-0=Step1)로 전환
+let simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[],barl:{survivalRate:'',marketGrowth:'',firstRevenue:'',premortemReason1:'',premortemReason2:'',premortemReason3:'',selectedBiases:[]}};
 let simMultiMax={tech:5,talent:6,welfare:5};
 let customMultiValues={tech:[],talent:[],welfare:[]}; // 직접 입력 값 저장
 
@@ -3189,8 +3663,16 @@ function initSimSteps(){
   simStepLabels.forEach((label,i)=>{
     if(i>0){const conn=document.createElement('div');conn.className='sim-connector';conn.id='conn-'+i;container.appendChild(conn);}
     const wrap=document.createElement('div');wrap.className='sim-step-dot';
-    const dot=document.createElement('div');dot.className='sim-dot'+(i===0?' active':'');dot.id='dot-'+i;dot.textContent=i+1;
-    const lbl=document.createElement('div');lbl.className='sim-step-label';lbl.textContent=label;
+    const dot=document.createElement('div');
+    // BARL 단계(i===0)는 보라색, 나머지는 골드
+    dot.className='sim-dot'+(i===0?' barl-step active':'')+(i===0?'':'');
+    dot.id='dot-'+i;
+    // BARL은 🛡️ 아이콘, 나머지는 숫자
+    dot.textContent=i===0?'🛡':i;
+    const lbl=document.createElement('div');
+    lbl.className='sim-step-label';
+    if(i===0){lbl.style.color='var(--purple)';lbl.style.fontWeight='700';}
+    lbl.textContent=label;
     wrap.appendChild(dot);wrap.appendChild(lbl);container.appendChild(wrap);
   });
 }
@@ -3244,25 +3726,111 @@ function selectMulti(el,field,val){
   updateSidebarContext();
 }
 
+
+// =============================================
+// 🛡️ BARL 완료 처리
+// =============================================
+function completeBarl(){
+  // 모든 필수 입력 검증
+  const q1 = document.getElementById('barl-q1').value.trim();
+  const q2 = document.getElementById('barl-q2').value.trim();
+  const q3 = document.getElementById('barl-q3').value.trim();
+  const q4 = document.getElementById('barl-q4').value.trim();
+  const q5 = document.getElementById('barl-q5').value.trim();
+  const q6 = document.getElementById('barl-q6').value.trim();
+  const biases = Array.from(document.querySelectorAll('.barl-bias:checked')).map(c=>c.value);
+  
+  // 검증
+  const requiredMsg = document.getElementById('barl-required-msg');
+  if(!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || biases.length===0){
+    requiredMsg.classList.add('show');
+    // 빠진 항목으로 스크롤
+    let firstMissing = null;
+    if(!q1) firstMissing='barl-q1';
+    else if(!q2) firstMissing='barl-q2';
+    else if(!q3) firstMissing='barl-q3';
+    else if(!q4) firstMissing='barl-q4';
+    else if(!q5) firstMissing='barl-q5';
+    else if(!q6) firstMissing='barl-q6';
+    else if(biases.length===0) firstMissing='barl-bias-checks';
+    if(firstMissing){
+      const el = document.getElementById(firstMissing);
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      if(el.focus) el.focus();
+    }
+    return;
+  }
+  
+  // simData에 BARL 답변 저장
+  simData.barl = {
+    survivalRate: q1 + '%',
+    marketGrowth: q2 + '%/년',
+    firstRevenue: q3 + '개월',
+    premortemReason1: q4,
+    premortemReason2: q5,
+    premortemReason3: q6,
+    selectedBiases: biases
+  };
+  
+  console.log('🛡️ BARL 완료:', simData.barl);
+  
+  // BARL 단계 완료 처리
+  document.getElementById('sim-barl').classList.remove('active');
+  document.getElementById('dot-0').classList.remove('active');
+  document.getElementById('dot-0').classList.add('done');
+  document.getElementById('conn-1').classList.add('done');
+  
+  // Step 1 (기본정보) 활성화
+  document.getElementById('sim-0').classList.add('active');
+  document.getElementById('dot-1').classList.add('active');
+  simCurrentStep = 0; // sim-0 = Step 1, dot-1이 활성
+  
+  requiredMsg.classList.remove('show');
+  
+  // 사이드바 컨텍스트 업데이트 (AI 컨설턴트가 BARL 데이터 활용)
+  updateSidebarContext();
+  
+  scrollToSimSteps();
+}
+
 function simNext(){
+  // simCurrentStep은 sim-{N} 패널 인덱스 (0~4), dot은 +1 오프셋 (BARL이 dot-0)
   document.getElementById('sim-'+simCurrentStep).classList.remove('active');
-  document.getElementById('dot-'+simCurrentStep).classList.remove('active');
-  document.getElementById('dot-'+simCurrentStep).classList.add('done');
-  if(simCurrentStep>0)document.getElementById('conn-'+simCurrentStep).classList.add('done');
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('active');
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('done');
+  const connElNext = document.getElementById('conn-'+(simCurrentStep+2));
+  if(connElNext)connElNext.classList.add('done');
   simCurrentStep++;
   document.getElementById('sim-'+simCurrentStep).classList.add('active');
-  document.getElementById('dot-'+simCurrentStep).classList.add('active');
-  window.scrollTo(0,200);
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('active');
+  // 단계 표시 영역으로 부드럽게 스크롤 (페이지 위로 안 올라가게)
+  scrollToSimSteps();
 }
 
 function simPrev(){
+  if(simCurrentStep<=0){
+    alert('🛡️ BARL은 필수 단계예요!\n시뮬레이션이 이미 진행 중이라 돌아갈 수 없어요.');
+    return;
+  }
   document.getElementById('sim-'+simCurrentStep).classList.remove('active');
-  document.getElementById('dot-'+simCurrentStep).classList.remove('active');
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('active');
+  const connElPrev = document.getElementById('conn-'+(simCurrentStep+1));
+  if(connElPrev)connElPrev.classList.remove('done');
   simCurrentStep--;
   document.getElementById('sim-'+simCurrentStep).classList.add('active');
-  document.getElementById('dot-'+simCurrentStep).classList.remove('done');
-  document.getElementById('dot-'+simCurrentStep).classList.add('active');
-  if(simCurrentStep>0)document.getElementById('conn-'+(simCurrentStep+1)).classList.remove('done');
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('done');
+  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('active');
+  // 단계 표시 영역으로 부드럽게 스크롤
+  scrollToSimSteps();
+}
+
+// 시뮬레이터 단계 영역으로 부드럽게 스크롤 (페이지 위로 안 올라가게)
+function scrollToSimSteps(){
+  const stepsEl = document.getElementById('sim-steps');
+  if(!stepsEl) return;
+  const rect = stepsEl.getBoundingClientRect();
+  const absoluteY = window.pageYOffset + rect.top - 100; // 헤더 공간 100px
+  window.scrollTo({top: absoluteY, behavior: 'smooth'});
 }
 
 function updateSimPreview(){
@@ -3274,10 +3842,11 @@ function updateSimPreview(){
 
 function runSimulation(){
   updateSimPreview();
+  // 마지막 패널 sim-4(복지)의 dot은 dot-5 (BARL이 dot-0이므로 +1 오프셋)
   document.getElementById('sim-4').classList.remove('active');
-  document.getElementById('dot-4').classList.remove('active');
-  document.getElementById('dot-4').classList.add('done');
-  document.getElementById('conn-4').classList.add('done');
+  document.getElementById('dot-5').classList.remove('active');
+  document.getElementById('dot-5').classList.add('done');
+  document.getElementById('conn-5').classList.add('done');
 
   let score=45;
   score+=Math.min(simData.capital,30)*0.6;
@@ -3311,6 +3880,35 @@ function runSimulation(){
   document.getElementById('risk-bars').innerHTML=risks.map(r=>`<div class="risk-bar-row"><div class="risk-bar-label">${r.label}</div><div class="risk-bar-track"><div class="risk-bar-fill" style="width:${r.val}%;background:${r.color};"></div></div><div class="risk-bar-val" style="color:${r.color}">${r.val}%</div></div>`).join('');
 
   const recs=[];
+  
+  // 🛡️ BARL 인사이트 - 사용자 직감 vs AI 예측 비교 (최우선 배치)
+  if(simData.barl && simData.barl.survivalRate){
+    const userGuess = parseInt(simData.barl.survivalRate);
+    const aiPredict = base;
+    const gap = userGuess - aiPredict;
+    
+    if(Math.abs(gap) >= 15){
+      // 큰 차이 - 편향 경고
+      if(gap > 0){
+        recs.push({type:'warn',icon:'🛡️',text:`<strong>BARL 편향 경고</strong>: 본인의 직감(${userGuess}%) vs AI 예측(${aiPredict}%) = +${gap}%p 과신. Astebro et al.(2014) 연구의 평균 과신 폭(46%p)과 유사한 패턴입니다. <strong>과신 편향(Overconfidence)</strong>에 주의하세요.`});
+      } else {
+        recs.push({type:'info',icon:'🛡️',text:`<strong>BARL 인사이트</strong>: 본인의 직감(${userGuess}%) vs AI 예측(${aiPredict}%) = ${gap}%p 보수적. 신중함은 좋지만, 과도한 비관도 결정 마비를 부를 수 있습니다.`});
+      }
+    } else {
+      recs.push({type:'ok',icon:'🛡️',text:`<strong>BARL 인사이트</strong>: 본인 직감(${userGuess}%)과 AI 예측(${aiPredict}%) 간 차이가 ${Math.abs(gap)}%p로 작습니다. 균형 잡힌 판단력을 보유하고 계십니다.`});
+    }
+    
+    // Pre-mortem 이유 반영
+    if(simData.barl.premortemReason1){
+      recs.push({type:'warn',icon:'🔮',text:`<strong>BARL Pre-mortem 검증</strong>: 본인이 미리 지목한 실패 위험 ("${simData.barl.premortemReason1.substring(0,40)}${simData.barl.premortemReason1.length>40?'...':''}")에 대한 구체적 대응책을 수립하세요.`});
+    }
+    
+    // 자각한 편향에 대한 맞춤 조언
+    if(simData.barl.selectedBiases && simData.barl.selectedBiases.length){
+      recs.push({type:'info',icon:'🧠',text:`<strong>자각 편향 맞춤 가이드</strong>: ${simData.barl.selectedBiases.join(', ')} - 사이드바의 AI 컨설턴트에게 이 편향들이 현재 결정에 어떻게 영향 미치는지 질문해 보세요.`});
+    }
+  }
+  
   if(simData.talent.length<2)recs.push({type:'warn',icon:'⚠️',text:'핵심 인재 영입이 부족합니다. CTO 또는 CMO 영입을 최우선으로 고려하세요.'});
   if(simData.tech.length<2)recs.push({type:'warn',icon:'⚠️',text:'기술 스택 다양성이 낮습니다. 핵심 기술 2개 이상을 확보해야 경쟁력이 강화됩니다.'});
   if(simData.capital<5)recs.push({type:'warn',icon:'💰',text:'초기 자본금이 낮아 런웨이가 짧습니다. 정부 지원 과제(TIPS, KISED)를 적극 활용하세요.'});
@@ -3350,16 +3948,38 @@ function drawDial(pct){
 }
 
 function resetSimulator(){
-  simCurrentStep=0;simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[]};
+  // simData 완전 초기화 (BARL 포함)
+  simCurrentStep=-1; // BARL 단계는 -1로 (sim-barl에 해당, BARL 완료 시 0이 됨)
+  simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[],
+    barl:{survivalRate:'',marketGrowth:'',firstRevenue:'',premortemReason1:'',premortemReason2:'',premortemReason3:'',selectedBiases:[]}};
   customMultiValues={tech:[],talent:[],welfare:[]};
-  document.querySelectorAll('.sim-panel').forEach((p,i)=>{p.classList.remove('active');if(i===0)p.classList.add('active');});
+  
+  // 모든 sim-panel 비활성
+  document.querySelectorAll('.sim-panel').forEach(p=>p.classList.remove('active'));
+  // BARL 패널 활성화 (Step 0)
+  const barlPanel = document.getElementById('sim-barl');
+  if(barlPanel) barlPanel.classList.add('active');
+  
   document.getElementById('sim-result').classList.remove('show');
+  
+  // 모든 dot 초기화, BARL dot(dot-0) 활성화
   document.querySelectorAll('.sim-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i===0)d.classList.add('active');});
   document.querySelectorAll('.sim-connector').forEach(c=>c.classList.remove('done'));
   document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('selected'));
+  
+  // 입력 초기화
   document.getElementById('s-name').value='';document.getElementById('s-vision').value='';
   if(document.getElementById('s-persona'))document.getElementById('s-persona').value='';
   document.getElementById('s-capital').value=1;updateCapital();
+  
+  // 🛡️ BARL 입력 초기화
+  ['barl-q1','barl-q2','barl-q3','barl-q4','barl-q5','barl-q6'].forEach(id=>{
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  document.querySelectorAll('.barl-bias').forEach(cb=>cb.checked=false);
+  const reqMsg = document.getElementById('barl-required-msg');
+  if(reqMsg) reqMsg.classList.remove('show');
+  
   // 직접 입력 input 모두 숨기기 & 초기화
   ['s-region-custom','s-item-custom','s-tech-custom','s-talent-custom','s-welfare-custom'].forEach(id=>{
     const el = document.getElementById(id);
@@ -3370,7 +3990,7 @@ function resetSimulator(){
   updateSidebarContext();
   const history = document.getElementById('chat-history');
   if(history){
-    history.innerHTML = `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.</div>`;
+    history.innerHTML = `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 먼저 🛡️ <strong>BARL</strong> 단계에서 본인의 의사결정 가정을 점검한 후, 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.</div>`;
   }
   window.scrollTo(0,300);
 }
@@ -3384,6 +4004,18 @@ let chatMessages = [];
 function buildSimContextText(){
   const d = simData;
   const parts = [];
+  // 🛡️ BARL 데이터 (가장 앞에 - AI가 편향 자각 정보 활용)
+  if(d.barl && d.barl.survivalRate){
+    parts.push(`[BARL] 사용자 직감 5년 생존율: ${d.barl.survivalRate}`);
+    parts.push(`[BARL] 시장 성장률 가정: ${d.barl.marketGrowth}`);
+    parts.push(`[BARL] 첫 매출 예상: ${d.barl.firstRevenue}`);
+    if(d.barl.premortemReason1) parts.push(`[BARL Pre-mortem 1] ${d.barl.premortemReason1}`);
+    if(d.barl.premortemReason2) parts.push(`[BARL Pre-mortem 2] ${d.barl.premortemReason2}`);
+    if(d.barl.premortemReason3) parts.push(`[BARL Pre-mortem 3] ${d.barl.premortemReason3}`);
+    if(d.barl.selectedBiases && d.barl.selectedBiases.length) {
+      parts.push(`[BARL 자각 편향] ${d.barl.selectedBiases.join(', ')}`);
+    }
+  }
   if(d.name) parts.push(`회사명: ${d.name}`);
   if(d.vision) parts.push(`비전: ${d.vision}`);
   if(d.capital) parts.push(`자본: ${d.capital}억 원`);
@@ -3393,7 +4025,7 @@ function buildSimContextText(){
   if(d.tech && d.tech.length) parts.push(`기술: ${d.tech.join(', ')}`);
   if(d.talent && d.talent.length) parts.push(`인재: ${d.talent.join(', ')}`);
   if(d.welfare && d.welfare.length) parts.push(`복지: ${d.welfare.join(', ')}`);
-  if(window._simResult) parts.push(`5년 생존 확률: ${window._simResult.base}%`);
+  if(window._simResult) parts.push(`AI 예측 5년 생존 확률: ${window._simResult.base}%`);
   if(window._founderType) parts.push(`창업자 DNA: ${window._founderType.name} (${window._founderType.code})`);
   return parts.join(' / ');
 }
@@ -3413,6 +4045,7 @@ function updateSidebarContext(){
 function resetAiChat(){
   // 항상 호출 가능 (시뮬 결과 전/후 모두)
   const ctx = buildSimContextText();
+  const hasBarl = simData.barl && simData.barl.survivalRate;
   
   chatMessages = [{
     role:'system',
@@ -3420,12 +4053,20 @@ function resetAiChat(){
 
 ${ctx ? `사용자의 현재 입력 상태:\n${ctx}` : '사용자가 아직 입력을 시작하지 않았습니다.'}
 
+${hasBarl ? `🛡️ **BARL(편향 자각 반영층) 데이터 활용 지침**:
+사용자는 시뮬레이션 시작 전 BARL 단계에서 자신의 가정과 잠재 편향을 자각했습니다. 답변할 때 다음 사항을 반드시 반영하세요:
+1. **사용자 직감 생존율과 객관 데이터 비교**: Astebro et al.(2014)에 따르면 창업자 평균 자기 추정은 81%이지만 실제 기준율은 35%. 사용자의 직감이 이 평균과 어떻게 다른지 언급.
+2. **Pre-mortem 이유 직접 인용**: 사용자가 적은 가상 실패 이유를 답변에 언급하며, "본인이 미리 지목한 위험"이라고 강조해 그 위험에 대한 구체적 대응책 제안.
+3. **자각 편향 맞춤 조언**: 사용자가 체크한 편향(과신/계획오류/확증편향/매몰비용/가용성/오만)에 맞춰 그 편향이 현재 결정에 어떻게 영향 미칠지 분석.
+4. **계획 오류 보정**: 사용자의 첫 매출 예상 시점에 1.5~3배 곱한 보정값도 함께 제시 (Buehler et al., 1994).
+` : ''}
+
 답변 원칙:
 1. **핵심 권고**: 한 줄로 결론
 2. **우선순위 액션**: 2-3가지 구체적 행동
-3. **주의사항**: 빠지기 쉬운 함정
+3. **주의사항**: BARL 데이터에 근거한 편향 경고
 
-답변은 행동경제학 기반 편향 자각(planning fallacy, overconfidence, optimism bias)을 활용하여 한국어로 400자 이내로 작성하세요. **굵게 표시할 핵심은 **단어** 형식 사용. 사용자가 아직 입력 정보가 부족하면, 그 단계에서 일반적으로 고려해야 할 사항을 안내하세요.`
+답변은 행동경제학 기반 편향 자각(planning fallacy, overconfidence, optimism bias)을 적극 활용하여 한국어로 500자 이내로 작성하세요. **굵게 표시할 핵심은 **단어** 형식 사용. 사용자가 아직 입력 정보가 부족하면, 그 단계에서 일반적으로 고려해야 할 사항을 안내하세요.`
   }];
 }
 
@@ -3480,15 +4121,107 @@ document.getElementById('chat-input').addEventListener('keypress', function(e){
 });
 
 // =============================================
-// 🌐 M4: NOTIFY ME
+// 🌐 M4: NOTIFY ME (Google Sheets 저장)
 // =============================================
+
+// ⚠️ 본인의 Google Apps Script 웹훅 URL을 여기에 입력하세요
+// (Apps Script 설정 가이드: README.md 참고)
+const NOTIFY_WEBHOOK_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
 function notifyMe(){
-  const email = prompt('출시 알림을 받으실 이메일을 입력해주세요:\n(Phase 2 출시 시 알림을 보내드립니다)');
-  if(email && email.includes('@')){
-    alert('✅ 감사합니다!\n' + email + ' 으로 Phase 2 출시 시 알림을 보내드리겠습니다.');
-  } else if(email){
-    alert('⚠️ 올바른 이메일 형식을 입력해주세요.');
+  // 모달 열기
+  document.getElementById('notify-modal').classList.add('show');
+  document.getElementById('notify-email').focus();
+}
+
+function closeNotifyModal(){
+  document.getElementById('notify-modal').classList.remove('show');
+  // 입력 초기화
+  document.getElementById('notify-name').value = '';
+  document.getElementById('notify-email').value = '';
+  document.getElementById('notify-industry').value = '';
+  document.getElementById('notify-memo').value = '';
+  document.getElementById('notify-stage').value = '';
+  document.getElementById('notify-status').textContent = '';
+  document.getElementById('notify-status').className = 'notify-status';
+}
+
+async function submitNotify(){
+  const name = document.getElementById('notify-name').value.trim();
+  const email = document.getElementById('notify-email').value.trim();
+  const industry = document.getElementById('notify-industry').value.trim();
+  const memo = document.getElementById('notify-memo').value.trim();
+  const stage = document.getElementById('notify-stage').value;
+  const statusEl = document.getElementById('notify-status');
+  const submitBtn = document.getElementById('notify-submit-btn');
+  
+  // 검증
+  if(!name || !email){
+    statusEl.className = 'notify-status err';
+    statusEl.textContent = '⚠️ 이름과 이메일은 필수입니다.';
+    return;
   }
+  if(!email.includes('@') || !email.includes('.')){
+    statusEl.className = 'notify-status err';
+    statusEl.textContent = '⚠️ 올바른 이메일 형식이 아니에요.';
+    return;
+  }
+  
+  // 로딩 상태
+  submitBtn.disabled = true;
+  submitBtn.textContent = '⏳ 신청 중...';
+  statusEl.className = 'notify-status';
+  statusEl.textContent = '';
+  statusEl.style.display = 'block';
+  
+  const payload = {
+    timestamp: new Date().toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}),
+    name: name,
+    email: email,
+    industry: industry || '미입력',
+    memo: memo || '미입력',
+    stage: stage || '미입력'
+  };
+  
+  // Google Sheets로 전송 시도
+  if(NOTIFY_WEBHOOK_URL && NOTIFY_WEBHOOK_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
+    try {
+      // Apps Script는 CORS 이슈가 있을 수 있으므로 no-cors 모드 사용
+      await fetch(NOTIFY_WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      console.log('✓ Google Sheets 저장 완료:', payload);
+    } catch(err){
+      console.error('Google Sheets 저장 실패:', err);
+      // 실패해도 localStorage 백업
+    }
+  } else {
+    console.warn('⚠️ NOTIFY_WEBHOOK_URL 미설정 - localStorage에만 저장됩니다');
+  }
+  
+  // localStorage 백업 (웹훅 미설정 시에도 작동)
+  try {
+    const existing = JSON.parse(localStorage.getItem('asnm_notify_list') || '[]');
+    existing.push(payload);
+    localStorage.setItem('asnm_notify_list', JSON.stringify(existing));
+  } catch(e){
+    console.error('localStorage 저장 실패', e);
+  }
+  
+  // 완료 메시지
+  statusEl.className = 'notify-status ok';
+  statusEl.innerHTML = `✅ <strong>${name}</strong>님, 신청이 완료되었어요!<br>출시 소식을 <strong>${email}</strong>으로 보내드릴게요. 🚀`;
+  submitBtn.textContent = '✓ 완료';
+  
+  // 3초 후 모달 자동 닫기
+  setTimeout(() => {
+    closeNotifyModal();
+    submitBtn.disabled = false;
+    submitBtn.textContent = '🚀 알림 신청하기';
+  }, 3000);
 }
 
 // =============================================
@@ -3590,5 +4323,56 @@ document.getElementById('report-date').textContent=new Date().toLocaleDateString
 initDnaCircleSvgs(); // 6명 원형 배치 SVG 주입
 updateSidebarContext(); // M3 사이드바 초기 상태
 </script>
+
+<!-- 🌐 M4 알림 신청 모달 -->
+<div class="notify-modal" id="notify-modal">
+  <div class="notify-modal-inner">
+    <button class="notify-modal-close" onclick="closeNotifyModal()" aria-label="닫기">✕</button>
+    
+    <div class="notify-modal-title">🚀 메타버스 출시 알림 신청</div>
+    <div class="notify-modal-subtitle">
+      Phase 2 메타버스 양식 출시 시 가장 먼저 소식을 보내드릴게요!<br>
+      💜 베타 테스터 우선 초대 + 출시 할인 혜택 제공
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-name">이름 <span class="req">*</span></label>
+      <input type="text" id="notify-name" placeholder="홍길동" maxlength="30">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-email">이메일 <span class="req">*</span></label>
+      <input type="email" id="notify-email" placeholder="example@email.com" maxlength="100">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-stage">현재 창업 단계</label>
+      <select id="notify-stage">
+        <option value="">선택하지 않음</option>
+        <option value="예비창업">예비창업 (아이디어 구상 중)</option>
+        <option value="아이디어 검증">아이디어 검증 (MVP 개발/시장 조사)</option>
+        <option value="초기 운영">초기 운영 (서비스 출시 후)</option>
+        <option value="성장">성장 (안정적 매출 발생)</option>
+      </select>
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-industry">관심 업종 (선택)</label>
+      <input type="text" id="notify-industry" placeholder="예: AI/SaaS, 헬스케어, 에듀테크..." maxlength="50">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-memo">남기실 말씀 (선택)</label>
+      <textarea id="notify-memo" placeholder="어떤 기능이 가장 기대되시나요?" maxlength="200"></textarea>
+    </div>
+    
+    <div id="notify-status" class="notify-status"></div>
+    
+    <button id="notify-submit-btn" class="notify-submit-btn" onclick="submitNotify()">
+      🚀 알림 신청하기
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
