@@ -52,6 +52,11 @@
 }
 *{margin:0;padding:0;box-sizing:border-box}
 /* scroll-behavior:smooth 제거 — 페이지 전환 시 즉시 최상단 이동을 보장하기 위함 */
+/* overflow-anchor:none — 브라우저 자동 스크롤 앵커링 비활성화 */
+html, body {
+  overflow-anchor: none !important;
+  scroll-behavior: auto !important;
+}
 body{
   background:var(--bg);
   color:var(--text);
@@ -2881,14 +2886,37 @@ function toggleTheme(){
 let currentPageId = 'home';
 
 function showPage(id){
-  // 모든 페이지 숨기기
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // ============================================
+  // 🔥 핵심 수정: 페이지 전환 + 즉시 최상단 이동
+  // ============================================
+  
+  // Step 1: 즉시 최상단으로 스크롤 (페이지 바꾸기 직전)
+  forceScrollToTop();
+  
+  // Step 2: 모든 페이지 숨기기
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  
   const targetPage = document.getElementById('page-' + id);
   if(!targetPage){
     console.warn('Page not found: ' + id);
     return;
   }
+  
+  // Step 3: 다시 한번 최상단으로 (페이지가 사라진 시점)
+  forceScrollToTop();
+  
+  // Step 4: 새 페이지 표시 (display 명시적 설정)
+  targetPage.style.display = 'block';
   targetPage.classList.add('active');
+  
+  // Step 5: DOM reflow 강제 트리거 (브라우저가 레이아웃 재계산하게 함)
+  void targetPage.offsetHeight;
+  
+  // Step 6: 페이지가 보이는 직후 다시 최상단으로
+  forceScrollToTop();
 
   // 네비게이션 활성화 상태 업데이트
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -2898,17 +2926,19 @@ function showPage(id){
     navBtns[navMap[id]].classList.add('active');
   }
 
-  // ★★★ 강력한 최상단 스크롤 (smooth 비활성화 + 즉시 + 다중 보장) ★★★
-  forceScrollToTop();
-  // requestAnimationFrame으로 다음 페인트 직전 한번 더 강제
+  // Step 7: requestAnimationFrame으로 다음 페인트 직전 다시 보장
   requestAnimationFrame(() => {
     forceScrollToTop();
-    requestAnimationFrame(() => forceScrollToTop());
+    requestAnimationFrame(() => {
+      forceScrollToTop();
+    });
   });
-  // 안전망: 여러 시점에서 한번 더
+  
+  // Step 8: 안전망 - 여러 시점에서 보장
   setTimeout(forceScrollToTop, 0);
-  setTimeout(forceScrollToTop, 50);
-  setTimeout(forceScrollToTop, 150);
+  setTimeout(forceScrollToTop, 30);
+  setTimeout(forceScrollToTop, 100);
+  setTimeout(forceScrollToTop, 250);
 
   currentPageId = id;
 
@@ -2924,26 +2954,34 @@ function showPage(id){
   }
 }
 
-// 강력한 최상단 스크롤 헬퍼 함수
+// 강력한 최상단 스크롤 헬퍼 함수 - 모든 가능한 방법 동원
 function forceScrollToTop(){
-  // 모든 가능한 방법으로 최상단 스크롤
-  if(window.scrollTo){
-    try { window.scrollTo(0, 0); } catch(e){}
-    try { window.scrollTo({top: 0, left: 0, behavior: 'auto'}); } catch(e){}
-  }
+  // 방법 1: window.scrollTo (현대 브라우저)
+  try { window.scrollTo(0, 0); } catch(e){}
+  try { window.scrollTo({top: 0, left: 0, behavior: 'auto'}); } catch(e){}
+  
+  // 방법 2: document.documentElement (대부분 브라우저)
   if(document.documentElement){
     document.documentElement.scrollTop = 0;
     document.documentElement.scrollLeft = 0;
   }
+  
+  // 방법 3: document.body (구식 브라우저)
   if(document.body){
     document.body.scrollTop = 0;
     document.body.scrollLeft = 0;
   }
-  // 활성 페이지 내부도 최상단으로
-  const activePage = document.querySelector('.page.active');
-  if(activePage){
-    activePage.scrollTop = 0;
+  
+  // 방법 4: scrollingElement (가장 안전한 방법)
+  if(document.scrollingElement){
+    document.scrollingElement.scrollTop = 0;
+    document.scrollingElement.scrollLeft = 0;
   }
+  
+  // 방법 5: 모든 active page 내부 스크롤도 초기화
+  document.querySelectorAll('.page').forEach(p => {
+    p.scrollTop = 0;
+  });
 }
 
 function goHome(){ showPage('home'); }
@@ -3397,7 +3435,7 @@ const founderSVGs = {
 function startDnaQuiz(){
   document.getElementById('dna-intro').classList.add('hidden');
   document.getElementById('dna-quiz-wrap').classList.add('active');
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  forceScrollToTop();
 }
 
 function initDnaCircleSvgs(){
@@ -3518,7 +3556,7 @@ function quizNext(){
       nextBtn.style.opacity = '0.4';
     }
     
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    // 스크롤 제거 - 사용자 위치 유지
   } else {
     // 결과 표시
     showFounderResult();
@@ -3545,7 +3583,7 @@ function quizPrev(){
     nextBtn.disabled = false;
     nextBtn.style.opacity = '1';
     
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    // 스크롤 제거
   }
 }
 
@@ -3604,7 +3642,7 @@ function showFounderResult(){
   
   setTimeout(() => drawRadar(type.radar), 300);
   
-  setTimeout(() => result.scrollIntoView({behavior: 'smooth'}), 100);
+  // scrollIntoView 제거 - 페이지 상단 유지
 }
 
 function showTypeDetail(code){
@@ -3700,7 +3738,7 @@ function retakeQuiz(){
   document.getElementById('dna-intro').classList.remove('hidden');
   document.getElementById('dna-quiz-wrap').classList.remove('active');
   
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  forceScrollToTop();
 }
 
 // ============================================
@@ -3778,7 +3816,7 @@ function completeBarl(){
   // AI 메시지: BARL 완료
   addChatMsg('ai', `편향 자각 단계 완료! 잘하셨어요 🎉<br><br>본인이 예상한 생존율 ${q1}%, 시장 성장률 ${q2}%/년이네요. 이 가정들을 시뮬레이션 후 실제 결과와 비교해보면 본인의 의사결정 패턴이 보일 거예요.`);
   
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  forceScrollToTop();
 }
 
 function updateCapital(){
@@ -3903,7 +3941,7 @@ function simNext(){
     document.getElementById(steps[currentIdx + 1]).classList.add('active');
     currentSimStep = currentIdx + 2;
     renderSimSteps();
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    forceScrollToTop();
   }
 }
 
@@ -3916,7 +3954,7 @@ function simPrev(){
     document.getElementById(steps[currentIdx - 1]).classList.add('active');
     currentSimStep = currentIdx - 1;
     renderSimSteps();
-    window.scrollTo({top: 0, behavior: 'smooth'});
+    forceScrollToTop();
   }
 }
 
@@ -4092,7 +4130,7 @@ function runSimulation(){
     </div>
   `).join('');
   
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  forceScrollToTop();
 }
 
 function drawDial(score){
@@ -4157,7 +4195,7 @@ function resetSimulator(){
   renderSimSteps();
   resetAiChat();
   updateSidebarContext();
-  window.scrollTo({top: 0, behavior: 'smooth'});
+  forceScrollToTop();
 }
 
 // ============================================
