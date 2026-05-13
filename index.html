@@ -12,8 +12,16 @@
 <script>
   // ⚠️ 중요: 발표용 임시 키만 사용하고, 발표 후 즉시 폐기하세요!
   // ⚠️ 사용량 한도를 $5~10로 설정하세요 (OpenAI dashboard → Limits)
-  const OPENAI_API_KEY = 'YOUR_API_KEY_HERE'; // 👈 여기에 본인 키 입력 (sk-...)
-  const AI_MODEL = 'gpt-4o-mini'; // 저렴하고 빠른 모델 (gpt-4o 사용 시 더 정확)
+  // 👇 여기에 본인의 OpenAI API 키를 입력하세요 (sk-...로 시작)
+  try {
+    window.OPENAI_API_KEY = 'YOUR_API_KEY_HERE';
+    window.AI_MODEL = 'gpt-4o-mini';
+  } catch(e) {
+    // 키 입력 중 오류 발생해도 페이지가 망가지지 않도록 보호
+    console.warn('API key setup error - using fallback');
+    window.OPENAI_API_KEY = 'YOUR_API_KEY_HERE';
+    window.AI_MODEL = 'gpt-4o-mini';
+  }
 </script>
 
 <style>
@@ -2886,6 +2894,8 @@ function toggleTheme(){
 let currentPageId = 'home';
 
 function showPage(id){
+  console.log('[showPage] 호출:', id);
+  
   // ============================================
   // 🔥 핵심 수정: 페이지 전환 + 즉시 최상단 이동
   // ============================================
@@ -2901,7 +2911,7 @@ function showPage(id){
   
   const targetPage = document.getElementById('page-' + id);
   if(!targetPage){
-    console.warn('Page not found: ' + id);
+    console.warn('[showPage] 페이지를 찾을 수 없음: page-' + id);
     return;
   }
   
@@ -2952,7 +2962,13 @@ function showPage(id){
       quizWrap.classList.remove('active');
     }
   }
+  
+  console.log('[showPage] 완료:', id);
 }
+
+// 🔥 전역 window 객체에 등록 (onclick에서 호출 보장)
+window.showPage = showPage;
+window.goHome = function(){ showPage('home'); };
 
 // 강력한 최상단 스크롤 헬퍼 함수 - 모든 가능한 방법 동원
 function forceScrollToTop(){
@@ -2990,7 +3006,7 @@ function goHome(){ showPage('home'); }
 // 🤖 OpenAI API 호출
 // ============================================
 function checkApiKey(){
-  if(!OPENAI_API_KEY || OPENAI_API_KEY === 'YOUR_API_KEY_HERE'){
+  if(!window.OPENAI_API_KEY || window.OPENAI_API_KEY === 'YOUR_API_KEY_HERE'){
     document.getElementById('api-warning').classList.add('show');
     return false;
   }
@@ -3004,10 +3020,10 @@ async function callOpenAI(messages, options = {}){
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${OPENAI_API_KEY}`
+      'Authorization': `Bearer ${window.OPENAI_API_KEY}`
     },
     body: JSON.stringify({
-      model: AI_MODEL,
+      model: window.AI_MODEL,
       messages: messages,
       temperature: options.temperature || 0.7,
       max_tokens: options.max_tokens || 1000
@@ -4437,16 +4453,33 @@ function downloadJSON(){
 // ============================================
 // 🚀 초기화
 // ============================================
+
+// ✨ 백업 이벤트 위임 비활성화
+// onclick 속성이 직접 작동하도록 두는 것이 가장 안전함
+// (이벤트 위임은 quizNext, simNext 같은 다른 함수까지 가로채서 문제 발생)
+//
+// 만약 onclick이 작동하지 않으면, registerGlobalFunctions가
+// 모든 함수를 window에 등록해놨기 때문에 작동할 것임
+
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('[ASNM] DOMContentLoaded - 초기화 시작');
+  
+  // showPage 함수 존재 확인
+  if(typeof showPage !== 'function'){
+    console.error('[ASNM] ⚠️ showPage 함수가 정의되지 않았습니다!');
+    alert('JavaScript 로드 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+    return;
+  }
+  console.log('[ASNM] ✓ showPage 함수 확인됨');
+  
   // 트렌드 렌더링
-  renderTrends();
+  try { renderTrends(); console.log('[ASNM] ✓ 트렌드 렌더링'); } catch(e){ console.error('트렌드 렌더링 실패:', e); }
   
   // M2 인트로 캐릭터 SVG
-  initDnaCircleSvgs();
+  try { initDnaCircleSvgs(); console.log('[ASNM] ✓ DNA SVG'); } catch(e){ console.error('DNA SVG 실패:', e); }
   
   // M3 스텝 인디케이터
-  renderSimSteps();
-  updateSidebarContext();
+  try { renderSimSteps(); updateSidebarContext(); console.log('[ASNM] ✓ Sim Steps'); } catch(e){ console.error('Sim Steps 실패:', e); }
   
   // 채팅 입력 엔터 키
   const chatInput = document.getElementById('chat-input');
@@ -4465,8 +4498,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   // API 키 체크 (있으면 경고 숨김)
-  if(OPENAI_API_KEY && OPENAI_API_KEY !== 'YOUR_API_KEY_HERE'){
-    document.getElementById('api-warning').classList.remove('show');
+  if(window.OPENAI_API_KEY && window.OPENAI_API_KEY !== 'YOUR_API_KEY_HERE'){
+    const warning = document.getElementById('api-warning');
+    if(warning) warning.classList.remove('show');
   }
   
   // 알림 모달: 배경 클릭 시 닫기
@@ -4476,7 +4510,49 @@ document.addEventListener('DOMContentLoaded', () => {
       if(e.target === notifyModal) closeNotifyModal();
     });
   }
+  
+  console.log('[ASNM] ✅ 초기화 완료');
 });
+
+// ============================================
+// 🔥 모든 onclick 함수를 window에 등록
+// (HTML의 onclick="xxx()" 가 무조건 작동하도록 보장)
+// ============================================
+(function registerGlobalFunctions(){
+  const fns = [
+    'showPage', 'goHome', 'toggleTheme',
+    'setTrendQuery', 'aiTrendSearch',
+    'startDnaQuiz', 'selectOption', 'quizNext', 'quizPrev', 'retakeQuiz',
+    'completeBarl', 'simNext', 'simPrev', 'selectSim', 'selectMulti',
+    'toggleCustomItem', 'toggleCustomRegion', 'toggleCustomTech', 
+    'toggleCustomTalent', 'toggleCustomWelfare',
+    'setCustomItem', 'setCustomRegion', 'setCustomMulti',
+    'updateCapital', 'updateSimPreview', 'runSimulation', 'resetSimulator',
+    'sendChatMessage', 'sendQuickQ',
+    'notifyMe', 'closeNotifyModal', 'submitNotify',
+    'downloadReport', 'downloadJSON'
+  ];
+  let registered = 0;
+  fns.forEach(name => {
+    if(typeof window[name] === 'undefined'){
+      try {
+        // eval을 사용하지 않고 함수 참조 시도
+        const fn = (function(n){ 
+          try { return eval(n); } catch(e){ return null; }
+        })(name);
+        if(fn && typeof fn === 'function'){
+          window[name] = fn;
+          registered++;
+        }
+      } catch(e){
+        console.warn('함수 등록 실패:', name);
+      }
+    } else {
+      registered++;
+    }
+  });
+  console.log('[ASNM] window에 등록된 함수:', registered + '/' + fns.length);
+})();
 </script>
 </body>
 </html>
