@@ -51,7 +51,7 @@
   --border: rgba(8,145,178,0.2);
 }
 *{margin:0;padding:0;box-sizing:border-box}
-html{scroll-behavior:smooth}
+/* scroll-behavior:smooth 제거 — 페이지 전환 시 즉시 최상단 이동을 보장하기 위함 */
 body{
   background:var(--bg);
   color:var(--text);
@@ -336,8 +336,15 @@ nav{
   border-radius:12px;
   padding:1.2rem;
   transition:all 0.3s;cursor:pointer;
+  position:relative;
 }
-.news-card:hover{border-color:rgba(0,245,255,0.3);background:rgba(0,245,255,0.05);}
+.news-card:hover{
+  border-color:rgba(0,245,255,0.5);
+  background:rgba(0,245,255,0.07);
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(0,245,255,0.1);
+}
+.news-card:active{transform:translateY(-1px);}
 .news-source{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--cyan2);margin-bottom:0.4rem;}
 .news-title{font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;line-height:1.5;}
 .news-desc{font-size:0.75rem;color:var(--text2);line-height:1.6;}
@@ -2891,15 +2898,17 @@ function showPage(id){
     navBtns[navMap[id]].classList.add('active');
   }
 
-  // ★★★ 수정 #2: 항상 최상단으로 스크롤 ★★★
-  window.scrollTo({top: 0, left: 0, behavior: 'instant'});
-  document.documentElement.scrollTop = 0;
-  document.body.scrollTop = 0;
-  setTimeout(function(){
-    window.scrollTo({top: 0, left: 0, behavior: 'instant'});
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-  }, 50);
+  // ★★★ 강력한 최상단 스크롤 (smooth 비활성화 + 즉시 + 다중 보장) ★★★
+  forceScrollToTop();
+  // requestAnimationFrame으로 다음 페인트 직전 한번 더 강제
+  requestAnimationFrame(() => {
+    forceScrollToTop();
+    requestAnimationFrame(() => forceScrollToTop());
+  });
+  // 안전망: 여러 시점에서 한번 더
+  setTimeout(forceScrollToTop, 0);
+  setTimeout(forceScrollToTop, 50);
+  setTimeout(forceScrollToTop, 150);
 
   currentPageId = id;
 
@@ -2912,6 +2921,28 @@ function showPage(id){
       intro.classList.remove('hidden');
       quizWrap.classList.remove('active');
     }
+  }
+}
+
+// 강력한 최상단 스크롤 헬퍼 함수
+function forceScrollToTop(){
+  // 모든 가능한 방법으로 최상단 스크롤
+  if(window.scrollTo){
+    try { window.scrollTo(0, 0); } catch(e){}
+    try { window.scrollTo({top: 0, left: 0, behavior: 'auto'}); } catch(e){}
+  }
+  if(document.documentElement){
+    document.documentElement.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
+  }
+  if(document.body){
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+  }
+  // 활성 페이지 내부도 최상단으로
+  const activePage = document.querySelector('.page.active');
+  if(activePage){
+    activePage.scrollTop = 0;
   }
 }
 
@@ -3163,24 +3194,24 @@ function toggleTrend(el, trend, category){
 
 const newsDB = {
   ai: [
-    {source: 'TECHCRUNCH', title: 'AI 에이전트, 2026년 기업 도입률 70% 돌파', desc: '대형 SaaS 기업들이 AI 에이전트를 핵심 기능으로 채택하면서 시장이 폭발적으로 성장 중이다.'},
-    {source: 'BLOOMBERG', title: '엔비디아, AI 반도체 시장 92% 점유율', desc: '데이터센터 GPU 시장에서 압도적인 우위를 차지하며 매출이 전년 대비 265% 성장했다.'},
-    {source: 'MIT REVIEW', title: '생성형 AI, 의료 진단 정확도 인간 의사 능가', desc: '영상의학 분야에서 AI 보조 진단이 90% 이상의 정확도를 보이며 임상 적용이 확대되고 있다.'}
+    {source: 'TECHCRUNCH', title: 'AI 에이전트, 2026년 기업 도입률 70% 돌파', desc: '대형 SaaS 기업들이 AI 에이전트를 핵심 기능으로 채택하면서 시장이 폭발적으로 성장 중이다.', url: 'https://techcrunch.com/search/AI%20agent%20enterprise%20adoption'},
+    {source: 'BLOOMBERG', title: '엔비디아, AI 반도체 시장 92% 점유율', desc: '데이터센터 GPU 시장에서 압도적인 우위를 차지하며 매출이 전년 대비 265% 성장했다.', url: 'https://www.bloomberg.com/search?query=nvidia%20AI%20chip%20market'},
+    {source: 'MIT REVIEW', title: '생성형 AI, 의료 진단 정확도 인간 의사 능가', desc: '영상의학 분야에서 AI 보조 진단이 90% 이상의 정확도를 보이며 임상 적용이 확대되고 있다.', url: 'https://www.technologyreview.com/?s=generative+AI+medical+diagnosis'}
   ],
   market: [
-    {source: 'FORBES', title: 'K-콘텐츠 글로벌 매출 1,400억 달러 돌파', desc: '넷플릭스 상위 10위 중 4편이 한국 콘텐츠, 게임/웹툰 IP 확장이 가속화되고 있다.'},
-    {source: 'WSJ', title: 'D2C 브랜드 성공의 핵심은 데이터', desc: '소비자 직접 판매 모델로 마진율을 35% 이상 끌어올린 기업들이 부상하고 있다.'},
-    {source: 'FT', title: '구독경제, 2030년 1.5조 달러 시장 전망', desc: '서비스형 비즈니스 모델이 SaaS를 넘어 일상 소비재로 확장되고 있다.'}
+    {source: 'FORBES', title: 'K-콘텐츠 글로벌 매출 1,400억 달러 돌파', desc: '넷플릭스 상위 10위 중 4편이 한국 콘텐츠, 게임/웹툰 IP 확장이 가속화되고 있다.', url: 'https://www.forbes.com/search/?q=K-content%20global%20revenue'},
+    {source: 'WSJ', title: 'D2C 브랜드 성공의 핵심은 데이터', desc: '소비자 직접 판매 모델로 마진율을 35% 이상 끌어올린 기업들이 부상하고 있다.', url: 'https://www.wsj.com/search?query=D2C%20brand%20data'},
+    {source: 'FT', title: '구독경제, 2030년 1.5조 달러 시장 전망', desc: '서비스형 비즈니스 모델이 SaaS를 넘어 일상 소비재로 확장되고 있다.', url: 'https://www.ft.com/search?q=subscription+economy+2030'}
   ],
   social: [
-    {source: 'NYT', title: 'Z세대 소비 패턴, 가치 소비로 전환', desc: '환경/사회 책임을 고려한 브랜드 선택이 73%로 증가, ESG 강조 브랜드가 성장 중.'},
-    {source: 'REUTERS', title: '한국 시니어테크 시장 2030년 7,000억 달러', desc: '고령화 가속화로 헬스케어/돌봄 서비스 수요가 폭발적으로 증가하고 있다.'},
-    {source: 'CNBC', title: '1인가구, 전 세계 4억 가구 돌파', desc: '소형 가전, 간편식, 1인 여행 서비스 등 솔로 이코노미가 신성장 동력으로 부상.'}
+    {source: 'NYT', title: 'Z세대 소비 패턴, 가치 소비로 전환', desc: '환경/사회 책임을 고려한 브랜드 선택이 73%로 증가, ESG 강조 브랜드가 성장 중.', url: 'https://www.nytimes.com/search?query=Gen+Z+conscious+consumer'},
+    {source: 'REUTERS', title: '한국 시니어테크 시장 2030년 7,000억 달러', desc: '고령화 가속화로 헬스케어/돌봄 서비스 수요가 폭발적으로 증가하고 있다.', url: 'https://www.reuters.com/site-search/?query=korea+senior+tech+market'},
+    {source: 'CNBC', title: '1인가구, 전 세계 4억 가구 돌파', desc: '소형 가전, 간편식, 1인 여행 서비스 등 솔로 이코노미가 신성장 동력으로 부상.', url: 'https://www.cnbc.com/search/?query=single%20household%20economy'}
   ],
   finance: [
-    {source: 'BLOOMBERG', title: '핀테크 투자 2026년 다시 회복세', desc: 'AI 기반 신용평가, 임베디드 금융이 차세대 핀테크 키워드로 부상하고 있다.'},
-    {source: 'COINDESK', title: 'CBDC 도입국 130개국 돌파', desc: '한국은행도 디지털 원화 시범사업을 확대, 2027년 본격 도입을 목표로 한다.'},
-    {source: 'FORTUNE', title: '인슈어테크 스타트업, 보험사 인수 합병 가속', desc: 'AI 언더라이팅, 마이크로 보험이 전통 보험을 디지털 트랜스포메이션 중.'}
+    {source: 'BLOOMBERG', title: '핀테크 투자 2026년 다시 회복세', desc: 'AI 기반 신용평가, 임베디드 금융이 차세대 핀테크 키워드로 부상하고 있다.', url: 'https://www.bloomberg.com/search?query=fintech%20investment%202026'},
+    {source: 'COINDESK', title: 'CBDC 도입국 130개국 돌파', desc: '한국은행도 디지털 원화 시범사업을 확대, 2027년 본격 도입을 목표로 한다.', url: 'https://www.coindesk.com/search?s=CBDC%20adoption'},
+    {source: 'FORTUNE', title: '인슈어테크 스타트업, 보험사 인수 합병 가속', desc: 'AI 언더라이팅, 마이크로 보험이 전통 보험을 디지털 트랜스포메이션 중.', url: 'https://fortune.com/?s=insurtech+startup+acquisition'}
   ]
 };
 
@@ -3203,6 +3234,10 @@ function showTrendResult(){
     const card = document.createElement('div');
     card.className = 'news-card';
     const relatedTrend = selectedTrends[idx % selectedTrends.length];
+    
+    // 클릭 시 열 URL 결정: news.url이 있으면 그것, 없으면 Google 검색
+    const targetUrl = news.url || ('https://www.google.com/search?q=' + encodeURIComponent(relatedTrend.name + ' ' + news.title));
+    
     card.innerHTML = `
       <div class="news-source">${news.source}</div>
       <div class="news-title">${news.title}</div>
@@ -3211,13 +3246,21 @@ function showTrendResult(){
         <span class="news-trend-tag">#${relatedTrend.name}</span>
         <span>${Math.floor(Math.random() * 24) + 1}h ago</span>
       </div>
+      <div style="margin-top:0.6rem;font-size:0.7rem;color:var(--cyan);font-family:'Space Mono',monospace;letter-spacing:1px;">기사 읽기 →</div>
     `;
+    
+    // 클릭 시 새 탭에서 열기
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    });
+    
     newsGrid.appendChild(card);
   });
   
   setTimeout(() => {
     renderMarketCharts();
-    resultDiv.scrollIntoView({behavior: 'smooth', block: 'start'});
+    // 자동 스크롤 제거: 사용자가 직접 결과를 확인하도록 함
   }, 200);
 }
 
