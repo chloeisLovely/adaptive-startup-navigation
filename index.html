@@ -76,6 +76,7 @@ nav{
   font-size:1.2rem;font-weight:900;
   color:var(--cyan);
   letter-spacing:2px;
+  cursor:pointer;
 }
 .nav-logo span{color:var(--coral);}
 .nav-links{display:flex;gap:0.5rem;}
@@ -226,6 +227,7 @@ nav{
   color:var(--cyan);
 }
 .stat-label{font-size:0.75rem;color:var(--text2);margin-top:0.2rem;}
+.stat-source{font-size:0.65rem;color:var(--text2);opacity:0.6;margin-top:0.15rem;font-style:italic;}
 
 .glass-card{
   background:rgba(255,255,255,0.03);
@@ -612,21 +614,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
   color:var(--text);
 }
 
-/* 6개 캐릭터 위치 (12시 방향부터 시계방향) */
-.dna-circle-char:nth-child(2){ top:0;left:50%;transform:translateX(-50%); }
-.dna-circle-char:nth-child(3){ top:25%;right:0;transform:translate(15%,-10%); }
-.dna-circle-char:nth-child(4){ bottom:25%;right:0;transform:translate(15%,10%); }
-.dna-circle-char:nth-child(5){ bottom:0;left:50%;transform:translateX(-50%); }
-.dna-circle-char:nth-child(6){ bottom:25%;left:0;transform:translate(-15%,10%); }
-.dna-circle-char:nth-child(7){ top:25%;left:0;transform:translate(-15%,-10%); }
-
-.dna-circle-char:nth-child(2):hover{ transform:translateX(-50%) scale(1.1) translateY(-5px); }
-.dna-circle-char:nth-child(3):hover{ transform:translate(15%,-10%) scale(1.1); }
-.dna-circle-char:nth-child(4):hover{ transform:translate(15%,10%) scale(1.1); }
-.dna-circle-char:nth-child(5):hover{ transform:translateX(-50%) scale(1.1) translateY(5px); }
-.dna-circle-char:nth-child(6):hover{ transform:translate(-15%,10%) scale(1.1); }
-.dna-circle-char:nth-child(7):hover{ transform:translate(-15%,-10%) scale(1.1); }
-
 /* 명시적 클래스 (브라우저 호환성 보강) */
 .dna-pos-12{ top:0 !important;left:50% !important;transform:translateX(-50%); }
 .dna-pos-2{ top:25% !important;right:0 !important;left:auto !important;transform:translate(15%,-10%); }
@@ -642,14 +629,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
 .dna-pos-8:hover{ transform:translate(-15%,10%) scale(1.1) !important; }
 .dna-pos-10:hover{ transform:translate(-15%,-10%) scale(1.1) !important; }
 
-/* 연결선 (장식) */
-.dna-circle-lines{
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  z-index:1;
-}
-
 /* 모바일: 그리드로 폴백 */
 @media(max-width:600px){
   .dna-circle-container{
@@ -664,13 +643,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
     margin:0 auto 1.5rem;
     width:120px;height:120px;
   }
-  .dna-circle-char,
-  .dna-circle-char:nth-child(2),
-  .dna-circle-char:nth-child(3),
-  .dna-circle-char:nth-child(4),
-  .dna-circle-char:nth-child(5),
-  .dna-circle-char:nth-child(6),
-  .dna-circle-char:nth-child(7),
   .dna-pos-12, .dna-pos-2, .dna-pos-4, .dna-pos-6, .dna-pos-8, .dna-pos-10{
     position:relative !important;
     top:auto !important;left:auto !important;right:auto !important;bottom:auto !important;
@@ -680,7 +652,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
     margin:0.5rem;
     vertical-align:top;
   }
-  .dna-circle-char:hover,
   .dna-pos-12:hover, .dna-pos-2:hover, .dna-pos-4:hover, 
   .dna-pos-6:hover, .dna-pos-8:hover, .dna-pos-10:hover{
     transform:scale(1.05) !important;
@@ -723,9 +694,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
 
 .dna-quiz-wrap{display:none;}
 .dna-quiz-wrap.active{display:block;animation:fadeInUp 0.4s ease;}
-
-/* 기존 카드 그리드 (사용 안 함) */
-.dna-characters-grid{display:none;}
 
 /* === 결과 이미지 (큰 캐릭터) === */
 .founder-result-character{
@@ -1007,17 +975,6 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
   background:rgba(168,85,247,0.05);
   box-shadow:0 0 12px rgba(168,85,247,0.2);
 }
-.barl-warning{
-  background:rgba(255,107,107,0.08);
-  border-left:3px solid var(--coral);
-  border-radius:6px;
-  padding:0.8rem 1rem;
-  font-size:0.8rem;
-  color:var(--text2);
-  margin-top:1rem;
-  line-height:1.6;
-}
-.barl-warning strong{color:var(--coral);}
 .barl-required-msg{
   display:none;
   color:var(--coral);
@@ -1062,7 +1019,7 @@ canvas.ai-chart{width:100%!important;height:160px!important;}
     position:relative !important;
     top:auto !important;
     max-height:none !important;
-    order: -1; /* 모바일에서는 사이드바를 본문 위로 */
+    order: -1;
     margin-bottom: 1.5rem;
   }
   .sim-chat-history{
@@ -1311,110 +1268,6 @@ input[type=range]::-webkit-slider-thumb{
 .risk-bar-fill{height:100%;border-radius:100px;transition:width 1s ease;}
 .risk-bar-val{font-size:0.75rem;font-family:'Space Mono',monospace;min-width:35px;text-align:right;}
 
-/* === M3 AI CHAT === */
-.ai-chat-section{
-  background:linear-gradient(135deg,rgba(255,107,107,0.06),rgba(255,215,0,0.06));
-  border:1px solid rgba(255,107,107,0.3);
-  border-radius:16px;
-  padding:1.5rem;
-  margin-top:2rem;
-  margin-bottom:2rem;
-}
-.ai-chat-header{
-  display:flex;align-items:center;gap:0.6rem;
-  margin-bottom:1rem;
-}
-.ai-chat-title{
-  font-family:'Orbitron',monospace;
-  font-size:1rem;font-weight:700;
-  background:linear-gradient(90deg,var(--coral),var(--gold));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.ai-chat-badge{
-  background:rgba(255,107,107,0.2);
-  border:1px solid rgba(255,107,107,0.4);
-  color:var(--coral);
-  padding:0.15rem 0.5rem;
-  border-radius:3px;
-  font-family:'Space Mono',monospace;
-  font-size:0.6rem;letter-spacing:1px;
-}
-.chat-history{
-  max-height:400px;
-  overflow-y:auto;
-  padding:1rem;
-  background:rgba(0,0,0,0.3);
-  border:1px solid rgba(255,255,255,0.05);
-  border-radius:10px;
-  margin-bottom:1rem;
-}
-.chat-msg{
-  padding:0.8rem 1rem;
-  border-radius:10px;
-  margin-bottom:0.8rem;
-  font-size:0.88rem;line-height:1.7;
-  animation:fadeInUp 0.3s ease;
-}
-.chat-msg.ai{
-  background:rgba(255,107,107,0.08);
-  border:1px solid rgba(255,107,107,0.2);
-  color:var(--text);
-}
-.chat-msg.user{
-  background:rgba(0,245,255,0.08);
-  border:1px solid rgba(0,245,255,0.2);
-  margin-left:2rem;color:var(--text);
-}
-.chat-msg-label{
-  font-family:'Space Mono',monospace;
-  font-size:0.65rem;letter-spacing:1px;
-  margin-bottom:0.4rem;display:block;
-}
-.chat-msg.ai .chat-msg-label{color:var(--coral);}
-.chat-msg.user .chat-msg-label{color:var(--cyan);}
-
-.chat-input-row{
-  display:flex;gap:0.6rem;
-  flex-wrap:wrap;
-}
-.chat-input{
-  flex:1;min-width:200px;
-  padding:0.8rem 1rem;
-  background:rgba(0,0,0,0.3);
-  border:1px solid rgba(255,107,107,0.2);
-  border-radius:10px;
-  color:var(--text);
-  font-family:'Noto Sans KR',sans-serif;
-  font-size:0.9rem;
-}
-.chat-input:focus{outline:none;border-color:var(--coral);}
-.chat-send-btn{
-  padding:0.8rem 1.5rem;
-  background:linear-gradient(135deg,var(--coral),var(--gold));
-  border:none;border-radius:10px;
-  color:#000;font-weight:700;
-  cursor:pointer;transition:all 0.3s;
-  font-size:0.88rem;
-  display:flex;align-items:center;gap:0.4rem;
-}
-.chat-send-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,107,107,0.3);}
-.chat-send-btn:disabled{opacity:0.5;cursor:not-allowed;}
-
-.quick-chat-qs{
-  display:flex;gap:0.5rem;flex-wrap:wrap;
-  margin-bottom:1rem;
-}
-.quick-chat-q{
-  padding:0.4rem 0.8rem;
-  background:rgba(255,107,107,0.08);
-  border:1px solid rgba(255,107,107,0.2);
-  border-radius:20px;
-  color:var(--coral);
-  font-size:0.75rem;cursor:pointer;
-  transition:all 0.3s;
-}
-.quick-chat-q:hover{background:rgba(255,107,107,0.15);border-color:var(--coral);}
-
 /* === M4 메타버스 COMING SOON === */
 #page-m4 .content{padding:0 2rem 4rem;max-width:1300px;margin:0 auto;}
 .metaverse-preview-box{
@@ -1569,9 +1422,7 @@ input[type=range]::-webkit-slider-thumb{
   margin-bottom:1.5rem;
   line-height:1.6;
 }
-.notify-field{
-  margin-bottom:1rem;
-}
+.notify-field{margin-bottom:1rem;}
 .notify-field label{
   display:block;
   font-size:0.85rem;
@@ -1849,6 +1700,58 @@ input[type=range]::-webkit-slider-thumb{
   display:none;
 }
 .api-warning.show{display:block;}
+
+/* === PRINT-FRIENDLY CSS (PDF 인쇄용) === */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  nav, #canvas-bg, .back-btn, .download-row, #api-warning,
+  .theme-toggle, .nav-logo {
+    display: none !important;
+  }
+  .page {
+    display: none;
+    padding-top: 0 !important;
+  }
+  .page.active {
+    display: block !important;
+  }
+  .glass-card, .report-section, .final-score-card, .report-header {
+    background: white !important;
+    border: 1px solid #ddd !important;
+    color: black !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  .report-title, .page-title, .stat-num, .hero-title {
+    color: #000 !important;
+    background: none !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+  .report-section-title {
+    color: #0891b2 !important;
+    border-bottom: 2px solid #0891b2;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .report-row-label, .final-score-label, .report-meta {
+    color: #555 !important;
+  }
+  .report-row-val, .final-score-num {
+    color: #000 !important;
+  }
+  .rec-text { color: #333 !important; }
+  .rec-item {
+    background: #f8f9fa !important;
+    page-break-inside: avoid;
+  }
+}
 </style>
 </head>
 <body>
@@ -1856,9 +1759,9 @@ input[type=range]::-webkit-slider-thumb{
 <canvas id="canvas-bg"></canvas>
 
 <nav>
-  <div class="nav-logo">ASN<span>M</span></div>
+  <div class="nav-logo" onclick="showPage('home')">ASN<span>M</span></div>
   <div class="nav-links">
-    <button class="nav-btn active" onclick="goHome()">홈</button>
+    <button class="nav-btn active" onclick="showPage('home')">홈</button>
     <button class="nav-btn" onclick="showPage('m1')">시장트렌드</button>
     <button class="nav-btn" onclick="showPage('m2')">창업자DNA</button>
     <button class="nav-btn" onclick="showPage('m3a')">스타트업 시뮬레이터</button>
@@ -1908,22 +1811,29 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- ============================================== -->
+    <!-- ✏️ 수정 #1: 통계 수치 - 논문 정확히 일치 -->
+    <!-- ============================================== -->
     <div class="stats-row">
       <div class="stat-item">
-        <div class="stat-num">36.4%</div>
+        <div class="stat-num">33%</div>
         <div class="stat-label">한국 스타트업 5년 생존율</div>
+        <div class="stat-source">KISED 2024 코호트</div>
       </div>
       <div class="stat-item">
-        <div class="stat-num">43.7%</div>
-        <div class="stat-label">시장 수요 오판 실패 비율</div>
+        <div class="stat-num">46%p</div>
+        <div class="stat-label">창업자 자기 과신 격차</div>
+        <div class="stat-source">Astebro 2014 (81% vs 35%)</div>
       </div>
       <div class="stat-item">
         <div class="stat-num">β=.949</div>
-        <div class="stat-label">PU↔AI 표준화 계수 (n=190)</div>
+        <div class="stat-label">PU↔AI 표준화 계수</div>
+        <div class="stat-source">Study 1 (n=190, p&lt;.001)</div>
       </div>
       <div class="stat-item">
         <div class="stat-num">.785</div>
         <div class="stat-label">CBA→PU→AI 간접효과</div>
+        <div class="stat-source">95% CI [.679, .903]</div>
       </div>
     </div>
   </div>
@@ -1938,15 +1848,13 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title">트렌드 기반 기회 탐색</h2>
         <p class="page-desc">AI 자연어 검색으로 산업 트렌드를 분석하거나, 트렌드 블록을 선택해 시장 기회를 탐색하세요.</p>
       </div>
-      <button class="back-btn" onclick="goHome()">← 홈으로</button>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
     </div>
   </div>
   <div class="content">
     <div style="padding:0 2rem 4rem;max-width:1200px;margin:0 auto;">
 
-      <!-- =================================== -->
-      <!-- 🤖 AI 트렌드 검색 (NEW) -->
-      <!-- =================================== -->
+      <!-- 🤖 AI 트렌드 검색 -->
       <div class="ai-search-section">
         <div class="ai-search-header">
           <span style="font-size:1.4rem;">🤖</span>
@@ -1978,7 +1886,6 @@ input[type=range]::-webkit-slider-thumb{
           </div>
           <div id="ai-trend-text" class="ai-response-text"></div>
 
-          <!-- AI 분석 차트 -->
           <div class="ai-charts-grid" id="ai-trend-charts" style="display:none;">
             <div class="ai-chart-card">
               <div class="ai-chart-title">📊 시장 규모 추이 (10억 USD)</div>
@@ -2038,14 +1945,12 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">창업자 유형 진단 & 적합성 평가</h2>
         <p class="page-desc">10가지 질문으로 V/A/C/T/I/S 6가지 창업자 DNA를 진단합니다.</p>
       </div>
-      <button class="back-btn" onclick="goHome()">← 홈으로</button>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
     </div>
   </div>
   <div class="content" style="padding:0 2rem 4rem;max-width:900px;margin:0 auto;">
     
-    <!-- ========================================== -->
     <!-- 🧬 인트로 화면: 6명 창업자 캐릭터 원형 배치 -->
-    <!-- ========================================== -->
     <div class="dna-intro" id="dna-intro">
       <div class="dna-intro-header">
         <div class="dna-intro-title">6가지 창업자 DNA</div>
@@ -2056,10 +1961,7 @@ input[type=range]::-webkit-slider-thumb{
         <div class="dna-intro-question">나는 어떤 유형일까? 🤔</div>
       </div>
 
-      <!-- 원형 배치 (6명 캐릭터가 원을 이룸) -->
       <div class="dna-circle-container">
-
-        <!-- 중앙 -->
         <div class="dna-circle-center">
           <div class="dna-circle-center-content">
             <div class="dna-circle-center-icon">🧬</div>
@@ -2067,42 +1969,36 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- V: Visionary (12시 - 상단) -->
         <div class="dna-circle-char dna-pos-12" style="--char-glow:rgba(255,107,107,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-V"></div>
           <div class="dna-char-circle-code" style="color:var(--coral);">V</div>
           <div class="dna-char-circle-name">비전형</div>
         </div>
 
-        <!-- A: Analytical (2시 - 우상) -->
         <div class="dna-circle-char dna-pos-2" style="--char-glow:rgba(0,245,255,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-A"></div>
           <div class="dna-char-circle-code" style="color:var(--cyan);">A</div>
           <div class="dna-char-circle-name">분석형</div>
         </div>
 
-        <!-- C: Community (4시 - 우하) -->
         <div class="dna-circle-char dna-pos-4" style="--char-glow:rgba(0,255,136,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-C"></div>
           <div class="dna-char-circle-code" style="color:var(--green);">C</div>
           <div class="dna-char-circle-name">커뮤니티형</div>
         </div>
 
-        <!-- T: Technical (6시 - 하단) -->
         <div class="dna-circle-char dna-pos-6" style="--char-glow:rgba(168,85,247,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-T"></div>
           <div class="dna-char-circle-code" style="color:var(--purple);">T</div>
           <div class="dna-char-circle-name">기술형</div>
         </div>
 
-        <!-- I: Impact (8시 - 좌하) -->
         <div class="dna-circle-char dna-pos-8" style="--char-glow:rgba(52,211,153,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-I"></div>
           <div class="dna-char-circle-code" style="color:#34d399;">I</div>
           <div class="dna-char-circle-name">임팩트형</div>
         </div>
 
-        <!-- S: Scaler (10시 - 좌상) -->
         <div class="dna-circle-char dna-pos-10" style="--char-glow:rgba(255,215,0,0.6);">
           <div class="dna-char-circle-svg" id="circle-svg-S"></div>
           <div class="dna-char-circle-code" style="color:var(--gold);">S</div>
@@ -2110,7 +2006,6 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
 
-      <!-- 시작 버튼 -->
       <div class="dna-start-btn-wrap">
         <button class="dna-start-btn" onclick="startDnaQuiz()">
           🧬 나의 유형 찾기 →
@@ -2121,9 +2016,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- 퀴즈 영역 (시작 버튼 클릭 시 활성화) -->
-    <!-- ========================================== -->
+    <!-- 퀴즈 영역 -->
     <div class="dna-quiz-wrap" id="dna-quiz-wrap">
     <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
 
@@ -2275,18 +2168,15 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">가상 창업 시뮬레이션 & 실패 위험 예측</h2>
         <p class="page-desc">내 스타트업을 직접 설계하고 AI가 생존 확률을 시뮬레이션합니다. 결과 후 AI 컨설턴트와 전략을 논의하세요.</p>
       </div>
-      <button class="back-btn" onclick="goHome()">← 홈으로</button>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
     </div>
   </div>
   <div class="content" style="padding:0 2rem 4rem;max-width:1400px;margin:0 auto;">
     <div class="sim-layout">
-      <!-- 좌측: 시뮬레이터 본문 -->
       <div class="sim-main">
     <div class="sim-steps" id="sim-steps"></div>
 
-    <!-- ========================================== -->
-    <!-- 🛡️ Step 0: BARL (편향 자각 반영층) - 시뮬레이션 시작 전 의사결정 가정 점검 -->
-    <!-- ========================================== -->
+    <!-- 🛡️ Step 0: BARL -->
     <div class="sim-panel active" id="sim-barl">
       <div class="glass-card" style="padding:2rem;">
         <div class="barl-intro-box">
@@ -2301,7 +2191,6 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- 섹션 1: 가정 명시화 -->
         <div class="barl-section">
           <div class="barl-section-title">
             <span>📝</span>
@@ -2342,7 +2231,6 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- 섹션 2: 사전 부검 -->
         <div class="barl-section">
           <div class="barl-section-title">
             <span>🔮</span>
@@ -2357,25 +2245,24 @@ input[type=range]::-webkit-slider-thumb{
             <label class="barl-question-label">
               ① 가장 결정적인 이유는 뭐였을 것 같아요?<span class="req">*</span>
             </label>
-            <textarea class="barl-textarea" id="barl-q4" placeholder="편하게 적어주세요. 예: 자금이 너무 빨리 떨어졌어요, 핵심 멤버가 떠났어요..."></textarea>
+            <textarea class="barl-textarea" id="barl-q4" placeholder="편하게 적어주세요. 예: 자금이 너무 빨리 떨어졌어요..."></textarea>
           </div>
 
           <div class="barl-question">
             <label class="barl-question-label">
               ② 두 번째 이유는요?<span class="req">*</span>
             </label>
-            <textarea class="barl-textarea" id="barl-q5" placeholder="예: 경쟁사가 너무 빨리 따라왔어요, 마케팅이 잘 안 먹혔어요..."></textarea>
+            <textarea class="barl-textarea" id="barl-q5" placeholder="예: 경쟁사가 너무 빨리 따라왔어요..."></textarea>
           </div>
 
           <div class="barl-question">
             <label class="barl-question-label">
               ③ 마지막으로 하나 더!<span class="req">*</span>
             </label>
-            <textarea class="barl-textarea" id="barl-q6" placeholder="예: 고객들이 우리 생각만큼 안 좋아했어요, 팀 분위기가 안 좋아졌어요..."></textarea>
+            <textarea class="barl-textarea" id="barl-q6" placeholder="예: 고객들이 우리 생각만큼 안 좋아했어요..."></textarea>
           </div>
         </div>
 
-        <!-- 섹션 3: 편향 자각 -->
         <div class="barl-section">
           <div class="barl-section-title">
             <span>🧠</span>
@@ -2387,42 +2274,42 @@ input[type=range]::-webkit-slider-thumb{
           </div>
 
           <div id="barl-bias-checks" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.6rem;">
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="과신" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">😎 너무 자신만만</div>
                 <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"내 사업은 무조건 대박날 거야!"</div>
               </div>
             </label>
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="계획오류" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">⏰ 일정 욕심쟁이</div>
                 <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"3개월이면 충분해!" (실제 9개월)</div>
               </div>
             </label>
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="확증편향" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">👂 듣고 싶은 말만</div>
                 <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">긍정 피드백만 기억나요</div>
               </div>
             </label>
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="매몰비용" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">💸 그만두기 어려워</div>
                 <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"여기까지 쓴 돈이 아까워..."</div>
               </div>
             </label>
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="가용성편향" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">🌟 성공담만 떠올라</div>
                 <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">실패 사례는 잘 기억 안 나요</div>
               </div>
             </label>
-            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;transition:all 0.3s;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
               <input type="checkbox" class="barl-bias" value="오만" style="margin-top:0.2rem;">
               <div>
                 <div style="font-size:0.85rem;font-weight:600;">🏆 한번 성공해본 사람</div>
@@ -2433,8 +2320,7 @@ input[type=range]::-webkit-slider-thumb{
         </div>
 
         <div id="barl-required-msg" class="barl-required-msg">
-          🙏 모든 항목을 채워주셔야 다음으로 넘어가요! <br>
-          <span style="font-size:0.72rem;">5분만 투자하면 훨씬 더 정확한 결과를 받으실 수 있어요 😊</span>
+          🙏 모든 항목을 채워주셔야 다음으로 넘어가요!
         </div>
 
         <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
@@ -2445,9 +2331,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- Step 1: 회사 기본 정보 (BARL 완료 후 활성화) -->
-    <!-- ========================================== -->
+    <!-- Step 1: 회사 기본 정보 -->
     <div class="sim-panel" id="sim-0">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">🏢 Step 1. 회사 기본 정보</div>
@@ -2480,12 +2364,13 @@ input[type=range]::-webkit-slider-thumb{
             <div class="choice-card" onclick="selectSim(this,'region','해외')"><div class="choice-icon">🌍</div><div class="choice-name">해외 진출</div></div>
             <div class="choice-card" onclick="toggleCustomRegion(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
           </div>
-          <input class="sim-input" id="s-region-custom" placeholder="지역명을 직접 입력하세요 (예: 강원도 춘천)" style="display:none;margin-top:0.8rem;" oninput="setCustomRegion(this.value)">
+          <input class="sim-input" id="s-region-custom" placeholder="지역명을 직접 입력하세요" style="display:none;margin-top:0.8rem;" oninput="setCustomRegion(this.value)">
         </div>
         <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
       </div>
     </div>
 
+    <!-- Step 2: 사업 아이템 -->
     <div class="sim-panel" id="sim-1">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">💡 Step 2. 사업 아이템 & 타겟 페르소나</div>
@@ -2516,7 +2401,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="choice-card" onclick="selectSim(this,'item','우주/항공')"><div class="choice-icon">🚀</div><div class="choice-name">우주/항공</div></div>
           <div class="choice-card" onclick="toggleCustomItem(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
-        <input class="sim-input" id="s-item-custom" placeholder="사업 아이템을 직접 입력하세요 (예: 반려식물 관리 SaaS)" style="display:none;margin-top:0.8rem;" oninput="setCustomItem(this.value)">
+        <input class="sim-input" id="s-item-custom" placeholder="사업 아이템을 직접 입력하세요" style="display:none;margin-top:0.8rem;" oninput="setCustomItem(this.value)">
         <div style="margin-top:1rem;">
           <label class="sim-label">타겟 페르소나</label>
           <input class="sim-input" id="s-persona" placeholder="예: 30대 직장인, 소규모 자영업자, MZ세대 여성..." oninput="updateSimPreview()">
@@ -2528,6 +2413,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- Step 3: 기술 -->
     <div class="sim-panel" id="sim-2">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">🔬 Step 3. 핵심 기술 요구사항 (최대 5개)</div>
@@ -2555,7 +2441,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="choice-card" onclick="selectMulti(this,'tech','디지털트윈')"><div class="choice-icon">🌀</div><div class="choice-name">디지털트윈</div></div>
           <div class="choice-card" onclick="toggleCustomTech(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
-        <input class="sim-input" id="s-tech-custom" placeholder="기술을 직접 입력하세요 (쉼표로 구분, 예: WebRTC, GraphQL)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('tech',this.value)">
+        <input class="sim-input" id="s-tech-custom" placeholder="기술을 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('tech',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
@@ -2563,6 +2449,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- Step 4: 인재 -->
     <div class="sim-panel" id="sim-3">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">👥 Step 4. 인재 영입 계획 (최대 6명)</div>
@@ -2590,7 +2477,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="choice-card" onclick="selectMulti(this,'talent','업계 멘토')"><div class="choice-icon">👨‍🏫</div><div class="choice-name">업계 멘토</div></div>
           <div class="choice-card" onclick="toggleCustomTalent(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
-        <input class="sim-input" id="s-talent-custom" placeholder="인재 역할을 직접 입력하세요 (쉼표로 구분, 예: 의료 전문 자문, 약사)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('talent',this.value)">
+        <input class="sim-input" id="s-talent-custom" placeholder="인재 역할을 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('talent',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
@@ -2598,6 +2485,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- Step 5: 복지 -->
     <div class="sim-panel" id="sim-4">
       <div class="glass-card" style="padding:2rem;">
         <div class="result-section-title gold">🎁 Step 5. 복지 & 문화 (최대 5개)</div>
@@ -2624,7 +2512,7 @@ input[type=range]::-webkit-slider-thumb{
           <div class="choice-card" onclick="selectMulti(this,'welfare','해외근무')"><div class="choice-icon">✈️</div><div class="choice-name">해외근무 기회</div></div>
           <div class="choice-card" onclick="toggleCustomWelfare(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
         </div>
-        <input class="sim-input" id="s-welfare-custom" placeholder="복지 제도를 직접 입력하세요 (쉼표로 구분, 예: 명상룸, 신혼여행비)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('welfare',this.value)">
+        <input class="sim-input" id="s-welfare-custom" placeholder="복지 제도를 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('welfare',this.value)">
         <div style="display:flex;gap:1rem;margin-top:1.5rem;">
           <button class="back-btn" onclick="simPrev()">← 이전</button>
           <button class="btn-primary btn-gold" onclick="runSimulation()">🚀 시뮬레이션 실행</button>
@@ -2632,6 +2520,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
+    <!-- 시뮬레이션 결과 -->
     <div class="sim-result-container" id="sim-result">
       <div class="survival-dial glass-card">
         <div class="result-section-title gold" style="align-self:flex-start;">⚡ AI 생존 확률 분석 결과</div>
@@ -2676,24 +2565,20 @@ input[type=range]::-webkit-slider-thumb{
     </div>
       </div><!-- /.sim-main -->
 
-      <!-- ============================================ -->
-      <!-- 우측: AI 컨설턴트 사이드바 (모든 단계에서 표시) -->
-      <!-- ============================================ -->
+      <!-- AI 컨설턴트 사이드바 -->
       <aside class="sim-ai-sidebar">
         <div class="sim-ai-sidebar-header">
           <span style="font-size:1.2rem;">💬</span>
           <span class="sim-ai-sidebar-title">실시간 AI 전략 컨설턴트</span>
-          <span style="display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 10px #00ff88;animation:btn-pulse 1.5s ease-in-out infinite;"></span>
+          <span style="display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 10px #00ff88;"></span>
         </div>
         <p class="sim-ai-sidebar-desc">단계별로 입력하시는 정보를 AI가 실시간으로 분석합니다. 궁금한 점을 자유롭게 물어보세요.</p>
 
-        <!-- 현재 입력 정보 컨텍스트 -->
         <div class="sim-ai-context-info" id="sim-ai-context">
           <strong>📍 현재 입력 정보:</strong><br>
           <span id="sim-context-display">아직 입력된 정보가 없습니다. 단계별로 입력을 시작해 주세요.</span>
         </div>
 
-        <!-- 대화 기록 -->
         <div class="sim-chat-history" id="chat-history">
           <div class="sim-chat-msg ai">
             <span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>
@@ -2701,7 +2586,6 @@ input[type=range]::-webkit-slider-thumb{
           </div>
         </div>
 
-        <!-- 빠른 질문 -->
         <div class="sim-quick-chat-qs">
           <span class="sim-quick-chat-q" onclick="sendQuickQ('지금 입력한 정보로 가장 큰 위험은?')">⚠️ 현재 위험</span>
           <span class="sim-quick-chat-q" onclick="sendQuickQ('이 사업 아이템의 시장 전망은?')">📊 시장 전망</span>
@@ -2709,7 +2593,6 @@ input[type=range]::-webkit-slider-thumb{
           <span class="sim-quick-chat-q" onclick="sendQuickQ('한국 정부 지원 프로그램 알려줘')">🇰🇷 정부 지원</span>
         </div>
 
-        <!-- 입력창 -->
         <div class="sim-chat-input-row">
           <input type="text" id="chat-input" class="sim-chat-input" placeholder="질문을 입력하세요...">
           <button class="sim-chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">전송</button>
@@ -2736,8 +2619,6 @@ input[type=range]::-webkit-slider-thumb{
     </div>
   </div>
   <div class="content">
-
-    <!-- 메타버스 이미지 -->
     <div class="metaverse-preview-box">
       <div class="metaverse-preview-header">
         <div class="metaverse-preview-title">메타버스 창업 센터 미리보기 (Preview)</div>
@@ -2753,7 +2634,6 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
-    <!-- 3가지 기능 카드 -->
     <div class="metaverse-features">
       <div class="metaverse-feature-card cyan">
         <div class="metaverse-feature-icon-box cyan"></div>
@@ -2772,17 +2652,14 @@ input[type=range]::-webkit-slider-thumb{
       </div>
     </div>
 
-    <!-- 알림 신청 -->
     <div class="notify-section">
       <button class="notify-btn" onclick="notifyMe()">출시 알림 신청하기 →</button>
     </div>
 
-    <!-- 로드맵 -->
     <div class="roadmap-box">
       <div class="roadmap-title">개발 로드맵 (Development Roadmap)</div>
       <div class="roadmap-grid">
         <div class="roadmap-line"></div>
-
         <div class="roadmap-phase phase1">
           <div class="roadmap-phase-label">Phase 1</div>
           <div class="roadmap-phase-date">현재 ✓</div>
@@ -2809,7 +2686,6 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -2822,7 +2698,7 @@ input[type=range]::-webkit-slider-thumb{
         <h2 class="page-title">종합 분석 보고서</h2>
         <p class="page-desc">ASNM 모듈의 분석 결과를 종합한 맞춤형 창업 전략 보고서입니다.</p>
       </div>
-      <button class="back-btn" onclick="goHome()">← 홈으로</button>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
     </div>
   </div>
   <div class="content" style="padding:0 2rem 4rem;max-width:1000px;margin:0 auto;">
@@ -2873,7 +2749,7 @@ input[type=range]::-webkit-slider-thumb{
     </div>
 
     <div class="download-row">
-      <button class="dl-btn" onclick="downloadReport()">⬇ PDF 보고서 다운로드</button>
+      <button class="dl-btn" onclick="downloadReport()">📄 PDF 보고서 다운로드</button>
       <button class="dl-btn purple" onclick="downloadJSON()">⬇ 데이터 JSON 내보내기</button>
     </div>
   </div>
@@ -2883,1446 +2759,6 @@ input[type=range]::-webkit-slider-thumb{
 <div id="api-warning" class="api-warning">
   ⚠️ API_KEY를 입력해주세요.
 </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-
-<script>
-// =============================================
-// 🎨 CANVAS BG PARTICLES
-// =============================================
-const canvas = document.getElementById('canvas-bg');
-const ctx = canvas.getContext('2d');
-let particles = [];
-function resizeCanvas(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
-resizeCanvas();window.addEventListener('resize',resizeCanvas);
-class Particle{
-  constructor(){this.reset();}
-  reset(){
-    this.x=Math.random()*canvas.width;
-    this.y=Math.random()*canvas.height;
-    this.vx=(Math.random()-0.5)*0.3;
-    this.vy=(Math.random()-0.5)*0.3;
-    this.r=Math.random()*1.5+0.3;
-    this.alpha=Math.random()*0.5+0.1;
-    this.color=Math.random()>0.7?'0,245,255':'100,150,255';
-  }
-  update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>canvas.width||this.y<0||this.y>canvas.height)this.reset();}
-  draw(){ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(${this.color},${this.alpha})`;ctx.fill();}
-}
-for(let i=0;i<120;i++)particles.push(new Particle());
-function animParticles(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  particles.forEach(p=>{p.update();p.draw();});
-  for(let i=0;i<particles.length;i++){
-    for(let j=i+1;j<particles.length;j++){
-      const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y;
-      const d=Math.sqrt(dx*dx+dy*dy);
-      if(d<100){
-        ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);
-        ctx.strokeStyle=`rgba(0,245,255,${0.05*(1-d/100)})`;ctx.lineWidth=0.5;ctx.stroke();
-      }
-    }
-  }
-  requestAnimationFrame(animParticles);
-}
-animParticles();
-
-// =============================================
-// 🌗 THEME TOGGLE
-// =============================================
-function toggleTheme(){
-  const html=document.documentElement;
-  const cur=html.getAttribute('data-theme');
-  const next=cur==='light'?'dark':'light';
-  html.setAttribute('data-theme',next);
-  localStorage.setItem('asnm-theme',next);
-  document.getElementById('theme-toggle').textContent=next==='light'?'☀️':'🌙';
-}
-function loadTheme(){
-  const saved=localStorage.getItem('asnm-theme')||'dark';
-  document.documentElement.setAttribute('data-theme',saved);
-  const btn=document.getElementById('theme-toggle');
-  if(btn)btn.textContent=saved==='light'?'☀️':'🌙';
-}
-loadTheme();
-
-// =============================================
-// 📄 PAGE NAVIGATION
-// =============================================
-// =============================================
-// 페이지별 스크롤 위치 저장 (탭 전환 시 그 자리에서 이어보기)
-// =============================================
-const pageScrollPositions = {
-  home: 0, m1: 0, m2: 0, m3a: 0, m4: 0, result: 0
-};
-let currentPageId = 'home';
-
-function showPage(id, resetScroll){
-  // 1. 현재 페이지의 스크롤 위치 저장
-  if(currentPageId){
-    pageScrollPositions[currentPageId] = window.pageYOffset || document.documentElement.scrollTop || 0;
-  }
-  
-  // 2. 페이지 전환
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  
-  // 3. 스크롤 위치 복원 (resetScroll=true이면 0)
-  if(resetScroll){
-    pageScrollPositions[id] = 0;
-    window.scrollTo(0, 0);
-  } else {
-    setTimeout(function(){
-      window.scrollTo(0, pageScrollPositions[id] || 0);
-    }, 10);
-  }
-  
-  // 4. 현재 페이지 ID 업데이트
-  currentPageId = id;
-  
-  // 5. 페이지별 추가 로직
-  if(id==='result')updateReport();
-  if(id==='m2' && !window._founderType){
-    const intro = document.getElementById('dna-intro');
-    const quizWrap = document.getElementById('dna-quiz-wrap');
-    if(intro && quizWrap){
-      intro.classList.remove('hidden');
-      quizWrap.classList.remove('active');
-    }
-  }
-}
-
-// 홈으로 가는 경우 모든 스크롤 초기화 (홈/이전 버튼용)
-function goHome(){
-  Object.keys(pageScrollPositions).forEach(function(k){ pageScrollPositions[k]=0; });
-  showPage('home', true);
-}
-
-// =============================================
-// 🔑 API KEY CHECK
-// =============================================
-function checkApiKey(){
-  if(!OPENAI_API_KEY || OPENAI_API_KEY === 'YOUR_API_KEY_HERE'){
-    document.getElementById('api-warning').classList.add('show');
-    setTimeout(()=>{document.getElementById('api-warning').classList.remove('show');},5000);
-    return false;
-  }
-  return true;
-}
-
-// =============================================
-// 🤖 OPENAI API CALL HELPER
-// =============================================
-async function callOpenAI(messages, maxTokens=800){
-  if(!checkApiKey()){
-    throw new Error('API Key가 설정되지 않았습니다. API_KEY를 설정해주세요.');
-  }
-  
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${OPENAI_API_KEY}`
-    },
-    body:JSON.stringify({
-      model:AI_MODEL,
-      messages:messages,
-      max_tokens:maxTokens,
-      temperature:0.7
-    })
-  });
-  
-  if(!response.ok){
-    const error = await response.json();
-    throw new Error(error.error?.message || `API 오류: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return data.choices[0].message.content;
-}
-
-// =============================================
-// 🤖 M1: AI TREND SEARCH (NEW)
-// =============================================
-function setTrendQuery(q){
-  document.getElementById('ai-trend-query').value = q;
-}
-
-async function aiTrendSearch(){
-  const query = document.getElementById('ai-trend-query').value.trim();
-  if(!query){ alert('질문을 입력해주세요.'); return; }
-  
-  const resultBox = document.getElementById('ai-trend-result');
-  const textDiv = document.getElementById('ai-trend-text');
-  const chartsDiv = document.getElementById('ai-trend-charts');
-  const btn = document.getElementById('trend-search-btn');
-  
-  resultBox.classList.add('show');
-  chartsDiv.style.display = 'none';
-  textDiv.innerHTML = '<div class="ai-loading"><div class="loading-spinner"></div><span>AI가 트렌드를 분석 중입니다...</span></div>';
-  btn.disabled = true;
-  
-  try {
-    // 1. AI 텍스트 분석
-    const aiResponse = await callOpenAI([
-      {
-        role:'system',
-        content:`당신은 한국 창업 시장 전문 컨설턴트입니다. 예비창업자가 묻는 시장 트렌드 질문에 대해 다음 구조로 답변하세요:
-
-📊 **시장 규모 및 성장률**: 현재 시장 규모, CAGR
-🏢 **주요 플레이어**: 글로벌·국내 주요 기업
-💡 **진입 기회**: 예비창업자가 노릴 수 있는 틈새 시장
-⚠️ **위험 요소**: 진입 시 주의할 점
-🎯 **핵심 시사점**: 예비창업자를 위한 행동 지침
-
-응답 마지막에 반드시 다음 JSON 데이터를 포함하세요:
-\`\`\`json
-{
-  "marketData": {
-    "years": ["2023", "2024", "2025", "2026", "2027"],
-    "sizes": [100, 130, 175, 220, 280]
-  },
-  "growthData": {
-    "regions": ["북미", "유럽", "아시아", "중동", "기타"],
-    "rates": [25, 18, 32, 15, 12]
-  }
-}
-\`\`\`
-한국어로, 600자 이내 답변.`
-      },
-      { role:'user', content:query }
-    ]);
-    
-    // JSON 추출
-    let chartData = null;
-    let textPart = aiResponse;
-    const jsonMatch = aiResponse.match(/```json([\s\S]*?)```/);
-    if(jsonMatch){
-      try {
-        chartData = JSON.parse(jsonMatch[1].trim());
-        textPart = aiResponse.replace(/```json[\s\S]*?```/, '').trim();
-      } catch(e){ console.warn('JSON 파싱 실패:', e); }
-    }
-    
-    // 텍스트 표시
-    textDiv.innerHTML = textPart.replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--cyan)">$1</strong>')
-                                .replace(/\n/g,'<br>');
-    
-    // 차트 그리기
-    if(chartData && chartData.marketData && chartData.growthData){
-      chartsDiv.style.display = 'grid';
-      drawAiCharts(chartData);
-    }
-    
-  } catch(err){
-    textDiv.innerHTML = `<div style="color:var(--coral);padding:1rem;">❌ ${err.message}<br><small style="color:var(--text2);">API Key를 확인하거나 잠시 후 다시 시도해주세요.</small></div>`;
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-let aiMarketChart = null, aiGrowthChart = null;
-function drawAiCharts(data){
-  if(aiMarketChart) aiMarketChart.destroy();
-  if(aiGrowthChart) aiGrowthChart.destroy();
-  
-  // 시장 규모 차트
-  const ctx1 = document.getElementById('aiMarketSizeChart').getContext('2d');
-  aiMarketChart = new Chart(ctx1,{
-    type:'line',
-    data:{
-      labels:data.marketData.years,
-      datasets:[{
-        label:'Market Size (B USD)',
-        data:data.marketData.sizes,
-        borderColor:'rgba(0,245,255,0.8)',
-        backgroundColor:'rgba(0,245,255,0.15)',
-        fill:true,
-        tension:0.4,
-        pointBackgroundColor:'rgba(0,245,255,1)',
-        pointRadius:5
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
-        y:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}
-      }
-    }
-  });
-  
-  // 성장률 차트
-  const ctx2 = document.getElementById('aiGrowthChart').getContext('2d');
-  aiGrowthChart = new Chart(ctx2,{
-    type:'bar',
-    data:{
-      labels:data.growthData.regions,
-      datasets:[{
-        label:'CAGR %',
-        data:data.growthData.rates,
-        backgroundColor:[
-          'rgba(0,245,255,0.7)',
-          'rgba(168,85,247,0.7)',
-          'rgba(0,255,136,0.7)',
-          'rgba(255,215,0,0.7)',
-          'rgba(255,107,107,0.7)'
-        ],
-        borderRadius:6
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{legend:{display:false}},
-      scales:{
-        x:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{display:false}},
-        y:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}
-      }
-    }
-  });
-}
-
-// Enter 키로 검색
-document.getElementById('ai-trend-query').addEventListener('keypress', function(e){
-  if(e.key === 'Enter') aiTrendSearch();
-});
-
-// =============================================
-// 📊 M1: TREND BLOCKS (기존)
-// =============================================
-const trendsData = {
-  ai:[
-    {name:'생성 AI·LLM',tag:'ai',size:'$1,300B',hot:true},
-    {name:'AI 에이전트',tag:'ai',size:'$250B',hot:true},
-    {name:'엣지 AI',tag:'tech',size:'$380B'},
-    {name:'AI 반도체',tag:'tech',size:'$500B',hot:true},
-    {name:'멀티모달 AI',tag:'ai',size:'$180B'},
-    {name:'디지털 트윈',tag:'tech',size:'$130B',hot:true},
-    {name:'양자컴퓨팅',tag:'tech',size:'$90B'},
-    {name:'로봇공학 AI',tag:'ai',size:'$220B'},
-    {name:'AI 보안',tag:'tech',size:'$160B'},
-  ],
-  market:[
-    {name:'SaaS B2B',tag:'market',size:'$900B',hot:true},
-    {name:'헬스케어 AI',tag:'market',size:'$320B',hot:true},
-    {name:'에듀테크',tag:'market',size:'$440B'},
-    {name:'기후테크',tag:'market',size:'$600B',hot:true},
-    {name:'스페이스테크',tag:'market',size:'$1,000B'},
-    {name:'커머스 AI',tag:'market',size:'$280B'},
-    {name:'물류 자동화',tag:'market',size:'$190B'},
-    {name:'푸드테크',tag:'market',size:'$250B'},
-    {name:'시니어테크',tag:'market',size:'$120B'},
-  ],
-  social:[
-    {name:'1인 경제',tag:'social',size:'$340B',hot:true},
-    {name:'MZ 소비 트렌드',tag:'social',size:'$280B'},
-    {name:'메타버스',tag:'social',size:'$800B'},
-    {name:'웰니스·마인드',tag:'social',size:'$150B',hot:true},
-    {name:'지속가능 소비',tag:'social',size:'$200B'},
-    {name:'K-컬처 글로벌',tag:'social',size:'$180B',hot:true},
-    {name:'펫 이코노미',tag:'social',size:'$90B'},
-    {name:'숏폼 커머스',tag:'social',size:'$160B',hot:true},
-  ],
-  finance:[
-    {name:'임베디드 핀테크',tag:'finance',size:'$300B',hot:true},
-    {name:'토큰증권(STO)',tag:'finance',size:'$180B'},
-    {name:'CBDC',tag:'finance',size:'$500B'},
-    {name:'리워드 플랫폼',tag:'finance',size:'$120B'},
-    {name:'인슈어테크',tag:'finance',size:'$150B'},
-    {name:'오픈뱅킹',tag:'finance',size:'$95B'},
-    {name:'크립토 DeFi',tag:'finance',size:'$200B'},
-    {name:'ESG 투자',tag:'finance',size:'$400B',hot:true},
-  ]
-};
-const tagColors={ai:'tag-ai',market:'tag-market',tech:'tag-tech',social:'tag-social',finance:'tag-finance'};
-const tagLabels={ai:'AI',market:'시장',tech:'기술',social:'사회',finance:'핀테크'};
-let selectedTrends=[];
-
-function renderTrends(){
-  ['ai','market','social','finance'].forEach(cat=>{
-    const grid=document.getElementById('trend-grid-'+cat);
-    grid.innerHTML='';
-    trendsData[cat].forEach(t=>{
-      const div=document.createElement('div');
-      div.className='trend-block'+(t.hot?' hot':'');
-      div.dataset.name=t.name;
-      div.innerHTML=`<span class="trend-tag ${tagColors[t.tag]}">${tagLabels[t.tag]}</span><span>${t.name}</span><span class="trend-size">${t.size}</span>`;
-      div.onclick=()=>toggleTrend(div,t);
-      grid.appendChild(div);
-    });
-  });
-}
-renderTrends();
-
-function toggleTrend(el,t){
-  const already=el.classList.contains('selected');
-  if(!already && selectedTrends.length>=5)return;
-  if(already){el.classList.remove('selected');selectedTrends=selectedTrends.filter(x=>x.name!==t.name);}
-  else {el.classList.add('selected');selectedTrends.push(t);}
-  document.getElementById('trend-count').textContent=selectedTrends.length;
-  if(selectedTrends.length===5)showTrendResult();
-  else document.getElementById('trend-result').classList.remove('show');
-}
-
-const newsDB=[
-  {source:'TECHCRUNCH',title:'AI 에이전트 시장, 2025년 250억 달러 돌파 전망',desc:'자율 AI 에이전트 기술이 B2B SaaS 시장을 빠르게 대체하고 있습니다.',tag:'AI',date:'2025.03'},
-  {source:'BLOOMBERG',title:'한국 스타트업 생태계, K-AI 열풍으로 투자 급증',desc:'국내 AI 스타트업 투자가 전년 대비 280% 증가하며 글로벌 이목 집중.',tag:'투자',date:'2025.03'},
-  {source:'FORBES',title:'디지털 트윈 기술, 제조업 넘어 창업 지원 도구로 진화',desc:'스타트업 의사결정 지원에 디지털 트윈을 접목한 새로운 솔루션들이 등장.',tag:'기술',date:'2025.02'},
-  {source:'MIT TECH REVIEW',title:'LLM 기반 창업 코치, 인간 멘토 성과에 근접',desc:'AI 기반 창업 지도 솔루션의 효과성이 실험적으로 검증되고 있습니다.',tag:'AI',date:'2025.03'},
-  {source:'WSJ',title:'기후테크 스타트업, 2025년 최대 VC 투자 분야로 부상',desc:'넷제로 목표와 탄소 감축 규제가 기후테크 생태계 성장을 촉진합니다.',tag:'ESG',date:'2025.03'},
-  {source:'THE ECONOMIST',title:'MZ 세대 창업 트렌드: 임팩트 비즈니스의 부상',desc:'수익과 사회적 가치를 동시에 추구하는 임팩트 스타트업이 MZ 세대 중심으로 급증.',tag:'트렌드',date:'2025.02'},
-  {source:'VENTUREBEAT',title:'한국 헬스케어 AI, 글로벌 시장 공략 가속화',desc:'K-헬스케어 AI 스타트업들이 동남아·중동 시장으로 빠르게 확장.',tag:'헬스',date:'2025.03'},
-  {source:'NIKKEI',title:'핀테크 토큰증권(STO), 2025년 제도권 진입 완료',desc:'국내 토큰증권 발행 규제 정비가 완료되며 새로운 투자 상품 시장이 열립니다.',tag:'핀테크',date:'2025.03'},
-];
-
-function showTrendResult(){
-  const result=document.getElementById('trend-result');
-  result.classList.add('show');
-  const grid=document.getElementById('news-grid');
-  grid.innerHTML='';
-  const shuffled=newsDB.sort(()=>0.5-Math.random()).slice(0,6);
-  shuffled.forEach(n=>{
-    grid.innerHTML+=`<div class="news-card"><div class="news-source">${n.source}</div><div class="news-title">${n.title}</div><div class="news-desc">${n.desc}</div><div class="news-meta"><span>${n.date}</span><span class="news-trend-tag">${n.tag}</span></div></div>`;
-  });
-  renderMarketCharts();
-  result.scrollIntoView({behavior:'smooth',block:'start'});
-}
-
-let barChart,lineChart;
-function renderMarketCharts(){
-  const names=selectedTrends.map(t=>t.name.substring(0,6));
-  const sizes=selectedTrends.map(()=>Math.floor(Math.random()*800+100));
-  const cagrs=selectedTrends.map(()=>(Math.random()*30+10).toFixed(1));
-  if(barChart)barChart.destroy();
-  if(lineChart)lineChart.destroy();
-  const bCtx=document.getElementById('marketBarChart').getContext('2d');
-  barChart=new Chart(bCtx,{type:'bar',data:{labels:names,datasets:[{label:'시장 규모',data:sizes,backgroundColor:['rgba(0,245,255,0.6)','rgba(255,107,107,0.6)','rgba(255,215,0,0.6)','rgba(0,255,136,0.6)','rgba(168,85,247,0.6)'],borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},y:{ticks:{color:'#8ba8cc',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}}}}});
-  const lCtx=document.getElementById('marketLineChart').getContext('2d');
-  lineChart=new Chart(lCtx,{type:'radar',data:{labels:names,datasets:[{label:'CAGR%',data:cagrs,fill:true,backgroundColor:'rgba(0,245,255,0.1)',borderColor:'rgba(0,245,255,0.6)',pointBackgroundColor:'rgba(0,245,255,0.8)',pointRadius:4}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{r:{ticks:{display:false},grid:{color:'rgba(255,255,255,0.08)'},pointLabels:{color:'#8ba8cc',font:{size:10}}}}}});
-}
-
-// =============================================
-// 🧬 M2: FOUNDER DNA (6 TYPES)
-// =============================================
-
-// 6명 창업자 SVG (결과 화면에서도 사용)
-const founderSVGs = {
-  V: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-v-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6b6b"/><stop offset="100%" stop-color="#ff9500"/></linearGradient></defs>
-    <circle cx="15" cy="20" r="1.5" fill="#ffd700" opacity="0.8"/><circle cx="85" cy="15" r="2" fill="#ffd700" opacity="0.9"/>
-    <circle cx="80" cy="40" r="1" fill="#ffd700" opacity="0.6"/><circle cx="20" cy="65" r="1.5" fill="#ffd700" opacity="0.7"/>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-v-r)" stroke-width="2"/>
-    <path d="M 36 32 Q 50 18, 64 32 L 62 38 Q 50 26, 38 38 Z" fill="#3a2818"/>
-    <circle cx="44" cy="38" r="1.5" fill="#1a1a2e"/><circle cx="56" cy="38" r="1.5" fill="#1a1a2e"/>
-    <path d="M 44 45 Q 50 49, 56 45" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 38 55 L 50 75 L 62 55 Z" fill="url(#g-v-r)"/><rect x="44" y="55" width="12" height="22" rx="2" fill="url(#g-v-r)"/>
-    <path d="M 46 77 L 50 88 L 54 77 Z" fill="#ffd700"><animate attributeName="opacity" values="0.7;1;0.7" dur="0.5s" repeatCount="indefinite"/></path>
-    <path d="M 38 62 L 30 70 L 38 70 Z" fill="#ff9500"/><path d="M 62 62 L 70 70 L 62 70 Z" fill="#ff9500"/>
-  </svg>`,
-  A: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-a-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f5ff"/><stop offset="100%" stop-color="#00bcd4"/></linearGradient></defs>
-    <rect x="10" y="70" width="6" height="15" fill="#00f5ff" opacity="0.4"/><rect x="18" y="65" width="6" height="20" fill="#00f5ff" opacity="0.5"/>
-    <rect x="76" y="68" width="6" height="17" fill="#00f5ff" opacity="0.4"/><rect x="84" y="62" width="6" height="23" fill="#00f5ff" opacity="0.5"/>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-a-r)" stroke-width="2"/>
-    <path d="M 36 30 Q 50 20, 64 30 L 64 38 L 62 35 Q 50 28, 38 35 L 36 38 Z" fill="#1a1a2e"/>
-    <circle cx="44" cy="39" r="4" fill="none" stroke="#1a1a2e" stroke-width="1.5"/><circle cx="56" cy="39" r="4" fill="none" stroke="#1a1a2e" stroke-width="1.5"/>
-    <line x1="48" y1="39" x2="52" y2="39" stroke="#1a1a2e" stroke-width="1.5"/>
-    <circle cx="44" cy="39" r="1" fill="#1a1a2e"/><circle cx="56" cy="39" r="1" fill="#1a1a2e"/>
-    <line x1="46" y1="46" x2="54" y2="46" stroke="#1a1a2e" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-a-r)"/>
-    <path d="M 48 55 L 52 55 L 53 75 L 50 80 L 47 75 Z" fill="#1a1a2e"/>
-    <rect x="22" y="50" width="14" height="10" rx="1" fill="white" stroke="url(#g-a-r)" stroke-width="1.5"/>
-    <polyline points="24,58 27,54 30,56 33,52" stroke="url(#g-a-r)" stroke-width="1.2" fill="none"/>
-  </svg>`,
-  C: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-c-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00ff88"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
-    <circle cx="18" cy="40" r="7" fill="#00ff88" opacity="0.3"/>
-    <path d="M 11 50 Q 11 60, 18 60 Q 25 60, 25 50 Z" fill="#00ff88" opacity="0.3"/>
-    <circle cx="82" cy="40" r="7" fill="#00ff88" opacity="0.3"/>
-    <path d="M 75 50 Q 75 60, 82 60 Q 89 60, 89 50 Z" fill="#00ff88" opacity="0.3"/>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-c-r)" stroke-width="2"/>
-    <path d="M 36 32 Q 50 22, 64 32 Q 62 28, 50 26 Q 38 28, 36 32 Z" fill="#5d4037"/>
-    <circle cx="44" cy="38" r="2" fill="#1a1a2e"/><circle cx="56" cy="38" r="2" fill="#1a1a2e"/>
-    <circle cx="44.5" cy="37.5" r="0.5" fill="white"/><circle cx="56.5" cy="37.5" r="0.5" fill="white"/>
-    <path d="M 42 45 Q 50 52, 58 45" stroke="#1a1a2e" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <ellipse cx="40" cy="42" rx="2" ry="1.5" fill="#ff6b6b" opacity="0.3"/><ellipse cx="60" cy="42" rx="2" ry="1.5" fill="#ff6b6b" opacity="0.3"/>
-    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-c-r)"/>
-    <path d="M 50 65 C 45 60, 40 65, 45 72 C 47 75, 50 78, 50 78 C 50 78, 53 75, 55 72 C 60 65, 55 60, 50 65 Z" fill="white"/>
-    <line x1="28" y1="65" x2="36" y2="62" stroke="url(#g-c-r)" stroke-width="3" stroke-linecap="round"/>
-    <line x1="72" y1="65" x2="64" y2="62" stroke="url(#g-c-r)" stroke-width="3" stroke-linecap="round"/>
-  </svg>`,
-  T: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-t-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#a855f7"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
-    <text x="10" y="20" font-family="monospace" font-size="6" fill="#a855f7" opacity="0.5">&lt;/&gt;</text>
-    <text x="82" y="20" font-family="monospace" font-size="6" fill="#a855f7" opacity="0.5">{ }</text>
-    <text x="12" y="92" font-family="monospace" font-size="5" fill="#a855f7" opacity="0.4">01010</text>
-    <text x="78" y="92" font-family="monospace" font-size="5" fill="#a855f7" opacity="0.4">10101</text>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-t-r)" stroke-width="2"/>
-    <path d="M 36 30 Q 40 22, 45 26 Q 50 18, 55 26 Q 60 22, 64 30 L 62 35 Q 50 30, 38 35 Z" fill="#2c1810"/>
-    <rect x="40" y="35" width="8" height="8" rx="1" fill="rgba(168,85,247,0.2)" stroke="#1a1a2e" stroke-width="1.5"/>
-    <rect x="52" y="35" width="8" height="8" rx="1" fill="rgba(168,85,247,0.2)" stroke="#1a1a2e" stroke-width="1.5"/>
-    <line x1="48" y1="39" x2="52" y2="39" stroke="#1a1a2e" stroke-width="1.5"/>
-    <circle cx="44" cy="39" r="1" fill="#1a1a2e"/><circle cx="56" cy="39" r="1" fill="#1a1a2e"/>
-    <path d="M 46 46 Q 50 48, 54 46" stroke="#1a1a2e" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-t-r)"/>
-    <line x1="46" y1="55" x2="46" y2="68" stroke="white" stroke-width="1"/>
-    <line x1="54" y1="55" x2="54" y2="68" stroke="white" stroke-width="1"/>
-    <rect x="38" y="60" width="24" height="14" rx="1" fill="#1a1a2e" stroke="white" stroke-width="0.5"/>
-    <text x="40" y="68" font-family="monospace" font-size="5" fill="#00ff88">code</text>
-    <text x="40" y="73" font-family="monospace" font-size="3" fill="#a855f7">func()</text>
-  </svg>`,
-  I: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-i-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#34d399"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
-    <path d="M 12 25 Q 15 15, 22 18 Q 18 25, 12 25" fill="#34d399" opacity="0.4"/>
-    <path d="M 78 18 Q 85 15, 88 25 Q 82 25, 78 18" fill="#34d399" opacity="0.4"/>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-i-r)" stroke-width="2"/>
-    <path d="M 36 30 Q 50 22, 64 30 L 62 32 Q 50 26, 38 32 Z" fill="#8d6e63"/>
-    <circle cx="38" cy="30" r="2" fill="#ffd700"/><circle cx="50" cy="25" r="2.5" fill="#ff6b6b"/><circle cx="62" cy="30" r="2" fill="#34d399"/>
-    <path d="M 42 38 Q 44 36, 46 38" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 54 38 Q 56 36, 58 38" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 44 45 Q 50 48, 56 45" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-i-r)"/>
-    <circle cx="50" cy="68" r="9" fill="#06b6d4"/>
-    <path d="M 43 65 Q 47 63, 50 65 Q 53 67, 57 65 Q 55 70, 50 71 Q 45 70, 43 65 Z" fill="#34d399"/>
-    <path d="M 42 70 Q 48 72, 54 70 L 53 73 Q 48 74, 43 73 Z" fill="#34d399"/>
-    <path d="M 50 58 Q 53 55, 55 58 Q 53 60, 50 58" fill="#10b981"/>
-  </svg>`,
-  S: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-    <defs><linearGradient id="g-s-r" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffd700"/><stop offset="100%" stop-color="#f59e0b"/></linearGradient></defs>
-    <polyline points="8,82 20,75 32,68 44,60 56,52 68,44 80,36 92,28" stroke="#ffd700" stroke-width="1.5" fill="none" opacity="0.4" stroke-dasharray="2,2"/>
-    <polygon points="88,28 92,28 92,32" fill="#ffd700" opacity="0.4"/>
-    <circle cx="50" cy="38" r="14" fill="#fdbcb4" stroke="url(#g-s-r)" stroke-width="2"/>
-    <path d="M 36 30 Q 50 22, 64 30 L 62 35 Q 50 26, 38 35 Z" fill="#4a3220"/>
-    <circle cx="63" cy="32" r="3" fill="#4a3220"/>
-    <path d="M 42 37 Q 44 39, 46 37" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 54 37 Q 56 39, 58 37" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 44 44 Q 50 47, 56 44" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <path d="M 36 55 L 30 80 L 70 80 L 64 55 Z" fill="url(#g-s-r)"/>
-    <path d="M 50 55 L 42 65 L 50 75 L 58 65 Z" fill="#1a1a2e" opacity="0.5"/>
-    <circle cx="50" cy="68" r="6" fill="#ffd700" stroke="white" stroke-width="1"/>
-    <text x="50" y="71" font-family="Arial" font-size="6" fill="#1a1a2e" text-anchor="middle" font-weight="bold">★</text>
-    <path d="M 78 60 L 82 56 L 86 60 M 82 56 L 82 70" stroke="#ffd700" stroke-width="2" fill="none" stroke-linecap="round"/>
-  </svg>`
-};
-
-// 인트로에서 퀴즈로 전환
-function startDnaQuiz(){
-  document.getElementById('dna-intro').classList.add('hidden');
-  document.getElementById('dna-quiz-wrap').classList.add('active');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-// 페이지 로드 시 원형 배치에 SVG 주입
-function initDnaCircleSvgs(){
-  ['V','A','C','T','I','S'].forEach(code=>{
-    const el = document.getElementById('circle-svg-'+code);
-    if(el) el.innerHTML = founderSVGs[code];
-  });
-}
-
-const founderTypes={
-  V:{code:'V',name:'비전형 창업가',eng:'The Visionary Pioneer',emoji:'🚀',
-    traits:['빅픽처 사고','리스크 감수','카리스마 리더십','성장 지향','빠른 피벗'],
-    biz:['플랫폼 비즈니스','소셜 미디어','글로벌 SaaS','시장 파괴형 서비스','VC 백드 스케일업'],
-    warning:'실행 세부 사항을 놓치는 경향이 있습니다. CFO와 COO 영입이 필수적입니다.',
-    scores:[90,55,80,70,60,75]},
-  A:{code:'A',name:'분석형 창업가',eng:'The Data-Driven Strategist',emoji:'📊',
-    traits:['데이터 중심 사고','리스크 최소화','체계적 계획','정확한 실행','냉철한 판단'],
-    biz:['B2B SaaS','핀테크','헬스케어 데이터','비즈니스 인텔리전스','컨설팅 플랫폼'],
-    warning:'과분석으로 실행이 늦어질 수 있습니다. 완벽한 데이터보다 빠른 실행을 연습하세요.',
-    scores:[60,90,65,85,75,80]},
-  C:{code:'C',name:'커뮤니티형 창업가',eng:'The Community Builder',emoji:'🤝',
-    traits:['관계 중심','높은 공감 능력','신뢰 구축','팀워크 강조','네트워크 활용'],
-    biz:['커뮤니티 플랫폼','소셜커머스','구독 서비스','에듀테크','B2B 파트너십'],
-    warning:'수익화 구조 설계에 어려움을 겪을 수 있습니다. 비즈니스 모델 전문가와 협업하세요.',
-    scores:[70,65,90,60,80,85]},
-  T:{code:'T',name:'기술형 창업가',eng:'The Deep Tech Innovator',emoji:'🔬',
-    traits:['기술 전문성','디테일 집착','IP 중심','연구 개발 지향','문제 해결사'],
-    biz:['딥테크 스타트업','AI 솔루션','바이오테크','반도체·하드웨어','R&D 라이선싱'],
-    warning:'고객과의 소통과 마케팅이 약점이 될 수 있습니다. CMO 또는 비즈니스 파트너를 찾으세요.',
-    scores:[65,80,60,95,70,65]},
-  I:{code:'I',name:'임팩트형 창업가',eng:'The Impact Entrepreneur',emoji:'🌱',
-    traits:['사회적 가치 추구','강한 사명감','임팩트 측정','지속가능 성장','ESG 친화적'],
-    biz:['소셜벤처','기후테크','헬스케어 접근성','교육 격차 해소','임팩트 투자'],
-    warning:'수익성과 임팩트 사이의 균형이 핵심 도전입니다. BM 검증을 일찍 시작하세요.',
-    scores:[75,70,75,65,90,70]},
-  S:{code:'S',name:'스케일러형 창업가',eng:'The Pragmatic Scaler',emoji:'💪',
-    traits:['실행력','현실적 계획','수익 중심','부트스트래핑 능력','빠른 PMF'],
-    biz:['이커머스','로컬 서비스','SaaS 틈새 시장','프랜차이즈 혁신','B2B 운영 솔루션'],
-    warning:'큰 그림을 놓치고 소규모에 머물 수 있습니다. 확장 가능한 비즈니스 모델을 고민하세요.',
-    scores:[80,75,70,70,65,90]},
-};
-
-let currentQ=0,answers=[],typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
-const questions=document.querySelectorAll('.quiz-step');
-
-function selectOption(el,type){
-  const parent=el.closest('.quiz-step');
-  parent.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
-  el.classList.add('selected');
-  answers[currentQ]=type;
-  document.getElementById('quiz-next-btn').disabled=false;
-  document.getElementById('quiz-next-btn').style.opacity='1';
-}
-
-function quizNext(){
-  if(answers[currentQ]===undefined)return;
-  if(currentQ<questions.length-1){
-    questions[currentQ].classList.remove('active');
-    currentQ++;
-    questions[currentQ].classList.add('active');
-    document.getElementById('quiz-progress-bar').style.width=((currentQ)/10*100)+'%';
-    document.getElementById('quiz-prev-btn').style.opacity='1';
-    document.getElementById('quiz-prev-btn').style.pointerEvents='auto';
-    if(answers[currentQ]===undefined){
-      document.getElementById('quiz-next-btn').disabled=true;
-      document.getElementById('quiz-next-btn').style.opacity='0.4';
-    }
-    if(currentQ===questions.length-1){
-      document.getElementById('quiz-next-btn').textContent='결과 보기 →';
-      document.getElementById('quiz-next-btn').onclick=showFounderResult;
-    }
-  }
-}
-
-function quizPrev(){
-  if(currentQ>0){
-    questions[currentQ].classList.remove('active');
-    currentQ--;
-    questions[currentQ].classList.add('active');
-    document.getElementById('quiz-progress-bar').style.width=((currentQ)/10*100)+'%';
-    document.getElementById('quiz-next-btn').disabled=false;
-    document.getElementById('quiz-next-btn').style.opacity='1';
-    if(currentQ===0){document.getElementById('quiz-prev-btn').style.opacity='0.3';document.getElementById('quiz-prev-btn').style.pointerEvents='none';}
-  }
-}
-
-function showFounderResult(){
-  typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
-  answers.forEach(a=>{if(typeCounts[a]!==undefined)typeCounts[a]++;});
-  const topType=Object.entries(typeCounts).sort((a,b)=>b[1]-a[1])[0][0];
-  const type=founderTypes[topType];
-  window._founderType=type;
-  document.getElementById('quiz-container').style.display='none';
-  document.getElementById('quiz-nav').style.display='none';
-  document.getElementById('quiz-progress-bar').style.width='100%';
-  const result=document.getElementById('founder-result');
-  result.classList.add('show');
-  // 결과 캐릭터 SVG 표시 (NEW)
-  document.getElementById('result-character-svg').innerHTML = founderSVGs[topType];
-  document.getElementById('result-code').textContent=type.emoji+' '+type.code;
-  document.getElementById('result-name').textContent=type.name;
-  document.getElementById('result-eng').textContent=type.eng;
-  document.getElementById('founder-traits').innerHTML=type.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('');
-  document.getElementById('suitable-biz').innerHTML=type.biz.map(b=>`<div class="biz-chip">💼 ${b}</div>`).join('');
-  document.getElementById('founder-warnings').textContent=type.warning;
-  drawRadar(type.scores);
-  const grid=document.getElementById('types-grid');
-  // 미니 타입 grid에 SVG 추가
-  grid.innerHTML=Object.values(founderTypes).map(t=>`<div class="type-mini ${t.code===topType?'current':''}" onclick="showTypeDetail('${t.code}')"><div style="width:50px;height:50px;margin:0 auto 0.3rem;">${founderSVGs[t.code]}</div><div class="type-mini-code">${t.code}</div><div class="type-mini-name">${t.name}</div></div>`).join('');
-}
-
-function showTypeDetail(code){
-  const type=founderTypes[code];
-  document.getElementById('result-character-svg').innerHTML = founderSVGs[code];
-  document.getElementById('result-code').textContent=type.emoji+' '+type.code;
-  document.getElementById('result-name').textContent=type.name;
-  document.getElementById('result-eng').textContent=type.eng;
-  document.getElementById('founder-traits').innerHTML=type.traits.map(t=>`<span class="trait-chip">${t}</span>`).join('');
-  document.getElementById('suitable-biz').innerHTML=type.biz.map(b=>`<div class="biz-chip">💼 ${b}</div>`).join('');
-  document.getElementById('founder-warnings').textContent=type.warning;
-  drawRadar(type.scores);
-  document.querySelectorAll('.type-mini').forEach(el=>el.classList.remove('current'));
-  document.querySelectorAll('.type-mini').forEach(el=>{if(el.querySelector('.type-mini-code').textContent===code)el.classList.add('current');});
-}
-
-function drawRadar(scores){
-  const canvas=document.getElementById('radarCanvas');
-  if(!canvas)return;
-  const ctx2=canvas.getContext('2d');
-  const cx=canvas.width/2,cy=canvas.height/2,r=Math.min(cx,cy)-40;
-  const labels=['비전력','분석력','커뮤니티','기술력','임팩트','실행력'];
-  const n=6,angle=Math.PI*2/n;
-  ctx2.clearRect(0,0,canvas.width,canvas.height);
-  for(let level=1;level<=5;level++){
-    ctx2.beginPath();
-    for(let i=0;i<n;i++){const a=angle*i-Math.PI/2;const x=cx+Math.cos(a)*r*(level/5);const y=cy+Math.sin(a)*r*(level/5);if(i===0)ctx2.moveTo(x,y);else ctx2.lineTo(x,y);}
-    ctx2.closePath();ctx2.strokeStyle='rgba(255,255,255,0.08)';ctx2.lineWidth=1;ctx2.stroke();
-  }
-  for(let i=0;i<n;i++){const a=angle*i-Math.PI/2;ctx2.beginPath();ctx2.moveTo(cx,cy);ctx2.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);ctx2.strokeStyle='rgba(255,255,255,0.1)';ctx2.lineWidth=1;ctx2.stroke();}
-  ctx2.beginPath();
-  scores.forEach((s,i)=>{const a=angle*i-Math.PI/2;const x=cx+Math.cos(a)*r*(s/100);const y=cy+Math.sin(a)*r*(s/100);if(i===0)ctx2.moveTo(x,y);else ctx2.lineTo(x,y);});
-  ctx2.closePath();ctx2.fillStyle='rgba(255,107,107,0.2)';ctx2.fill();
-  ctx2.strokeStyle='rgba(255,107,107,0.8)';ctx2.lineWidth=2;ctx2.stroke();
-  for(let i=0;i<n;i++){const a=angle*i-Math.PI/2;const x=cx+Math.cos(a)*(r+28);const y=cy+Math.sin(a)*(r+28);ctx2.fillStyle='#8ba8cc';ctx2.font='11px Noto Sans KR';ctx2.textAlign='center';ctx2.textBaseline='middle';ctx2.fillText(labels[i],x,y);}
-  scores.forEach((s,i)=>{const a=angle*i-Math.PI/2;const x=cx+Math.cos(a)*r*(s/100);const y=cy+Math.sin(a)*r*(s/100);ctx2.beginPath();ctx2.arc(x,y,4,0,Math.PI*2);ctx2.fillStyle='rgba(255,107,107,1)';ctx2.fill();});
-}
-
-function retakeQuiz(){
-  currentQ=0;answers=[];typeCounts={V:0,A:0,C:0,T:0,I:0,S:0};
-  questions.forEach((q,i)=>{q.classList.remove('active');if(i===0)q.classList.add('active');});
-  questions.forEach(q=>q.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected')));
-  document.getElementById('quiz-container').style.display='block';
-  document.getElementById('quiz-nav').style.display='flex';
-  document.getElementById('founder-result').classList.remove('show');
-  document.getElementById('quiz-progress-bar').style.width='0%';
-  document.getElementById('quiz-next-btn').textContent='다음 →';
-  document.getElementById('quiz-next-btn').onclick=quizNext;
-  document.getElementById('quiz-next-btn').disabled=true;
-  document.getElementById('quiz-next-btn').style.opacity='0.4';
-  window._founderType=null;
-  // 인트로 페이지로 다시 돌아가기 (NEW)
-  document.getElementById('dna-intro').classList.remove('hidden');
-  document.getElementById('dna-quiz-wrap').classList.remove('active');
-  window.scrollTo({top:0, behavior:'smooth'});
-}
-
-// =============================================
-// 🚀 M3: SIMULATOR
-// =============================================
-const simStepLabels=['BARL','기본정보','아이템','기술','인재','복지'];
-let simCurrentStep=-1; // -1 = BARL 단계 (sim-barl 활성), completeBarl() 호출 시 0 (sim-0=Step1)로 전환
-let simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[],barl:{survivalRate:'',marketGrowth:'',firstRevenue:'',premortemReason1:'',premortemReason2:'',premortemReason3:'',selectedBiases:[]}};
-let simMultiMax={tech:5,talent:6,welfare:5};
-let customMultiValues={tech:[],talent:[],welfare:[]}; // 직접 입력 값 저장
-
-// 사업 아이템 직접 입력 토글
-function toggleCustomItem(el){
-  document.querySelectorAll(`[onclick*="selectSim(this,'item'"]`).forEach(c=>c.classList.remove('selected'));
-  document.querySelectorAll(`[onclick*="toggleCustomItem"]`).forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  const customInput = document.getElementById('s-item-custom');
-  customInput.style.display='block';
-  customInput.focus();
-  simData.item = customInput.value || '';
-}
-function setCustomItem(val){
-  simData.item = val;
-  updateSidebarContext();
-}
-
-// 멀티 선택 항목 직접 입력 토글
-function toggleCustomTech(el){
-  el.classList.toggle('selected');
-  const customInput = document.getElementById('s-tech-custom');
-  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
-  if(el.classList.contains('selected')) customInput.focus();
-  else {
-    customInput.value='';
-    customMultiValues.tech=[];
-    rebuildMultiData('tech');
-  }
-}
-function toggleCustomTalent(el){
-  el.classList.toggle('selected');
-  const customInput = document.getElementById('s-talent-custom');
-  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
-  if(el.classList.contains('selected')) customInput.focus();
-  else {
-    customInput.value='';
-    customMultiValues.talent=[];
-    rebuildMultiData('talent');
-  }
-}
-function toggleCustomWelfare(el){
-  el.classList.toggle('selected');
-  const customInput = document.getElementById('s-welfare-custom');
-  customInput.style.display = el.classList.contains('selected') ? 'block' : 'none';
-  if(el.classList.contains('selected')) customInput.focus();
-  else {
-    customInput.value='';
-    customMultiValues.welfare=[];
-    rebuildMultiData('welfare');
-  }
-}
-
-// 직접 입력 값을 멀티 데이터에 병합
-function setCustomMulti(field, val){
-  customMultiValues[field] = val.split(',').map(s=>s.trim()).filter(s=>s.length>0);
-  rebuildMultiData(field);
-}
-function rebuildMultiData(field){
-  // 기존 선택 항목 (카드로 선택된 것) + 커스텀 입력 항목
-  const cards = document.querySelectorAll(`[onclick*="selectMulti(this,'${field}'"]`);
-  const selectedCards = [];
-  cards.forEach(c=>{
-    if(c.classList.contains('selected')){
-      const match = c.getAttribute('onclick').match(/'([^']+)','([^']+)'\)/);
-      if(match) selectedCards.push(match[2]);
-    }
-  });
-  simData[field] = [...selectedCards, ...customMultiValues[field]];
-  updateSidebarContext();
-}
-
-function initSimSteps(){
-  const container=document.getElementById('sim-steps');
-  container.innerHTML='';
-  simStepLabels.forEach((label,i)=>{
-    if(i>0){const conn=document.createElement('div');conn.className='sim-connector';conn.id='conn-'+i;container.appendChild(conn);}
-    const wrap=document.createElement('div');wrap.className='sim-step-dot';
-    const dot=document.createElement('div');
-    // BARL 단계(i===0)는 보라색, 나머지는 골드
-    dot.className='sim-dot'+(i===0?' barl-step active':'')+(i===0?'':'');
-    dot.id='dot-'+i;
-    // BARL은 🛡️ 아이콘, 나머지는 숫자
-    dot.textContent=i===0?'🛡':i;
-    const lbl=document.createElement('div');
-    lbl.className='sim-step-label';
-    if(i===0){lbl.style.color='var(--purple)';lbl.style.fontWeight='700';}
-    lbl.textContent=label;
-    wrap.appendChild(dot);wrap.appendChild(lbl);container.appendChild(wrap);
-  });
-}
-initSimSteps();
-
-function updateCapital(){
-  const v=parseInt(document.getElementById('s-capital').value);
-  simData.capital=v;
-  let disp=v<=10?v+'억 원':v<=50?(v*1000/10000).toFixed(1)+'억 원':Math.floor(v/10)+'0억 원';
-  if(v===100)disp='100억 원 이상';
-  document.getElementById('capital-display').textContent=disp;
-  updateSidebarContext();
-}
-
-function selectSim(el,field,val){
-  document.querySelectorAll(`[onclick*="selectSim(this,'${field}'"]`).forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  simData[field]=val;
-  // 직접 입력 칸 숨기기 (region/item일 때)
-  if(field==='region'){
-    const customInput = document.getElementById('s-region-custom');
-    if(customInput){customInput.style.display='none';customInput.value='';}
-  }
-  if(field==='item'){
-    const customInput = document.getElementById('s-item-custom');
-    if(customInput){customInput.style.display='none';customInput.value='';}
-  }
-  updateSidebarContext();
-}
-
-function toggleCustomRegion(el){
-  document.querySelectorAll(`[onclick*="selectSim(this,'region'"]`).forEach(c=>c.classList.remove('selected'));
-  document.querySelectorAll(`[onclick*="toggleCustomRegion"]`).forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  const customInput = document.getElementById('s-region-custom');
-  customInput.style.display='block';
-  customInput.focus();
-  simData.region = customInput.value || '';
-}
-
-function setCustomRegion(val){
-  simData.region = val;
-  updateSidebarContext();
-}
-
-function selectMulti(el,field,val){
-  const already=el.classList.contains('selected');
-  const arr=simData[field];
-  if(already){el.classList.remove('selected');simData[field]=arr.filter(x=>x!==val);}
-  else {if(arr.length>=simMultiMax[field]){alert(`최대 ${simMultiMax[field]}개까지 선택 가능합니다.`);return;}el.classList.add('selected');simData[field]=[...arr,val];}
-  updateSidebarContext();
-}
-
-
-// =============================================
-// 🛡️ BARL 완료 처리
-// =============================================
-function completeBarl(){
-  // 모든 필수 입력 검증
-  const q1 = document.getElementById('barl-q1').value.trim();
-  const q2 = document.getElementById('barl-q2').value.trim();
-  const q3 = document.getElementById('barl-q3').value.trim();
-  const q4 = document.getElementById('barl-q4').value.trim();
-  const q5 = document.getElementById('barl-q5').value.trim();
-  const q6 = document.getElementById('barl-q6').value.trim();
-  const biases = Array.from(document.querySelectorAll('.barl-bias:checked')).map(c=>c.value);
-  
-  // 검증
-  const requiredMsg = document.getElementById('barl-required-msg');
-  if(!q1 || !q2 || !q3 || !q4 || !q5 || !q6 || biases.length===0){
-    requiredMsg.classList.add('show');
-    // 빠진 항목으로 스크롤
-    let firstMissing = null;
-    if(!q1) firstMissing='barl-q1';
-    else if(!q2) firstMissing='barl-q2';
-    else if(!q3) firstMissing='barl-q3';
-    else if(!q4) firstMissing='barl-q4';
-    else if(!q5) firstMissing='barl-q5';
-    else if(!q6) firstMissing='barl-q6';
-    else if(biases.length===0) firstMissing='barl-bias-checks';
-    if(firstMissing){
-      const el = document.getElementById(firstMissing);
-      el.scrollIntoView({behavior:'smooth',block:'center'});
-      if(el.focus) el.focus();
-    }
-    return;
-  }
-  
-  // simData에 BARL 답변 저장
-  simData.barl = {
-    survivalRate: q1 + '%',
-    marketGrowth: q2 + '%/년',
-    firstRevenue: q3 + '개월',
-    premortemReason1: q4,
-    premortemReason2: q5,
-    premortemReason3: q6,
-    selectedBiases: biases
-  };
-  
-  console.log('🛡️ BARL 완료:', simData.barl);
-  
-  // BARL 단계 완료 처리
-  document.getElementById('sim-barl').classList.remove('active');
-  document.getElementById('dot-0').classList.remove('active');
-  document.getElementById('dot-0').classList.add('done');
-  document.getElementById('conn-1').classList.add('done');
-  
-  // Step 1 (기본정보) 활성화
-  document.getElementById('sim-0').classList.add('active');
-  document.getElementById('dot-1').classList.add('active');
-  simCurrentStep = 0; // sim-0 = Step 1, dot-1이 활성
-  
-  requiredMsg.classList.remove('show');
-  
-  // 사이드바 컨텍스트 업데이트 (AI 컨설턴트가 BARL 데이터 활용)
-  updateSidebarContext();
-  
-  scrollToSimSteps();
-}
-
-function simNext(){
-  // simCurrentStep은 sim-{N} 패널 인덱스 (0~4), dot은 +1 오프셋 (BARL이 dot-0)
-  document.getElementById('sim-'+simCurrentStep).classList.remove('active');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('active');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('done');
-  const connElNext = document.getElementById('conn-'+(simCurrentStep+2));
-  if(connElNext)connElNext.classList.add('done');
-  simCurrentStep++;
-  document.getElementById('sim-'+simCurrentStep).classList.add('active');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('active');
-  // 단계 표시 영역으로 부드럽게 스크롤 (페이지 위로 안 올라가게)
-  scrollToSimSteps();
-}
-
-function simPrev(){
-  if(simCurrentStep<=0){
-    alert('🛡️ BARL은 필수 단계예요!\n시뮬레이션이 이미 진행 중이라 돌아갈 수 없어요.');
-    return;
-  }
-  document.getElementById('sim-'+simCurrentStep).classList.remove('active');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('active');
-  const connElPrev = document.getElementById('conn-'+(simCurrentStep+1));
-  if(connElPrev)connElPrev.classList.remove('done');
-  simCurrentStep--;
-  document.getElementById('sim-'+simCurrentStep).classList.add('active');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.remove('done');
-  document.getElementById('dot-'+(simCurrentStep+1)).classList.add('active');
-  // 단계 표시 영역으로 부드럽게 스크롤
-  scrollToSimSteps();
-}
-
-// 시뮬레이터 단계 영역으로 부드럽게 스크롤 (페이지 위로 안 올라가게)
-function scrollToSimSteps(){
-  const stepsEl = document.getElementById('sim-steps');
-  if(!stepsEl) return;
-  const rect = stepsEl.getBoundingClientRect();
-  const absoluteY = window.pageYOffset + rect.top - 100; // 헤더 공간 100px
-  window.scrollTo({top: absoluteY, behavior: 'smooth'});
-}
-
-function updateSimPreview(){
-  simData.name=document.getElementById('s-name').value;
-  simData.vision=document.getElementById('s-vision').value;
-  if(document.getElementById('s-persona'))simData.persona=document.getElementById('s-persona').value;
-  updateSidebarContext();
-}
-
-function runSimulation(){
-  updateSimPreview();
-  // 마지막 패널 sim-4(복지)의 dot은 dot-5 (BARL이 dot-0이므로 +1 오프셋)
-  document.getElementById('sim-4').classList.remove('active');
-  document.getElementById('dot-5').classList.remove('active');
-  document.getElementById('dot-5').classList.add('done');
-  document.getElementById('conn-5').classList.add('done');
-
-  let score=45;
-  score+=Math.min(simData.capital,30)*0.6;
-  if(simData.item)score+=8;
-  if(simData.persona)score+=5;
-  score+=simData.tech.length*4;
-  score+=simData.talent.length*3;
-  score+=simData.welfare.length*2;
-  if(simData.region==='판교')score+=5;
-  if(simData.region==='서울')score+=3;
-  if(simData.tech.includes('LLM/생성AI')||simData.tech.includes('AI 에이전트'))score+=6;
-  score=Math.min(92,Math.max(28,Math.round(score)));
-
-  const base=score,opt=Math.min(95,score+12),pes=Math.max(20,score-21);
-  window._simResult={base,opt,pes,data:{...simData}};
-
-  document.getElementById('survival-pct').textContent=base+'%';
-  document.getElementById('survival-pct').style.color=base>=70?'var(--green)':base>=50?'var(--gold)':'var(--coral)';
-  document.getElementById('opt-pct').textContent=opt+'%';
-  document.getElementById('base-pct').textContent=base+'%';
-  document.getElementById('pes-pct').textContent=pes+'%';
-  document.getElementById('sim-company-name').textContent=simData.name||(simData.item||'가상 스타트업');
-
-  const risks=[
-    {label:'시장 수요 검증',val:simData.item?72:35,color:'var(--green)'},
-    {label:'팀 역량',val:40+simData.talent.length*10,color:'var(--cyan)'},
-    {label:'기술 경쟁력',val:30+simData.tech.length*13,color:'var(--purple)'},
-    {label:'자금 지속성',val:Math.min(90,20+simData.capital*0.7),color:'var(--gold)'},
-    {label:'운영 리스크',val:Math.max(20,70-simData.welfare.length*8),color:'var(--coral)'},
-  ];
-  document.getElementById('risk-bars').innerHTML=risks.map(r=>`<div class="risk-bar-row"><div class="risk-bar-label">${r.label}</div><div class="risk-bar-track"><div class="risk-bar-fill" style="width:${r.val}%;background:${r.color};"></div></div><div class="risk-bar-val" style="color:${r.color}">${r.val}%</div></div>`).join('');
-
-  const recs=[];
-  
-  // 🛡️ BARL 인사이트 - 사용자 직감 vs AI 예측 비교 (최우선 배치)
-  if(simData.barl && simData.barl.survivalRate){
-    const userGuess = parseInt(simData.barl.survivalRate);
-    const aiPredict = base;
-    const gap = userGuess - aiPredict;
-    
-    if(Math.abs(gap) >= 15){
-      // 큰 차이 - 편향 경고
-      if(gap > 0){
-        recs.push({type:'warn',icon:'🛡️',text:`<strong>BARL 편향 경고</strong>: 본인의 직감(${userGuess}%) vs AI 예측(${aiPredict}%) = +${gap}%p 과신. Astebro et al.(2014) 연구의 평균 과신 폭(46%p)과 유사한 패턴입니다. <strong>과신 편향(Overconfidence)</strong>에 주의하세요.`});
-      } else {
-        recs.push({type:'info',icon:'🛡️',text:`<strong>BARL 인사이트</strong>: 본인의 직감(${userGuess}%) vs AI 예측(${aiPredict}%) = ${gap}%p 보수적. 신중함은 좋지만, 과도한 비관도 결정 마비를 부를 수 있습니다.`});
-      }
-    } else {
-      recs.push({type:'ok',icon:'🛡️',text:`<strong>BARL 인사이트</strong>: 본인 직감(${userGuess}%)과 AI 예측(${aiPredict}%) 간 차이가 ${Math.abs(gap)}%p로 작습니다. 균형 잡힌 판단력을 보유하고 계십니다.`});
-    }
-    
-    // Pre-mortem 이유 반영
-    if(simData.barl.premortemReason1){
-      recs.push({type:'warn',icon:'🔮',text:`<strong>BARL Pre-mortem 검증</strong>: 본인이 미리 지목한 실패 위험 ("${simData.barl.premortemReason1.substring(0,40)}${simData.barl.premortemReason1.length>40?'...':''}")에 대한 구체적 대응책을 수립하세요.`});
-    }
-    
-    // 자각한 편향에 대한 맞춤 조언
-    if(simData.barl.selectedBiases && simData.barl.selectedBiases.length){
-      recs.push({type:'info',icon:'🧠',text:`<strong>자각 편향 맞춤 가이드</strong>: ${simData.barl.selectedBiases.join(', ')} - 사이드바의 AI 컨설턴트에게 이 편향들이 현재 결정에 어떻게 영향 미치는지 질문해 보세요.`});
-    }
-  }
-  
-  if(simData.talent.length<2)recs.push({type:'warn',icon:'⚠️',text:'핵심 인재 영입이 부족합니다. CTO 또는 CMO 영입을 최우선으로 고려하세요.'});
-  if(simData.tech.length<2)recs.push({type:'warn',icon:'⚠️',text:'기술 스택 다양성이 낮습니다. 핵심 기술 2개 이상을 확보해야 경쟁력이 강화됩니다.'});
-  if(simData.capital<5)recs.push({type:'warn',icon:'💰',text:'초기 자본금이 낮아 런웨이가 짧습니다. 정부 지원 과제(TIPS, KISED)를 적극 활용하세요.'});
-  if(simData.item==='AI SaaS'||simData.item==='헬스케어')recs.push({type:'info',icon:'🚀',text:`${simData.item} 분야는 현재 투자 유치 가능성이 높습니다. Series A 이전 VC 접촉을 추천합니다.`});
-  recs.push({type:'ok',icon:'✅',text:'ASNM 리스크 예측 모델 기준, 초기 MVP 출시 전 시장 검증 3회 이상을 권장합니다.'});
-  recs.push({type:'ok',icon:'📊',text:'선택하신 사업 아이템의 3년 내 시장 진입 성공 확률은 '+base+'%입니다.'});
-  document.getElementById('sim-recommendations').innerHTML=recs.map(r=>`<div class="rec-item ${r.type==='warn'?'warn':r.type==='info'?'info':''}"><div class="rec-icon">${r.icon}</div><div class="rec-text">${r.text}</div></div>`).join('');
-
-  drawDial(base);
-  
-  // 사이드바 컨텍스트 + AI Chat 환영 메시지 갱신
-  updateSidebarContext();
-  const history = document.getElementById('chat-history');
-  if(history){
-    history.innerHTML += `<div class="sim-chat-msg ai" style="border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.05);"><span class="sim-chat-msg-label" style="color:var(--green)">✅ 시뮬레이션 완료</span>5년 생존 확률 ${base}% 분석을 완료했습니다. 결과에 대해 무엇이든 물어보세요!</div>`;
-    history.scrollTop = history.scrollHeight;
-  }
-  resetAiChat();
-
-  const resultEl=document.getElementById('sim-result');
-  resultEl.classList.add('show');
-  resultEl.scrollIntoView({behavior:'smooth'});
-}
-
-function drawDial(pct){
-  const c=document.getElementById('dialCanvas');
-  if(!c)return;
-  const cx2=c.width/2,cy2=c.height-20,R=110;
-  const ctx3=c.getContext('2d');
-  ctx3.clearRect(0,0,c.width,c.height);
-  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,0);ctx3.strokeStyle='rgba(255,255,255,0.08)';ctx3.lineWidth=18;ctx3.lineCap='round';ctx3.stroke();
-  const color=pct>=70?'rgba(0,255,136,0.9)':pct>=50?'rgba(255,215,0,0.9)':'rgba(255,107,107,0.9)';
-  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,Math.PI+(Math.PI*pct/100));ctx3.strokeStyle=color;ctx3.lineWidth=18;ctx3.lineCap='round';ctx3.stroke();
-  ctx3.beginPath();ctx3.arc(cx2,cy2,R,Math.PI,Math.PI+(Math.PI*pct/100));ctx3.strokeStyle=color.replace('0.9','0.3');ctx3.lineWidth=30;ctx3.stroke();
-  ctx3.fillStyle='rgba(255,255,255,0.3)';ctx3.font='11px Space Mono';ctx3.textAlign='center';
-  ctx3.fillText('0%',cx2-R-5,cy2+15);ctx3.fillText('100%',cx2+R+5,cy2+15);
-}
-
-function resetSimulator(){
-  // simData 완전 초기화 (BARL 포함)
-  simCurrentStep=-1; // BARL 단계는 -1로 (sim-barl에 해당, BARL 완료 시 0이 됨)
-  simData={name:'',vision:'',capital:1,region:'',item:'',persona:'',tech:[],talent:[],welfare:[],
-    barl:{survivalRate:'',marketGrowth:'',firstRevenue:'',premortemReason1:'',premortemReason2:'',premortemReason3:'',selectedBiases:[]}};
-  customMultiValues={tech:[],talent:[],welfare:[]};
-  
-  // 모든 sim-panel 비활성
-  document.querySelectorAll('.sim-panel').forEach(p=>p.classList.remove('active'));
-  // BARL 패널 활성화 (Step 0)
-  const barlPanel = document.getElementById('sim-barl');
-  if(barlPanel) barlPanel.classList.add('active');
-  
-  document.getElementById('sim-result').classList.remove('show');
-  
-  // 모든 dot 초기화, BARL dot(dot-0) 활성화
-  document.querySelectorAll('.sim-dot').forEach((d,i)=>{d.classList.remove('active','done');if(i===0)d.classList.add('active');});
-  document.querySelectorAll('.sim-connector').forEach(c=>c.classList.remove('done'));
-  document.querySelectorAll('.choice-card').forEach(c=>c.classList.remove('selected'));
-  
-  // 입력 초기화
-  document.getElementById('s-name').value='';document.getElementById('s-vision').value='';
-  if(document.getElementById('s-persona'))document.getElementById('s-persona').value='';
-  document.getElementById('s-capital').value=1;updateCapital();
-  
-  // 🛡️ BARL 입력 초기화
-  ['barl-q1','barl-q2','barl-q3','barl-q4','barl-q5','barl-q6'].forEach(id=>{
-    const el = document.getElementById(id); if(el) el.value='';
-  });
-  document.querySelectorAll('.barl-bias').forEach(cb=>cb.checked=false);
-  const reqMsg = document.getElementById('barl-required-msg');
-  if(reqMsg) reqMsg.classList.remove('show');
-  
-  // 직접 입력 input 모두 숨기기 & 초기화
-  ['s-region-custom','s-item-custom','s-tech-custom','s-talent-custom','s-welfare-custom'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){el.style.display='none';el.value='';}
-  });
-  window._simResult=null;
-  // 사이드바 초기화
-  updateSidebarContext();
-  const history = document.getElementById('chat-history');
-  if(history){
-    history.innerHTML = `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 먼저 🛡️ <strong>BARL</strong> 단계에서 본인의 의사결정 가정을 점검한 후, 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.</div>`;
-  }
-  window.scrollTo(0,300);
-}
-
-// =============================================
-// 💬 M3: AI CONSULTANT CHAT (사이드바)
-// =============================================
-let chatMessages = [];
-
-// 현재 simData를 자연어 컨텍스트로 변환
-function buildSimContextText(){
-  const d = simData;
-  const parts = [];
-  // 🛡️ BARL 데이터 (가장 앞에 - AI가 편향 자각 정보 활용)
-  if(d.barl && d.barl.survivalRate){
-    parts.push(`[BARL] 사용자 직감 5년 생존율: ${d.barl.survivalRate}`);
-    parts.push(`[BARL] 시장 성장률 가정: ${d.barl.marketGrowth}`);
-    parts.push(`[BARL] 첫 매출 예상: ${d.barl.firstRevenue}`);
-    if(d.barl.premortemReason1) parts.push(`[BARL Pre-mortem 1] ${d.barl.premortemReason1}`);
-    if(d.barl.premortemReason2) parts.push(`[BARL Pre-mortem 2] ${d.barl.premortemReason2}`);
-    if(d.barl.premortemReason3) parts.push(`[BARL Pre-mortem 3] ${d.barl.premortemReason3}`);
-    if(d.barl.selectedBiases && d.barl.selectedBiases.length) {
-      parts.push(`[BARL 자각 편향] ${d.barl.selectedBiases.join(', ')}`);
-    }
-  }
-  if(d.name) parts.push(`회사명: ${d.name}`);
-  if(d.vision) parts.push(`비전: ${d.vision}`);
-  if(d.capital) parts.push(`자본: ${d.capital}억 원`);
-  if(d.region) parts.push(`지역: ${d.region}`);
-  if(d.item) parts.push(`사업 아이템: ${d.item}`);
-  if(d.persona) parts.push(`타겟: ${d.persona}`);
-  if(d.tech && d.tech.length) parts.push(`기술: ${d.tech.join(', ')}`);
-  if(d.talent && d.talent.length) parts.push(`인재: ${d.talent.join(', ')}`);
-  if(d.welfare && d.welfare.length) parts.push(`복지: ${d.welfare.join(', ')}`);
-  if(window._simResult) parts.push(`AI 예측 5년 생존 확률: ${window._simResult.base}%`);
-  if(window._founderType) parts.push(`창업자 DNA: ${window._founderType.name} (${window._founderType.code})`);
-  return parts.join(' / ');
-}
-
-// 사이드바 컨텍스트 정보 업데이트
-function updateSidebarContext(){
-  const ctx = buildSimContextText();
-  const display = document.getElementById('sim-context-display');
-  if(!display) return;
-  if(ctx){
-    display.innerHTML = ctx.split(' / ').map(s=>`• ${s}`).join('<br>');
-  } else {
-    display.textContent = '아직 입력된 정보가 없습니다. 단계별로 입력을 시작해 주세요.';
-  }
-}
-
-function resetAiChat(){
-  // 항상 호출 가능 (시뮬 결과 전/후 모두)
-  const ctx = buildSimContextText();
-  const hasBarl = simData.barl && simData.barl.survivalRate;
-  
-  chatMessages = [{
-    role:'system',
-    content:`당신은 한국 창업 시장 전문 AI 컨설턴트입니다. 예비창업자가 가상 스타트업을 설계하는 동안 실시간으로 조언을 제공합니다.
-
-${ctx ? `사용자의 현재 입력 상태:\n${ctx}` : '사용자가 아직 입력을 시작하지 않았습니다.'}
-
-${hasBarl ? `🛡️ **BARL(편향 자각 반영층) 데이터 활용 지침**:
-사용자는 시뮬레이션 시작 전 BARL 단계에서 자신의 가정과 잠재 편향을 자각했습니다. 답변할 때 다음 사항을 반드시 반영하세요:
-1. **사용자 직감 생존율과 객관 데이터 비교**: Astebro et al.(2014)에 따르면 창업자 평균 자기 추정은 81%이지만 실제 기준율은 35%. 사용자의 직감이 이 평균과 어떻게 다른지 언급.
-2. **Pre-mortem 이유 직접 인용**: 사용자가 적은 가상 실패 이유를 답변에 언급하며, "본인이 미리 지목한 위험"이라고 강조해 그 위험에 대한 구체적 대응책 제안.
-3. **자각 편향 맞춤 조언**: 사용자가 체크한 편향(과신/계획오류/확증편향/매몰비용/가용성/오만)에 맞춰 그 편향이 현재 결정에 어떻게 영향 미칠지 분석.
-4. **계획 오류 보정**: 사용자의 첫 매출 예상 시점에 1.5~3배 곱한 보정값도 함께 제시 (Buehler et al., 1994).
-` : ''}
-
-답변 원칙:
-1. **핵심 권고**: 한 줄로 결론
-2. **우선순위 액션**: 2-3가지 구체적 행동
-3. **주의사항**: BARL 데이터에 근거한 편향 경고
-
-답변은 행동경제학 기반 편향 자각(planning fallacy, overconfidence, optimism bias)을 적극 활용하여 한국어로 500자 이내로 작성하세요. **굵게 표시할 핵심은 **단어** 형식 사용. 사용자가 아직 입력 정보가 부족하면, 그 단계에서 일반적으로 고려해야 할 사항을 안내하세요.`
-  }];
-}
-
-async function sendChatMessage(){
-  const input = document.getElementById('chat-input');
-  const msg = input.value.trim();
-  if(!msg) return;
-  
-  const history = document.getElementById('chat-history');
-  const btn = document.getElementById('chat-send-btn');
-  
-  // 사용자 메시지 표시 (사이드바 CSS 클래스 사용)
-  history.innerHTML += `<div class="sim-chat-msg user"><span class="sim-chat-msg-label">👤 You</span>${msg}</div>`;
-  
-  input.value = '';
-  btn.disabled = true;
-  
-  // 로딩 표시
-  const loadingId = 'load-'+Date.now();
-  history.innerHTML += `<div id="${loadingId}" class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span><div class="ai-loading"><div class="loading-spinner"></div><span>분석 중...</span></div></div>`;
-  history.scrollTop = history.scrollHeight;
-  
-  // 매번 최신 컨텍스트로 시스템 프롬프트 갱신
-  resetAiChat();
-  chatMessages.push({role:'user', content:msg});
-  
-  try {
-    const response = await callOpenAI(chatMessages, 600);
-    chatMessages.push({role:'assistant', content:response});
-    
-    document.getElementById(loadingId).remove();
-    const formatted = response
-      .replace(/\*\*(.+?)\*\*/g, '<strong style="color:var(--coral)">$1</strong>')
-      .replace(/\n/g, '<br>');
-    history.innerHTML += `<div class="sim-chat-msg ai"><span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>${formatted}</div>`;
-  } catch(err){
-    document.getElementById(loadingId).remove();
-    history.innerHTML += `<div class="sim-chat-msg ai" style="border-color:var(--coral);"><span class="sim-chat-msg-label" style="color:var(--coral)">❌ 오류</span>${err.message}</div>`;
-  } finally {
-    btn.disabled = false;
-    history.scrollTop = history.scrollHeight;
-  }
-}
-
-function sendQuickQ(q){
-  document.getElementById('chat-input').value = q;
-  sendChatMessage();
-}
-
-document.getElementById('chat-input').addEventListener('keypress', function(e){
-  if(e.key === 'Enter') sendChatMessage();
-});
-
-// =============================================
-// 🌐 M4: NOTIFY ME (Google Sheets 저장)
-// =============================================
-
-// ⚠️ 본인의 Google Apps Script 웹훅 URL을 여기에 입력하세요
-// (Apps Script 설정 가이드: README.md 참고)
-const NOTIFY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec';
-
-function notifyMe(){
-  // 모달 열기
-  document.getElementById('notify-modal').classList.add('show');
-  document.getElementById('notify-email').focus();
-}
-
-function closeNotifyModal(){
-  document.getElementById('notify-modal').classList.remove('show');
-  // 입력 초기화
-  document.getElementById('notify-name').value = '';
-  document.getElementById('notify-email').value = '';
-  document.getElementById('notify-industry').value = '';
-  document.getElementById('notify-memo').value = '';
-  document.getElementById('notify-stage').value = '';
-  document.getElementById('notify-status').textContent = '';
-  document.getElementById('notify-status').className = 'notify-status';
-}
-
-async function submitNotify(){
-  const name = document.getElementById('notify-name').value.trim();
-  const email = document.getElementById('notify-email').value.trim();
-  const industry = document.getElementById('notify-industry').value.trim();
-  const memo = document.getElementById('notify-memo').value.trim();
-  const stage = document.getElementById('notify-stage').value;
-  const statusEl = document.getElementById('notify-status');
-  const submitBtn = document.getElementById('notify-submit-btn');
-  
-  // 검증
-  if(!name || !email){
-    statusEl.className = 'notify-status err';
-    statusEl.textContent = '⚠️ 이름과 이메일은 필수입니다.';
-    return;
-  }
-  if(!email.includes('@') || !email.includes('.')){
-    statusEl.className = 'notify-status err';
-    statusEl.textContent = '⚠️ 올바른 이메일 형식이 아니에요.';
-    return;
-  }
-  
-  // 로딩 상태
-  submitBtn.disabled = true;
-  submitBtn.textContent = '⏳ 신청 중...';
-  statusEl.className = 'notify-status';
-  statusEl.textContent = '';
-  statusEl.style.display = 'block';
-  
-  const payload = {
-    timestamp: new Date().toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}),
-    name: name,
-    email: email,
-    industry: industry || '미입력',
-    memo: memo || '미입력',
-    stage: stage || '미입력'
-  };
-  
-  // Google Sheets로 전송 시도
-  if(NOTIFY_WEBHOOK_URL && NOTIFY_WEBHOOK_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-    try {
-      // Apps Script는 CORS 이슈가 있을 수 있으므로 no-cors 모드 사용
-      await fetch(NOTIFY_WEBHOOK_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(payload)
-      });
-      console.log('✓ Google Sheets 저장 완료:', payload);
-    } catch(err){
-      console.error('Google Sheets 저장 실패:', err);
-      // 실패해도 localStorage 백업
-    }
-  } else {
-    console.warn('⚠️ NOTIFY_WEBHOOK_URL 미설정 - localStorage에만 저장됩니다');
-  }
-  
-  // localStorage 백업 (웹훅 미설정 시에도 작동)
-  try {
-    const existing = JSON.parse(localStorage.getItem('asnm_notify_list') || '[]');
-    existing.push(payload);
-    localStorage.setItem('asnm_notify_list', JSON.stringify(existing));
-  } catch(e){
-    console.error('localStorage 저장 실패', e);
-  }
-  
-  // 완료 메시지
-  statusEl.className = 'notify-status ok';
-  statusEl.innerHTML = `✅ <strong>${name}</strong>님, 신청이 완료되었어요!<br>출시 소식을 <strong>${email}</strong>으로 보내드릴게요. 🚀`;
-  submitBtn.textContent = '✓ 완료';
-  
-  // 3초 후 모달 자동 닫기
-  setTimeout(() => {
-    closeNotifyModal();
-    submitBtn.disabled = false;
-    submitBtn.textContent = '🚀 알림 신청하기';
-  }, 3000);
-}
-
-// =============================================
-// 📋 FINAL REPORT
-// =============================================
-function updateReport(){
-  document.getElementById('report-date').textContent=new Date().toLocaleDateString('ko-KR');
-  if(selectedTrends.length>0){
-    document.getElementById('fr-trends').textContent=selectedTrends.length+'개';
-    document.getElementById('report-trends-content').innerHTML=`
-      <div class="report-row"><span class="report-row-label">선택한 트렌드</span><span class="report-row-val">${selectedTrends.map(t=>t.name).join(', ')}</span></div>
-      <div class="report-row"><span class="report-row-label">주요 시장 규모</span><span class="report-row-val">${selectedTrends[0]?.size||'—'}</span></div>
-      <div class="report-row"><span class="report-row-label">추천 진입 분야</span><span class="report-row-val">${selectedTrends[0]?.name||'—'}</span></div>`;
-  }
-  if(window._founderType){
-    const t=window._founderType;
-    document.getElementById('fr-type').textContent=t.code;
-    document.getElementById('report-dna-content').innerHTML=`
-      <div class="report-row"><span class="report-row-label">창업자 유형</span><span class="report-row-val" style="color:var(--coral)">${t.emoji} ${t.name}</span></div>
-      <div class="report-row"><span class="report-row-label">핵심 강점</span><span class="report-row-val">${t.traits.slice(0,3).join(' · ')}</span></div>
-      <div class="report-row"><span class="report-row-label">적합 사업</span><span class="report-row-val">${t.biz[0]}, ${t.biz[1]}</span></div>
-      <div class="report-row"><span class="report-row-label">주의 사항</span><span class="report-row-val" style="color:var(--coral);font-size:0.75rem;">${t.warning.substring(0,40)}...</span></div>`;
-  }
-  if(window._simResult){
-    const s=window._simResult;
-    document.getElementById('fr-survival').textContent=s.base+'%';
-    document.getElementById('fr-item').textContent=s.data.item||'—';
-    document.getElementById('report-company-title').textContent=(s.data.name||'가상 스타트업')+' · 창업 전략 분석 보고서';
-    document.getElementById('report-sim-content').innerHTML=`
-      <div class="report-row"><span class="report-row-label">회사명</span><span class="report-row-val">${s.data.name||'미입력'}</span></div>
-      <div class="report-row"><span class="report-row-label">비전</span><span class="report-row-val">${s.data.vision||'미입력'}</span></div>
-      <div class="report-row"><span class="report-row-label">사업 아이템</span><span class="report-row-val">${s.data.item||'미선택'}</span></div>
-      <div class="report-row"><span class="report-row-label">핵심 기술</span><span class="report-row-val">${s.data.tech.join(', ')||'미선택'}</span></div>
-      <div class="report-row"><span class="report-row-label">인재 구성</span><span class="report-row-val">${s.data.talent.join(', ')||'미선택'}</span></div>
-      <div class="report-row"><span class="report-row-label">생존 확률</span><span class="report-row-val" style="color:var(--green)">${s.base}% (Base) / ${s.opt}% (Opt.) / ${s.pes}% (Pes.)</span></div>`;
-    const recs=[];
-    if(window._founderType&&s.data.item){recs.push({type:'ok',icon:'🎯',text:`${window._founderType.name} 유형은 ${s.data.item} 사업과 ${window._founderType.biz.includes(s.data.item)?'높은 적합도':'보완 전략 필요'}입니다.`});}
-    if(s.base>=70)recs.push({type:'ok',icon:'✅',text:'5년 생존 확률이 높습니다. TIPS 프로그램 신청과 MVP를 빠르게 출시하세요.'});
-    else if(s.base>=50)recs.push({type:'info',icon:'⚡',text:'생존 확률이 중간 수준입니다. 팀 강화와 기술 스택 보완이 필요합니다.'});
-    else recs.push({type:'warn',icon:'⚠️',text:'생존 확률이 낮습니다. 비즈니스 모델을 재검토하세요.'});
-    if(selectedTrends.length>0){recs.push({type:'info',icon:'📡',text:`선택 트렌드(${selectedTrends.slice(0,2).map(t=>t.name).join(', ')})와 사업 아이템 연계 전략을 수립하세요.`});}
-    recs.push({type:'ok',icon:'🇰🇷',text:'KISED, 중소벤처기업부 지원 프로그램을 단계적 성장 로드맵에 활용하세요.'});
-    document.getElementById('final-recommendations').innerHTML=recs.map(r=>`<div class="rec-item ${r.type==='warn'?'warn':r.type==='info'?'info':''}"><div class="rec-icon">${r.icon}</div><div class="rec-text">${r.text}</div></div>`).join('');
-  }
-}
-
-function downloadReport(){
-  const lines=[];
-  lines.push('ASNM 종합 분석 보고서');
-  lines.push('생성일: '+new Date().toLocaleDateString('ko-KR'));
-  lines.push('────────────────────────────────');
-  if(window._simResult){
-    const s=window._simResult;
-    lines.push('\n[기업 정보]');
-    lines.push('회사명: '+(s.data.name||'미입력'));
-    lines.push('비전: '+(s.data.vision||'미입력'));
-    lines.push('사업 아이템: '+(s.data.item||'미선택'));
-    lines.push('핵심 기술: '+s.data.tech.join(', '));
-    lines.push('핵심 인재: '+s.data.talent.join(', '));
-    lines.push('복지 제도: '+s.data.welfare.join(', '));
-    lines.push('\n[생존 확률]');
-    lines.push('낙관: '+s.opt+'% / 기본: '+s.base+'% / 비관: '+s.pes+'%');
-  }
-  if(window._founderType){
-    const t=window._founderType;
-    lines.push('\n[창업자 DNA]');
-    lines.push('유형: '+t.name+' ('+t.eng+')');
-    lines.push('핵심 강점: '+t.traits.join(', '));
-  }
-  if(selectedTrends.length>0){lines.push('\n[트렌드 분석]');lines.push('선택 트렌드: '+selectedTrends.map(t=>t.name).join(', '));}
-  lines.push('\n────────────────────────────────');
-  lines.push('Powered by ASNM · aSSIST MSTM · 2025');
-  const blob=new Blob([lines.join('\n')],{type:'text/plain;charset=utf-8'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='ASNM_Report_'+(window._simResult?.data?.name||'StartupAnalysis')+'_'+new Date().toISOString().slice(0,10)+'.txt';
-  a.click();
-}
-
-function downloadJSON(){
-  const data={
-    generated:new Date().toISOString(),
-    version:'ASNM v2.0',
-    trends:selectedTrends,
-    founderType:window._founderType?{code:window._founderType.code,name:window._founderType.name,eng:window._founderType.eng}:null,
-    simulation:window._simResult||null,
-  };
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='ASNM_Data_'+new Date().toISOString().slice(0,10)+'.json';
-  a.click();
-}
-
-// Init
-window._founderType=null;
-window._simResult=null;
-document.getElementById('report-date').textContent=new Date().toLocaleDateString('ko-KR');
-initDnaCircleSvgs(); // 6명 원형 배치 SVG 주입
-updateSidebarContext(); // M3 사이드바 초기 상태
-</script>
 
 <!-- 🌐 M4 알림 신청 모달 -->
 <div class="notify-modal" id="notify-modal">
@@ -4374,5 +2810,1592 @@ updateSidebarContext(); // M3 사이드바 초기 상태
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ============================================
+// 🎨 캔버스 배경 파티클
+// ============================================
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor(){
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.size = Math.random() * 1.5 + 0.5;
+    this.opacity = Math.random() * 0.5 + 0.1;
+  }
+  update(){
+    this.x += this.vx;
+    this.y += this.vy;
+    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+  draw(){
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = isLight ? `rgba(8,145,178,${this.opacity*0.6})` : `rgba(0,245,255,${this.opacity})`;
+    ctx.fill();
+  }
+}
+for(let i = 0; i < 60; i++) particles.push(new Particle());
+
+function animate(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ============================================
+// 🌓 테마 토글
+// ============================================
+function toggleTheme(){
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const newTheme = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  document.getElementById('theme-toggle').textContent = newTheme === 'light' ? '☀️' : '🌙';
+}
+
+// ============================================
+// 📄 페이지 네비게이션 (★ 수정 #2: 항상 최상단 스크롤)
+// ============================================
+let currentPageId = 'home';
+
+function showPage(id){
+  // 모든 페이지 숨기기
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const targetPage = document.getElementById('page-' + id);
+  if(!targetPage){
+    console.warn('Page not found: ' + id);
+    return;
+  }
+  targetPage.classList.add('active');
+
+  // 네비게이션 활성화 상태 업데이트
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const navMap = {home: 0, m1: 1, m2: 2, m3a: 3, m4: 4, result: 5};
+  const navBtns = document.querySelectorAll('.nav-btn');
+  if(navMap[id] !== undefined && navBtns[navMap[id]]){
+    navBtns[navMap[id]].classList.add('active');
+  }
+
+  // ★★★ 수정 #2: 항상 최상단으로 스크롤 ★★★
+  window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+  setTimeout(function(){
+    window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, 50);
+
+  currentPageId = id;
+
+  // 페이지별 초기화
+  if(id === 'result') updateReport();
+  if(id === 'm2' && !window._founderType){
+    const intro = document.getElementById('dna-intro');
+    const quizWrap = document.getElementById('dna-quiz-wrap');
+    if(intro && quizWrap){
+      intro.classList.remove('hidden');
+      quizWrap.classList.remove('active');
+    }
+  }
+}
+
+function goHome(){ showPage('home'); }
+
+// ============================================
+// 🤖 OpenAI API 호출
+// ============================================
+function checkApiKey(){
+  if(!OPENAI_API_KEY || OPENAI_API_KEY === 'YOUR_API_KEY_HERE'){
+    document.getElementById('api-warning').classList.add('show');
+    return false;
+  }
+  return true;
+}
+
+async function callOpenAI(messages, options = {}){
+  if(!checkApiKey()) throw new Error('API_KEY_MISSING');
+  
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENAI_API_KEY}`
+    },
+    body: JSON.stringify({
+      model: AI_MODEL,
+      messages: messages,
+      temperature: options.temperature || 0.7,
+      max_tokens: options.max_tokens || 1000
+    })
+  });
+
+  if(!response.ok){
+    const err = await response.json();
+    throw new Error(err.error?.message || 'API call failed');
+  }
+  
+  const data = await response.json();
+  return data.choices[0].message.content;
+}
+
+// ============================================
+// MODULE 1: 트렌드 검색
+// ============================================
+function setTrendQuery(q){
+  document.getElementById('ai-trend-query').value = q;
+  aiTrendSearch();
+}
+
+async function aiTrendSearch(){
+  const query = document.getElementById('ai-trend-query').value.trim();
+  if(!query){ alert('검색어를 입력해주세요!'); return; }
+  
+  const btn = document.getElementById('trend-search-btn');
+  const resultBox = document.getElementById('ai-trend-result');
+  const textEl = document.getElementById('ai-trend-text');
+  const chartsEl = document.getElementById('ai-trend-charts');
+  
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-spinner"></div> 분석 중...';
+  resultBox.classList.add('show');
+  textEl.innerHTML = '<div class="ai-loading"><div class="loading-spinner"></div>AI가 시장 데이터를 분석하고 있습니다...</div>';
+  chartsEl.style.display = 'none';
+  
+  try {
+    const prompt = `다음 주제에 대해 한국 시장 관점에서 분석해주세요: "${query}"
+
+다음 형식으로 응답해주세요:
+
+📊 시장 개요 (2-3문장)
+- 현재 시장 규모와 성장세
+
+🎯 핵심 기회 요인 (3가지)
+- 각 요인 1-2문장으로 설명
+
+⚠️ 진입 장벽 및 리스크 (2-3가지)
+- 주요 위험 요소
+
+💡 한국 스타트업 진입 전략 (2-3가지 구체적 제안)
+
+📈 마지막에 아래 JSON 데이터를 반드시 포함하세요(차트용):
+\`\`\`json
+{"market_size":[연도별 5개 숫자, 단위: 10억 USD],"growth_rate":[연도별 5개 CAGR %],"years":["2022","2023","2024","2025","2026"]}
+\`\`\``;
+    
+    const response = await callOpenAI([
+      {role: 'system', content: '당신은 한국 스타트업 시장 분석 전문가입니다. 정확한 데이터와 실용적인 전략을 제공합니다.'},
+      {role: 'user', content: prompt}
+    ], {max_tokens: 1500});
+    
+    // JSON 추출
+    const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
+    let chartData = null;
+    let displayText = response;
+    
+    if(jsonMatch){
+      try {
+        chartData = JSON.parse(jsonMatch[1]);
+        displayText = response.replace(/```json\s*[\s\S]*?\s*```/, '').trim();
+      } catch(e){ console.warn('JSON parse failed'); }
+    }
+    
+    textEl.textContent = displayText;
+    
+    if(chartData && chartData.market_size){
+      chartsEl.style.display = 'grid';
+      setTimeout(() => drawAiCharts(chartData), 100);
+    }
+    
+  } catch(err){
+    textEl.innerHTML = `<div style="color:var(--coral);">⚠️ 오류: ${err.message}<br><br>API 키를 확인하시거나 잠시 후 다시 시도해주세요.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 AI 분석';
+  }
+}
+
+function drawAiCharts(data){
+  const size = document.getElementById('aiMarketSizeChart');
+  const growth = document.getElementById('aiGrowthChart');
+  if(!size || !growth) return;
+  
+  if(window._aiSizeChart) window._aiSizeChart.destroy();
+  if(window._aiGrowthChart) window._aiGrowthChart.destroy();
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.05)';
+  
+  window._aiSizeChart = new Chart(size, {
+    type: 'bar',
+    data: {
+      labels: data.years,
+      datasets: [{
+        label: '시장 규모 (B USD)',
+        data: data.market_size,
+        backgroundColor: 'rgba(0,245,255,0.5)',
+        borderColor: '#00f5ff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor}, grid: {color: gridColor}}
+      }
+    }
+  });
+  
+  window._aiGrowthChart = new Chart(growth, {
+    type: 'line',
+    data: {
+      labels: data.years,
+      datasets: [{
+        label: 'CAGR %',
+        data: data.growth_rate,
+        backgroundColor: 'rgba(168,85,247,0.15)',
+        borderColor: '#a855f7',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor}, grid: {color: gridColor}}
+      }
+    }
+  });
+}
+
+// 트렌드 블록 데이터
+const trendsData = {
+  ai: [
+    {name: '생성형 AI', size: '$310B', hot: true},
+    {name: 'AI 에이전트', size: '$120B', hot: true},
+    {name: '엣지 AI', size: '$85B', hot: false},
+    {name: 'AI 반도체', size: '$95B', hot: true},
+    {name: 'AI 헬스케어', size: '$148B', hot: true},
+    {name: '멀티모달 AI', size: '$60B', hot: false}
+  ],
+  market: [
+    {name: 'K-콘텐츠', size: '$280B', hot: true},
+    {name: '구독경제', size: '$435B', hot: false},
+    {name: 'D2C 커머스', size: '$210B', hot: false},
+    {name: '크리에이터 이코노미', size: '$104B', hot: true},
+    {name: '슈퍼앱', size: '$1.2T', hot: false}
+  ],
+  social: [
+    {name: 'Z세대 소비', size: '$450B', hot: true},
+    {name: '시니어테크', size: '$180B', hot: true},
+    {name: '1인가구 경제', size: '$95B', hot: false},
+    {name: '펫코노미', size: '$320B', hot: true},
+    {name: '워라밸', size: '—', hot: false}
+  ],
+  finance: [
+    {name: '핀테크', size: '$340B', hot: true},
+    {name: '인슈어테크', size: '$155B', hot: false},
+    {name: 'CBDC', size: '—', hot: false},
+    {name: '디파이', size: '$80B', hot: false},
+    {name: 'P2P 대출', size: '$45B', hot: false}
+  ]
+};
+
+const tagMap = {ai: 'ai', market: 'market', social: 'social', finance: 'finance'};
+const tagLabel = {ai: 'AI/TECH', market: 'MARKET', social: 'SOCIAL', finance: 'FINANCE'};
+
+let selectedTrends = [];
+
+function renderTrends(){
+  Object.keys(trendsData).forEach(category => {
+    const grid = document.getElementById('trend-grid-' + category);
+    grid.innerHTML = '';
+    trendsData[category].forEach(t => {
+      const block = document.createElement('div');
+      block.className = 'trend-block' + (t.hot ? ' hot' : '');
+      block.innerHTML = `
+        <span>${t.name}</span>
+        <span class="trend-tag tag-${tagMap[category]}">${tagLabel[category]}</span>
+        <span class="trend-size">${t.size}</span>
+      `;
+      block.onclick = () => toggleTrend(block, t, category);
+      grid.appendChild(block);
+    });
+  });
+}
+
+function toggleTrend(el, trend, category){
+  const idx = selectedTrends.findIndex(s => s.name === trend.name);
+  if(idx >= 0){
+    selectedTrends.splice(idx, 1);
+    el.classList.remove('selected');
+  } else {
+    if(selectedTrends.length >= 5){
+      alert('최대 5개까지 선택 가능합니다.');
+      return;
+    }
+    selectedTrends.push({...trend, category});
+    el.classList.add('selected');
+  }
+  document.getElementById('trend-count').textContent = selectedTrends.length;
+  if(selectedTrends.length === 5) showTrendResult();
+}
+
+const newsDB = {
+  ai: [
+    {source: 'TECHCRUNCH', title: 'AI 에이전트, 2026년 기업 도입률 70% 돌파', desc: '대형 SaaS 기업들이 AI 에이전트를 핵심 기능으로 채택하면서 시장이 폭발적으로 성장 중이다.'},
+    {source: 'BLOOMBERG', title: '엔비디아, AI 반도체 시장 92% 점유율', desc: '데이터센터 GPU 시장에서 압도적인 우위를 차지하며 매출이 전년 대비 265% 성장했다.'},
+    {source: 'MIT REVIEW', title: '생성형 AI, 의료 진단 정확도 인간 의사 능가', desc: '영상의학 분야에서 AI 보조 진단이 90% 이상의 정확도를 보이며 임상 적용이 확대되고 있다.'}
+  ],
+  market: [
+    {source: 'FORBES', title: 'K-콘텐츠 글로벌 매출 1,400억 달러 돌파', desc: '넷플릭스 상위 10위 중 4편이 한국 콘텐츠, 게임/웹툰 IP 확장이 가속화되고 있다.'},
+    {source: 'WSJ', title: 'D2C 브랜드 성공의 핵심은 데이터', desc: '소비자 직접 판매 모델로 마진율을 35% 이상 끌어올린 기업들이 부상하고 있다.'},
+    {source: 'FT', title: '구독경제, 2030년 1.5조 달러 시장 전망', desc: '서비스형 비즈니스 모델이 SaaS를 넘어 일상 소비재로 확장되고 있다.'}
+  ],
+  social: [
+    {source: 'NYT', title: 'Z세대 소비 패턴, 가치 소비로 전환', desc: '환경/사회 책임을 고려한 브랜드 선택이 73%로 증가, ESG 강조 브랜드가 성장 중.'},
+    {source: 'REUTERS', title: '한국 시니어테크 시장 2030년 7,000억 달러', desc: '고령화 가속화로 헬스케어/돌봄 서비스 수요가 폭발적으로 증가하고 있다.'},
+    {source: 'CNBC', title: '1인가구, 전 세계 4억 가구 돌파', desc: '소형 가전, 간편식, 1인 여행 서비스 등 솔로 이코노미가 신성장 동력으로 부상.'}
+  ],
+  finance: [
+    {source: 'BLOOMBERG', title: '핀테크 투자 2026년 다시 회복세', desc: 'AI 기반 신용평가, 임베디드 금융이 차세대 핀테크 키워드로 부상하고 있다.'},
+    {source: 'COINDESK', title: 'CBDC 도입국 130개국 돌파', desc: '한국은행도 디지털 원화 시범사업을 확대, 2027년 본격 도입을 목표로 한다.'},
+    {source: 'FORTUNE', title: '인슈어테크 스타트업, 보험사 인수 합병 가속', desc: 'AI 언더라이팅, 마이크로 보험이 전통 보험을 디지털 트랜스포메이션 중.'}
+  ]
+};
+
+function showTrendResult(){
+  const resultDiv = document.getElementById('trend-result');
+  resultDiv.classList.add('show');
+  
+  // 뉴스 렌더링
+  const newsGrid = document.getElementById('news-grid');
+  newsGrid.innerHTML = '';
+  const categories = [...new Set(selectedTrends.map(t => t.category))];
+  
+  let newsItems = [];
+  categories.forEach(cat => {
+    newsItems = newsItems.concat(newsDB[cat] || []);
+  });
+  newsItems = newsItems.slice(0, 6);
+  
+  newsItems.forEach((news, idx) => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    const relatedTrend = selectedTrends[idx % selectedTrends.length];
+    card.innerHTML = `
+      <div class="news-source">${news.source}</div>
+      <div class="news-title">${news.title}</div>
+      <div class="news-desc">${news.desc}</div>
+      <div class="news-meta">
+        <span class="news-trend-tag">#${relatedTrend.name}</span>
+        <span>${Math.floor(Math.random() * 24) + 1}h ago</span>
+      </div>
+    `;
+    newsGrid.appendChild(card);
+  });
+  
+  setTimeout(() => {
+    renderMarketCharts();
+    resultDiv.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 200);
+}
+
+function renderMarketCharts(){
+  const bar = document.getElementById('marketBarChart');
+  const line = document.getElementById('marketLineChart');
+  if(!bar || !line) return;
+  
+  if(window._marketBar) window._marketBar.destroy();
+  if(window._marketLine) window._marketLine.destroy();
+  
+  const labels = selectedTrends.map(t => t.name);
+  const sizes = selectedTrends.map(t => {
+    const s = t.size.replace(/[\$BTM]/g, '');
+    let num = parseFloat(s);
+    if(t.size.includes('T')) num *= 1000;
+    return num;
+  });
+  
+  const growths = selectedTrends.map(() => Math.floor(Math.random() * 25) + 8);
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.05)';
+  
+  window._marketBar = new Chart(bar, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '시장 규모',
+        data: sizes,
+        backgroundColor: 'rgba(255,215,0,0.5)',
+        borderColor: '#ffd700',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor, font: {size: 10}}, grid: {color: gridColor}}
+      }
+    }
+  });
+  
+  window._marketLine = new Chart(line, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'CAGR %',
+        data: growths,
+        backgroundColor: 'rgba(0,255,136,0.15)',
+        borderColor: '#00ff88',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor, font: {size: 10}}, grid: {color: gridColor}}
+      }
+    }
+  });
+}
+
+// ============================================
+// MODULE 2: 창업자 DNA
+// ============================================
+
+// 6개 SVG 캐릭터 (간단한 추상 이미지)
+const founderSVGs = {
+  V: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="vGrad"><stop offset="0%" stop-color="#ff8b8b"/><stop offset="100%" stop-color="#ff6b6b"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#vGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#vGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 44 42 Q 50 46 56 42" stroke="#fff" stroke-width="1.5" fill="none"/>
+    <path d="M 30 25 L 70 25 L 65 15 L 50 22 L 35 15 Z" fill="#ffd700" opacity="0.8"/>
+  </svg>`,
+  A: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="aGrad"><stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#00f5ff"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#aGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#aGrad)"/>
+    <rect x="38" y="28" width="24" height="10" rx="5" fill="rgba(0,0,0,0.3)"/>
+    <circle cx="44" cy="33" r="3" fill="#fff"/><circle cx="56" cy="33" r="3" fill="#fff"/>
+    <line x1="42" y1="33" x2="46" y2="33" stroke="#00f5ff" stroke-width="1"/>
+    <line x1="54" y1="33" x2="58" y2="33" stroke="#00f5ff" stroke-width="1"/>
+  </svg>`,
+  C: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="cGrad"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#00ff88"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#cGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#cGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 40 42 Q 50 50 60 42" stroke="#fff" stroke-width="2" fill="none"/>
+    <circle cx="20" cy="50" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="80" cy="50" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="20" cy="75" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="80" cy="75" r="5" fill="url(#cGrad)" opacity="0.5"/>
+  </svg>`,
+  T: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="tGrad"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#a855f7"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#tGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#tGrad)"/>
+    <rect x="40" y="28" width="20" height="10" fill="rgba(0,0,0,0.3)"/>
+    <circle cx="44" cy="33" r="2.5" fill="#a855f7"/><circle cx="56" cy="33" r="2.5" fill="#a855f7"/>
+    <line x1="40" y1="50" x2="60" y2="50" stroke="#fff" stroke-width="2"/>
+    <circle cx="30" cy="65" r="3" fill="#fff" opacity="0.7"/>
+    <circle cx="70" cy="65" r="3" fill="#fff" opacity="0.7"/>
+  </svg>`,
+  I: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="iGrad"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="100%" stop-color="#34d399"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#iGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#iGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 42 44 Q 50 50 58 44" stroke="#fff" stroke-width="2" fill="none"/>
+    <path d="M 50 12 L 53 20 L 61 21 L 55 27 L 57 35 L 50 31 L 43 35 L 45 27 L 39 21 L 47 20 Z" fill="#ffd700"/>
+  </svg>`,
+  S: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="sGrad"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ffd700"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#sGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#sGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#000"/><circle cx="56" cy="33" r="2" fill="#000"/>
+    <path d="M 42 43 Q 50 48 58 43" stroke="#000" stroke-width="2" fill="none"/>
+    <path d="M 20 80 L 30 70 L 40 75 L 50 60 L 60 65 L 70 50 L 80 55" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  </svg>`
+};
+
+function startDnaQuiz(){
+  document.getElementById('dna-intro').classList.add('hidden');
+  document.getElementById('dna-quiz-wrap').classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function initDnaCircleSvgs(){
+  Object.keys(founderSVGs).forEach(code => {
+    const el = document.getElementById('circle-svg-' + code);
+    if(el) el.innerHTML = founderSVGs[code];
+  });
+}
+
+const founderTypes = {
+  V: {
+    name: '비전형 창업가',
+    eng: 'The Visionary Pioneer',
+    desc: '큰 그림을 그리고 시장을 변화시키는 혁신적인 아이디어를 추진합니다. 빠른 의사결정과 과감한 실행력이 강점입니다.',
+    traits: ['혁신적 사고', '리더십', '리스크 감수', '비전 중심', '카리스마'],
+    biz: ['플랫폼 사업', '글로벌 SaaS', 'AI/딥테크', '바이오/제약'],
+    warnings: '디테일과 실행력 강화 필요. 데이터 기반 의사결정 보완이 중요합니다. 운영 전문가 영입이 필수적입니다.',
+    radar: [9, 5, 7, 8, 9, 6]
+  },
+  A: {
+    name: '분석형 창업가',
+    eng: 'The Analytical Strategist',
+    desc: '데이터와 시장 분석을 기반으로 합리적인 의사결정을 합니다. 체계적 전략 수립과 운영 효율성이 강점입니다.',
+    traits: ['데이터 중심', '논리적 사고', '체계적 실행', '재무 감각', '리스크 관리'],
+    biz: ['핀테크', 'B2B SaaS', '컨설팅', '데이터 분석'],
+    warnings: '과도한 분석으로 인한 실행 지연 주의. 직관과 속도감 균형이 필요합니다.',
+    radar: [6, 9, 5, 9, 6, 9]
+  },
+  C: {
+    name: '커뮤니티형 창업가',
+    eng: 'The Community Builder',
+    desc: '관계와 신뢰를 기반으로 강력한 커뮤니티를 형성합니다. 고객 충성도와 팀 응집력이 탁월합니다.',
+    traits: ['공감 능력', '관계 구축', '협업 정신', '신뢰', '소통 역량'],
+    biz: ['커뮤니티 플랫폼', 'D2C 브랜드', '교육/멘토링', 'B2C 서비스'],
+    warnings: '과도한 합의 추구로 인한 의사결정 지연 주의. 결단력과 추진력 강화가 필요합니다.',
+    radar: [7, 5, 9, 5, 7, 6]
+  },
+  T: {
+    name: '기술형 창업가',
+    eng: 'The Technical Innovator',
+    desc: '깊은 기술 전문성을 기반으로 독창적인 솔루션을 개발합니다. 기술적 차별화와 IP 구축이 핵심 강점입니다.',
+    traits: ['기술 전문성', '문제 해결', '학습 능력', '디테일 지향', '혁신 추구'],
+    biz: ['딥테크', 'AI/머신러닝', '바이오 R&D', '하드웨어/IoT'],
+    warnings: '비즈니스/마케팅 약점 보완 필요. 영업/세일즈 전문가 영입이 우선입니다.',
+    radar: [7, 7, 4, 7, 6, 9]
+  },
+  I: {
+    name: '임팩트형 창업가',
+    eng: 'The Impact Driver',
+    desc: '사회적 가치와 의미 있는 변화를 추구합니다. 강한 사명감과 지속가능한 비즈니스 모델이 강점입니다.',
+    traits: ['사명감', '윤리적 리더십', '사회적 책임', '지속가능성', '진정성'],
+    biz: ['ESG/소셜벤처', '에듀테크', '헬스케어', '환경/그린테크'],
+    warnings: '수익성과 확장성 균형 필요. 비즈니스 모델 검증과 운영 효율화가 중요합니다.',
+    radar: [8, 6, 8, 6, 8, 5]
+  },
+  S: {
+    name: '스케일러형 창업가',
+    eng: 'The Scaler & Operator',
+    desc: '효율적인 운영과 단계적 확장에 능숙합니다. 견고한 시스템과 안정적 수익 구조 구축이 강점입니다.',
+    traits: ['운영 효율', '재무 관리', '단계적 성장', '시스템 사고', '안정성'],
+    biz: ['프랜차이즈', 'B2B 서비스', '운영 자동화', '구독 모델'],
+    warnings: '대담한 혁신과 비전 강화 필요. 시장 변화에 대한 빠른 적응력이 중요합니다.',
+    radar: [5, 8, 6, 8, 6, 7]
+  }
+};
+
+let quizAnswers = [];
+let currentQuestion = 0;
+
+function selectOption(btn, type){
+  const step = btn.closest('.quiz-step');
+  step.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const qIdx = parseInt(step.dataset.q);
+  quizAnswers[qIdx] = type;
+  
+  // 다음 버튼 활성화
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.disabled = false;
+  nextBtn.style.opacity = '1';
+}
+
+function quizNext(){
+  const steps = document.querySelectorAll('.quiz-step');
+  if(currentQuestion < steps.length - 1){
+    steps[currentQuestion].classList.remove('active');
+    currentQuestion++;
+    steps[currentQuestion].classList.add('active');
+    
+    // 진행 바
+    const progress = ((currentQuestion + 1) / steps.length) * 100;
+    document.getElementById('quiz-progress-bar').style.width = progress + '%';
+    
+    // 이전 버튼 활성화
+    document.getElementById('quiz-prev-btn').style.opacity = '1';
+    document.getElementById('quiz-prev-btn').style.pointerEvents = 'auto';
+    
+    // 마지막 질문이면 "결과 보기"로 변경
+    const nextBtn = document.getElementById('quiz-next-btn');
+    if(currentQuestion === steps.length - 1){
+      nextBtn.textContent = '🎯 결과 보기';
+    } else {
+      nextBtn.textContent = '다음 →';
+    }
+    
+    // 이전 답변이 있으면 활성화
+    if(quizAnswers[currentQuestion]){
+      const buttons = steps[currentQuestion].querySelectorAll('.option-btn');
+      buttons.forEach(b => {
+        if(b.getAttribute('data-type') === quizAnswers[currentQuestion]){
+          b.classList.add('selected');
+        }
+      });
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+    } else {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+    }
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  } else {
+    // 결과 표시
+    showFounderResult();
+  }
+}
+
+function quizPrev(){
+  if(currentQuestion > 0){
+    const steps = document.querySelectorAll('.quiz-step');
+    steps[currentQuestion].classList.remove('active');
+    currentQuestion--;
+    steps[currentQuestion].classList.add('active');
+    
+    const progress = ((currentQuestion + 1) / steps.length) * 100;
+    document.getElementById('quiz-progress-bar').style.width = progress + '%';
+    
+    if(currentQuestion === 0){
+      document.getElementById('quiz-prev-btn').style.opacity = '0.3';
+      document.getElementById('quiz-prev-btn').style.pointerEvents = 'none';
+    }
+    
+    const nextBtn = document.getElementById('quiz-next-btn');
+    nextBtn.textContent = '다음 →';
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function showFounderResult(){
+  // 가장 많이 선택된 유형 계산
+  const counts = {V: 0, A: 0, C: 0, T: 0, I: 0, S: 0};
+  quizAnswers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+  
+  let maxType = 'V';
+  let maxCount = 0;
+  for(const [type, count] of Object.entries(counts)){
+    if(count > maxCount){ maxCount = count; maxType = type; }
+  }
+  
+  window._founderType = maxType;
+  const type = founderTypes[maxType];
+  
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('quiz-nav').style.display = 'none';
+  document.querySelector('.quiz-progress').style.display = 'none';
+  
+  const result = document.getElementById('founder-result');
+  result.classList.add('show');
+  
+  // 결과 캐릭터
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[maxType];
+  document.getElementById('result-code').textContent = maxType;
+  document.getElementById('result-name').textContent = type.name;
+  document.getElementById('result-eng').textContent = type.eng;
+  
+  // 특징
+  const traitsEl = document.getElementById('founder-traits');
+  traitsEl.innerHTML = type.traits.map(t => `<span class="trait-chip">${t}</span>`).join('');
+  
+  // 사업
+  const bizEl = document.getElementById('suitable-biz');
+  bizEl.innerHTML = type.biz.map(b => `<div class="biz-chip">${b}</div>`).join('');
+  
+  // 경고
+  document.getElementById('founder-warnings').textContent = type.warnings;
+  
+  // 유형 그리드
+  const typesGrid = document.getElementById('types-grid');
+  typesGrid.innerHTML = '';
+  Object.entries(founderTypes).forEach(([code, t]) => {
+    const div = document.createElement('div');
+    div.className = 'type-mini' + (code === maxType ? ' current' : '');
+    div.innerHTML = `
+      <div class="type-mini-emoji">${['V','A','C','T','I','S'].includes(code) ? ['🚀','📊','🤝','💻','💡','📈'][['V','A','C','T','I','S'].indexOf(code)] : '🔥'}</div>
+      <div class="type-mini-code">${code}</div>
+      <div class="type-mini-name">${t.name}</div>
+    `;
+    div.onclick = () => showTypeDetail(code);
+    typesGrid.appendChild(div);
+  });
+  
+  setTimeout(() => drawRadar(type.radar), 300);
+  
+  setTimeout(() => result.scrollIntoView({behavior: 'smooth'}), 100);
+}
+
+function showTypeDetail(code){
+  const type = founderTypes[code];
+  window._founderType = code;
+  
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[code];
+  document.getElementById('result-code').textContent = code;
+  document.getElementById('result-name').textContent = type.name;
+  document.getElementById('result-eng').textContent = type.eng;
+  
+  const traitsEl = document.getElementById('founder-traits');
+  traitsEl.innerHTML = type.traits.map(t => `<span class="trait-chip">${t}</span>`).join('');
+  
+  const bizEl = document.getElementById('suitable-biz');
+  bizEl.innerHTML = type.biz.map(b => `<div class="biz-chip">${b}</div>`).join('');
+  
+  document.getElementById('founder-warnings').textContent = type.warnings;
+  
+  document.querySelectorAll('.type-mini').forEach(el => el.classList.remove('current'));
+  document.querySelectorAll('.type-mini').forEach(el => {
+    if(el.querySelector('.type-mini-code').textContent === code){
+      el.classList.add('current');
+    }
+  });
+  
+  drawRadar(type.radar);
+}
+
+function drawRadar(data){
+  const canvas = document.getElementById('radarCanvas');
+  if(!canvas) return;
+  if(window._radar) window._radar.destroy();
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.1)';
+  
+  window._radar = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: ['혁신성', '분석력', '관계성', '실행력', '리더십', '전문성'],
+      datasets: [{
+        label: '나의 역량',
+        data: data,
+        backgroundColor: 'rgba(255,107,107,0.2)',
+        borderColor: '#ff6b6b',
+        borderWidth: 2,
+        pointBackgroundColor: '#ff6b6b',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {legend: {display: false}},
+      scales: {
+        r: {
+          beginAtZero: true, max: 10,
+          ticks: {color: axisColor, backdropColor: 'transparent', font: {size: 9}},
+          grid: {color: gridColor},
+          angleLines: {color: gridColor},
+          pointLabels: {color: axisColor, font: {size: 11}}
+        }
+      }
+    }
+  });
+}
+
+function retakeQuiz(){
+  quizAnswers = [];
+  currentQuestion = 0;
+  window._founderType = null;
+  
+  document.getElementById('quiz-container').style.display = 'block';
+  document.getElementById('quiz-nav').style.display = 'flex';
+  document.querySelector('.quiz-progress').style.display = 'block';
+  document.getElementById('founder-result').classList.remove('show');
+  
+  document.querySelectorAll('.quiz-step').forEach((s, i) => {
+    if(i === 0) s.classList.add('active');
+    else s.classList.remove('active');
+    s.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  });
+  
+  document.getElementById('quiz-progress-bar').style.width = '10%';
+  document.getElementById('quiz-prev-btn').style.opacity = '0.3';
+  document.getElementById('quiz-prev-btn').style.pointerEvents = 'none';
+  document.getElementById('quiz-next-btn').disabled = true;
+  document.getElementById('quiz-next-btn').style.opacity = '0.4';
+  document.getElementById('quiz-next-btn').textContent = '다음 →';
+  
+  // 인트로로 복귀
+  document.getElementById('dna-intro').classList.remove('hidden');
+  document.getElementById('dna-quiz-wrap').classList.remove('active');
+  
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ============================================
+// MODULE 3: 시뮬레이터
+// ============================================
+const simStepLabels = ['편향자각 (BARL)', '회사 기본', '사업 아이템', '핵심 기술', '인재 영입', '복지/문화'];
+let currentSimStep = 0; // 0=BARL
+let simData = {
+  barl: {},
+  name: '', vision: '', capital: 10, region: '', item: '', persona: '',
+  tech: [], talent: [], welfare: []
+};
+
+function renderSimSteps(){
+  const container = document.getElementById('sim-steps');
+  if(!container) return;
+  container.innerHTML = '';
+  simStepLabels.forEach((label, i) => {
+    if(i > 0){
+      const conn = document.createElement('div');
+      conn.className = 'sim-connector' + (i <= currentSimStep ? ' done' : '');
+      container.appendChild(conn);
+    }
+    const dot = document.createElement('div');
+    dot.className = 'sim-step-dot';
+    const isBarl = (i === 0);
+    let dotClass = 'sim-dot';
+    if(isBarl) dotClass += ' barl-step';
+    if(i < currentSimStep) dotClass += ' done';
+    if(i === currentSimStep) dotClass += ' active';
+    dot.innerHTML = `
+      <div class="${dotClass}">${i + 1}</div>
+      <div class="sim-step-label">${label}</div>
+    `;
+    container.appendChild(dot);
+  });
+}
+
+function completeBarl(){
+  // 모든 필수 필드 체크
+  const q1 = document.getElementById('barl-q1').value.trim();
+  const q2 = document.getElementById('barl-q2').value.trim();
+  const q3 = document.getElementById('barl-q3').value.trim();
+  const q4 = document.getElementById('barl-q4').value.trim();
+  const q5 = document.getElementById('barl-q5').value.trim();
+  const q6 = document.getElementById('barl-q6').value.trim();
+  
+  if(!q1 || !q2 || !q3 || !q4 || !q5 || !q6){
+    document.getElementById('barl-required-msg').classList.add('show');
+    return;
+  }
+  
+  // 편향 체크박스
+  const biases = Array.from(document.querySelectorAll('.barl-bias:checked')).map(cb => cb.value);
+  
+  simData.barl = {
+    survival: parseFloat(q1),
+    growth: parseFloat(q2),
+    months: parseFloat(q3),
+    failReason1: q4,
+    failReason2: q5,
+    failReason3: q6,
+    biases: biases
+  };
+  
+  document.getElementById('barl-required-msg').classList.remove('show');
+  
+  // 다음 스텝
+  currentSimStep = 1;
+  document.getElementById('sim-barl').classList.remove('active');
+  document.getElementById('sim-0').classList.add('active');
+  renderSimSteps();
+  updateSidebarContext();
+  
+  // AI 메시지: BARL 완료
+  addChatMsg('ai', `편향 자각 단계 완료! 잘하셨어요 🎉<br><br>본인이 예상한 생존율 ${q1}%, 시장 성장률 ${q2}%/년이네요. 이 가정들을 시뮬레이션 후 실제 결과와 비교해보면 본인의 의사결정 패턴이 보일 거예요.`);
+  
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function updateCapital(){
+  const val = document.getElementById('s-capital').value;
+  let display;
+  if(val < 10) display = `${val * 1000}만원`;
+  else display = `${val / 10}억원`;
+  document.getElementById('capital-display').textContent = display;
+  simData.capital = parseInt(val);
+  updateSidebarContext();
+}
+
+function selectSim(el, key, value){
+  // 같은 그리드 내 다른 카드 선택 해제
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  simData[key] = value;
+  
+  // 커스텀 입력 숨기기
+  if(key === 'item'){
+    const customInput = document.getElementById('s-item-custom');
+    if(customInput) customInput.style.display = 'none';
+  }
+  if(key === 'region'){
+    const customInput = document.getElementById('s-region-custom');
+    if(customInput) customInput.style.display = 'none';
+  }
+  
+  updateSidebarContext();
+}
+
+function selectMulti(el, key, value){
+  el.classList.toggle('selected');
+  if(!simData[key]) simData[key] = [];
+  const idx = simData[key].indexOf(value);
+  
+  const limits = {tech: 5, talent: 6, welfare: 5};
+  
+  if(idx >= 0){
+    simData[key].splice(idx, 1);
+  } else {
+    if(simData[key].length >= limits[key]){
+      alert(`최대 ${limits[key]}개까지 선택 가능합니다.`);
+      el.classList.remove('selected');
+      return;
+    }
+    simData[key].push(value);
+  }
+  updateSidebarContext();
+}
+
+function toggleCustomItem(el){
+  const input = document.getElementById('s-item-custom');
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  input.style.display = 'block';
+  input.focus();
+}
+
+function setCustomItem(value){
+  simData.item = value;
+  updateSidebarContext();
+}
+
+function toggleCustomRegion(el){
+  const input = document.getElementById('s-region-custom');
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  input.style.display = 'block';
+  input.focus();
+}
+
+function setCustomRegion(value){
+  simData.region = value;
+  updateSidebarContext();
+}
+
+function toggleCustomTech(el){
+  const input = document.getElementById('s-tech-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function toggleCustomTalent(el){
+  const input = document.getElementById('s-talent-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function toggleCustomWelfare(el){
+  const input = document.getElementById('s-welfare-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function setCustomMulti(key, value){
+  const items = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  rebuildMultiData(key, items);
+}
+
+function rebuildMultiData(key, customItems){
+  const standard = simData[key].filter(item => {
+    return !item.startsWith('custom:');
+  });
+  simData[key] = [...standard, ...customItems.map(i => 'custom:' + i)];
+  updateSidebarContext();
+}
+
+function updateSimPreview(){
+  simData.name = document.getElementById('s-name').value;
+  simData.vision = document.getElementById('s-vision').value;
+  simData.persona = document.getElementById('s-persona').value;
+  updateSidebarContext();
+}
+
+function simNext(){
+  const steps = ['sim-0', 'sim-1', 'sim-2', 'sim-3', 'sim-4'];
+  const current = document.querySelector('.sim-panel.active');
+  const currentIdx = steps.indexOf(current.id);
+  if(currentIdx < steps.length - 1){
+    current.classList.remove('active');
+    document.getElementById(steps[currentIdx + 1]).classList.add('active');
+    currentSimStep = currentIdx + 2;
+    renderSimSteps();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function simPrev(){
+  const steps = ['sim-barl', 'sim-0', 'sim-1', 'sim-2', 'sim-3', 'sim-4'];
+  const current = document.querySelector('.sim-panel.active');
+  const currentIdx = steps.indexOf(current.id);
+  if(currentIdx > 0){
+    current.classList.remove('active');
+    document.getElementById(steps[currentIdx - 1]).classList.add('active');
+    currentSimStep = currentIdx - 1;
+    renderSimSteps();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+function buildSimContextText(){
+  let parts = [];
+  if(simData.name) parts.push(`회사: ${simData.name}`);
+  if(simData.vision) parts.push(`비전: ${simData.vision}`);
+  if(simData.capital) parts.push(`자본: ${simData.capital < 10 ? simData.capital*1000+'만원' : simData.capital/10+'억원'}`);
+  if(simData.region) parts.push(`지역: ${simData.region}`);
+  if(simData.item) parts.push(`업종: ${simData.item}`);
+  if(simData.persona) parts.push(`타겟: ${simData.persona}`);
+  if(simData.tech && simData.tech.length) parts.push(`기술: ${simData.tech.map(t=>t.replace('custom:','')).join(', ')}`);
+  if(simData.talent && simData.talent.length) parts.push(`인재: ${simData.talent.map(t=>t.replace('custom:','')).join(', ')}`);
+  if(simData.welfare && simData.welfare.length) parts.push(`복지: ${simData.welfare.map(t=>t.replace('custom:','')).join(', ')}`);
+  
+  // BARL 정보 포함
+  if(simData.barl && simData.barl.survival){
+    parts.push(`[BARL 가정] 예상 생존율 ${simData.barl.survival}%, 시장성장 ${simData.barl.growth}%, 첫매출 ${simData.barl.months}개월`);
+  }
+  return parts.join(' / ');
+}
+
+function updateSidebarContext(){
+  const display = document.getElementById('sim-context-display');
+  if(!display) return;
+  const txt = buildSimContextText();
+  display.innerHTML = txt || '아직 입력된 정보가 없습니다.';
+}
+
+function resetAiChat(){
+  document.getElementById('chat-history').innerHTML = `
+    <div class="sim-chat-msg ai">
+      <span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>
+      안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다.
+    </div>
+  `;
+}
+
+function addChatMsg(role, content){
+  const history = document.getElementById('chat-history');
+  const div = document.createElement('div');
+  div.className = 'sim-chat-msg ' + role;
+  const label = role === 'ai' ? '🤖 AI 컨설턴트' : '🙋 나';
+  div.innerHTML = `<span class="sim-chat-msg-label">${label}</span>${content}`;
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
+}
+
+function sendQuickQ(q){
+  document.getElementById('chat-input').value = q;
+  sendChatMessage();
+}
+
+async function sendChatMessage(){
+  const input = document.getElementById('chat-input');
+  const userMsg = input.value.trim();
+  if(!userMsg) return;
+  
+  input.value = '';
+  addChatMsg('user', userMsg);
+  
+  const sendBtn = document.getElementById('chat-send-btn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '...';
+  
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'sim-chat-msg ai';
+  loadingMsg.innerHTML = '<span class="sim-chat-msg-label">🤖 AI 컨설턴트</span><div class="loading-spinner" style="display:inline-block;"></div> 분석 중...';
+  document.getElementById('chat-history').appendChild(loadingMsg);
+  
+  try {
+    const context = buildSimContextText();
+    const systemPrompt = `당신은 한국 스타트업 전문 컨설턴트입니다. 사용자가 설계 중인 가상 스타트업에 대해 실용적이고 구체적인 조언을 제공하세요.
+
+[현재 사용자 입력 정보]
+${context || '(아직 입력 없음)'}
+
+응답은 간결하게 (3-5문장), 한국 시장 맥락에 맞게, 실행 가능한 조언으로 작성해주세요.`;
+    
+    const response = await callOpenAI([
+      {role: 'system', content: systemPrompt},
+      {role: 'user', content: userMsg}
+    ], {max_tokens: 500});
+    
+    loadingMsg.remove();
+    addChatMsg('ai', response.replace(/\n/g, '<br>'));
+  } catch(err){
+    loadingMsg.remove();
+    addChatMsg('ai', `<span style="color:var(--coral);">⚠️ 오류: ${err.message}</span>`);
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = '전송';
+  }
+}
+
+function runSimulation(){
+  // 검증
+  if(!simData.name){ alert('회사명을 입력해주세요.'); return; }
+  if(!simData.item){ alert('사업 아이템을 선택해주세요.'); return; }
+  
+  // 마지막 단계 패널 숨기고 결과 표시
+  document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('sim-result').classList.add('show');
+  currentSimStep = 6;
+  renderSimSteps();
+  
+  // 점수 계산 (BARL 영향 반영)
+  let baseScore = 50 + Math.random() * 20;
+  if(simData.tech.length >= 3) baseScore += 8;
+  if(simData.talent.length >= 4) baseScore += 7;
+  if(simData.welfare.length >= 3) baseScore += 5;
+  if(simData.capital >= 20) baseScore += 6;
+  
+  // BARL 과신 페널티 적용
+  if(simData.barl && simData.barl.survival > 80){
+    baseScore -= 5; // 과신 페널티
+  }
+  
+  const base = Math.min(Math.floor(baseScore), 95);
+  const opt = Math.min(base + 12, 99);
+  const pes = Math.max(base - 20, 30);
+  
+  // 다이얼 점수
+  document.getElementById('survival-pct').textContent = base + '%';
+  document.getElementById('opt-pct').textContent = opt + '%';
+  document.getElementById('base-pct').textContent = base + '%';
+  document.getElementById('pes-pct').textContent = pes + '%';
+  document.getElementById('sim-company-name').textContent = simData.name + ' · ' + (simData.item || '');
+  
+  setTimeout(() => drawDial(base), 300);
+  
+  // 리스크 바
+  const risks = [
+    {name: '시장 경쟁', val: Math.floor(Math.random() * 40) + 30, color: '#ff6b6b'},
+    {name: '자금 소진', val: simData.capital < 10 ? 75 : 35, color: '#ffd700'},
+    {name: '팀 빌딩', val: simData.talent.length < 3 ? 70 : 30, color: '#00f5ff'},
+    {name: '기술 리스크', val: simData.tech.length > 3 ? 25 : 55, color: '#a855f7'},
+    {name: '규제/법무', val: Math.floor(Math.random() * 30) + 20, color: '#00ff88'}
+  ];
+  
+  const riskBars = document.getElementById('risk-bars');
+  riskBars.innerHTML = '';
+  risks.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'risk-bar-row';
+    row.innerHTML = `
+      <div class="risk-bar-label">${r.name}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:0%;background:${r.color};"></div></div>
+      <div class="risk-bar-val">${r.val}%</div>
+    `;
+    riskBars.appendChild(row);
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.risk-bar-fill').forEach((bar, i) => {
+      bar.style.width = risks[i].val + '%';
+    });
+  }, 200);
+  
+  // 추천
+  const recs = [];
+  if(simData.capital < 15) recs.push({icon: '💰', type: 'warn', text: '초기 자본이 부족합니다. Pre-Seed 단계 액셀러레이터(TIPS, K-Startup) 참여를 권장합니다.'});
+  if(simData.talent.length < 3) recs.push({icon: '👥', type: 'warn', text: '핵심 인재 영입이 시급합니다. 특히 CTO와 CMO 영입을 우선해보세요.'});
+  if(simData.tech.length >= 3) recs.push({icon: '🔬', type: 'info', text: `${simData.tech.length}개의 기술 스택은 차별화 가능성이 높지만, MVP에서는 핵심 1-2개에 집중하세요.`});
+  if(simData.barl && simData.barl.survival > 75) recs.push({icon: '🛡️', type: 'warn', text: `BARL 분석: 본인이 예상한 생존율(${simData.barl.survival}%)이 실제 결과(${base}%)보다 ${simData.barl.survival - base}%p 높습니다. 과신 편향 점검이 필요합니다.`});
+  recs.push({icon: '🎯', type: '', text: `'${simData.item}' 분야는 한국 시장에서 ${Math.floor(Math.random()*15)+10}% 성장이 예상되며, 정부 R&D 과제 활용을 추천합니다.`});
+  recs.push({icon: '📈', type: '', text: '초기 6개월 PMF(Product-Market Fit) 검증에 집중하고, 18개월 내 Series A 준비를 시작하세요.'});
+  
+  const recsEl = document.getElementById('sim-recommendations');
+  recsEl.innerHTML = recs.map(r => `
+    <div class="rec-item ${r.type}">
+      <div class="rec-icon">${r.icon}</div>
+      <div class="rec-text">${r.text}</div>
+    </div>
+  `).join('');
+  
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function drawDial(score){
+  const canvas = document.getElementById('dialCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  
+  ctx.clearRect(0, 0, w, h);
+  
+  const cx = w / 2, cy = h - 20;
+  const radius = 100;
+  
+  // 배경 호
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 16;
+  ctx.stroke();
+  
+  // 점수 호
+  const angle = Math.PI + (score / 100) * Math.PI;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI, angle);
+  let color = '#00ff88';
+  if(score < 60) color = '#ff6b6b';
+  else if(score < 75) color = '#ffd700';
+  
+  const gradient = ctx.createLinearGradient(cx - radius, cy, cx + radius, cy);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(1, color);
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+function resetSimulator(){
+  simData = {
+    barl: {},
+    name: '', vision: '', capital: 10, region: '', item: '', persona: '',
+    tech: [], talent: [], welfare: []
+  };
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-vision').value = '';
+  document.getElementById('s-persona').value = '';
+  document.getElementById('s-capital').value = 10;
+  updateCapital();
+  document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('sim-barl').classList.add('active');
+  document.getElementById('sim-result').classList.remove('show');
+  
+  // BARL 필드 초기화
+  ['barl-q1','barl-q2','barl-q3','barl-q4','barl-q5','barl-q6'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.querySelectorAll('.barl-bias').forEach(cb => cb.checked = false);
+  
+  currentSimStep = 0;
+  renderSimSteps();
+  resetAiChat();
+  updateSidebarContext();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// ============================================
+// 🌐 M4 알림 신청 (Google Apps Script Webhook)
+// ============================================
+const NOTIFY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec';
+
+function notifyMe(){
+  document.getElementById('notify-modal').classList.add('show');
+  setTimeout(() => document.getElementById('notify-name').focus(), 200);
+}
+
+function closeNotifyModal(){
+  document.getElementById('notify-modal').classList.remove('show');
+  document.getElementById('notify-status').innerHTML = '';
+  document.getElementById('notify-status').className = 'notify-status';
+}
+
+async function submitNotify(){
+  const name = document.getElementById('notify-name').value.trim();
+  const email = document.getElementById('notify-email').value.trim();
+  const stage = document.getElementById('notify-stage').value;
+  const industry = document.getElementById('notify-industry').value.trim();
+  const memo = document.getElementById('notify-memo').value.trim();
+  
+  const status = document.getElementById('notify-status');
+  const btn = document.getElementById('notify-submit-btn');
+  
+  if(!name || !email){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 이름과 이메일은 필수입니다.';
+    return;
+  }
+  
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 올바른 이메일 형식이 아닙니다.';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner" style="display:inline-block;width:14px;height:14px;"></span> 전송 중...';
+  status.className = 'notify-status';
+  status.textContent = '';
+  
+  try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('stage', stage);
+    formData.append('industry', industry);
+    formData.append('memo', memo);
+    formData.append('timestamp', new Date().toISOString());
+    
+    await fetch(NOTIFY_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    });
+    
+    status.className = 'notify-status ok';
+    status.innerHTML = '✅ 신청 완료! 출시 시 이메일로 알려드릴게요.';
+    
+    setTimeout(() => {
+      closeNotifyModal();
+      document.getElementById('notify-name').value = '';
+      document.getElementById('notify-email').value = '';
+      document.getElementById('notify-stage').value = '';
+      document.getElementById('notify-industry').value = '';
+      document.getElementById('notify-memo').value = '';
+    }, 2500);
+    
+  } catch(err){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 전송 실패: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 알림 신청하기';
+  }
+}
+
+// ============================================
+// 📋 최종 보고서
+// ============================================
+function updateReport(){
+  const now = new Date();
+  document.getElementById('report-date').textContent = now.toLocaleDateString('ko-KR');
+  
+  // 회사명
+  if(simData.name){
+    document.getElementById('report-company-title').textContent = `${simData.name} 창업 전략 분석 보고서`;
+  }
+  
+  // 점수 카드
+  const survivalEl = document.getElementById('survival-pct');
+  if(survivalEl && survivalEl.textContent !== '72%'){
+    document.getElementById('fr-survival').textContent = survivalEl.textContent;
+  }
+  
+  if(window._founderType){
+    document.getElementById('fr-type').textContent = window._founderType;
+  }
+  
+  if(selectedTrends.length > 0){
+    document.getElementById('fr-trends').textContent = selectedTrends.length;
+  }
+  
+  if(simData.item){
+    document.getElementById('fr-item').textContent = simData.item.substring(0, 6);
+  }
+  
+  // 트렌드 섹션
+  if(selectedTrends.length > 0){
+    const trendsContent = `선택하신 ${selectedTrends.length}개 트렌드: <strong style="color:var(--cyan);">${selectedTrends.map(t => t.name).join(', ')}</strong><br>
+    <br>이 트렌드들은 모두 향후 5년간 두 자릿수 성장이 예상되는 분야이며, 한국 시장에서도 정부 R&D 과제 및 액셀러레이터 우선 지원 대상입니다.`;
+    document.getElementById('report-trends-content').innerHTML = trendsContent;
+  }
+  
+  // DNA 섹션
+  if(window._founderType){
+    const type = founderTypes[window._founderType];
+    document.getElementById('report-dna-content').innerHTML = `
+      <strong style="color:var(--coral);">${type.name} (${window._founderType})</strong> 유형이 진단되었습니다.<br><br>
+      <strong>핵심 강점:</strong> ${type.traits.slice(0, 3).join(', ')}<br>
+      <strong>적합 사업:</strong> ${type.biz.join(', ')}<br>
+      <strong>주의점:</strong> ${type.warnings}
+    `;
+  }
+  
+  // 시뮬레이션 섹션
+  if(simData.name && simData.item){
+    let simContent = `
+      <strong>회사명:</strong> ${simData.name}<br>
+      <strong>업종:</strong> ${simData.item}<br>
+      <strong>자본금:</strong> ${simData.capital < 10 ? simData.capital*1000+'만원' : simData.capital/10+'억원'}<br>
+      <strong>지역:</strong> ${simData.region || '미지정'}<br>
+      <strong>핵심 기술:</strong> ${simData.tech.length}개 선정<br>
+      <strong>인재 영입:</strong> ${simData.talent.length}명 계획<br>
+    `;
+    
+    if(simData.barl && simData.barl.survival){
+      simContent += `<br><strong style="color:var(--purple);">🛡️ BARL 자기 가정:</strong><br>
+      - 예상 생존율: ${simData.barl.survival}%<br>
+      - 예상 시장성장: ${simData.barl.growth}%/년<br>
+      - 첫 매출 예상: ${simData.barl.months}개월<br>`;
+      if(simData.barl.biases && simData.barl.biases.length > 0){
+        simContent += `- 자각 편향: ${simData.barl.biases.join(', ')}<br>`;
+      }
+    }
+    
+    document.getElementById('report-sim-content').innerHTML = simContent;
+  }
+  
+  // 종합 추천
+  const recs = [];
+  if(window._founderType === 'V' && simData.item){
+    recs.push({icon: '🚀', type: 'info', text: '비전형 창업가는 빠른 시장 진입이 강점입니다. MVP를 3-6개월 내 출시하고 빠른 사용자 피드백을 받으세요.'});
+  }
+  if(window._founderType === 'T'){
+    recs.push({icon: '💻', type: 'info', text: '기술형 창업가는 비즈니스 파트너 영입이 필수입니다. CMO 또는 사업개발 담당자를 우선 채용하세요.'});
+  }
+  if(simData.tech && simData.tech.length >= 3){
+    recs.push({icon: '⚡', type: '', text: '다중 기술 스택은 차별화 우위가 되지만, 초기 단계에서는 1-2개 핵심 기술에 집중하세요.'});
+  }
+  if(simData.barl && simData.barl.survival > simData.barl.survival - 10){
+    recs.push({icon: '🛡️', type: 'warn', text: 'BARL 분석: 자기 추정치와 시뮬레이션 결과의 차이를 정기적으로 점검하세요. 의사결정 품질 향상에 도움이 됩니다.'});
+  }
+  recs.push({icon: '🎯', type: '', text: '6개월 내 PMF 검증, 18개월 내 Series A 준비를 목표로 단계적 마일스톤을 설정하세요.'});
+  recs.push({icon: '📈', type: '', text: 'TIPS, K-Startup, AC 프로그램 등 한국 정부 지원사업을 적극 활용하여 초기 자본 부담을 완화하세요.'});
+  
+  if(recs.length > 0){
+    document.getElementById('final-recommendations').innerHTML = recs.map(r => `
+      <div class="rec-item ${r.type}">
+        <div class="rec-icon">${r.icon}</div>
+        <div class="rec-text">${r.text}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ============================================
+// 📄 ★★★ 수정 #4: PDF 다운로드 (실제 PDF) ★★★
+// ============================================
+function downloadReport(){
+  // result 페이지가 활성화되어 있는지 확인
+  if(!document.getElementById('page-result').classList.contains('active')){
+    showPage('result');
+    setTimeout(downloadReport, 500);
+    return;
+  }
+  
+  const userConfirm = confirm(
+    '📄 PDF 보고서를 다운로드합니다.\n\n' +
+    '다음 단계로 진행됩니다:\n' +
+    '1. 인쇄 창이 열립니다\n' +
+    '2. "대상"에서 "PDF로 저장"을 선택하세요\n' +
+    '3. "저장" 버튼을 클릭하세요\n\n' +
+    '계속하시겠습니까?'
+  );
+  
+  if(!userConfirm) return;
+  
+  // 브라우저 인쇄 기능 호출 - 사용자가 "PDF로 저장" 선택하면 실제 PDF 생성
+  window.print();
+}
+
+function downloadJSON(){
+  const data = {
+    timestamp: new Date().toISOString(),
+    company: {
+      name: simData.name,
+      vision: simData.vision,
+      capital: simData.capital,
+      region: simData.region,
+      item: simData.item,
+      persona: simData.persona,
+      tech: simData.tech,
+      talent: simData.talent,
+      welfare: simData.welfare
+    },
+    barl: simData.barl,
+    founder_type: window._founderType,
+    trends: selectedTrends,
+    survival_score: document.getElementById('survival-pct')?.textContent || 'N/A'
+  };
+  
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ASNM_${simData.name || 'Report'}_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================
+// 🚀 초기화
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  // 트렌드 렌더링
+  renderTrends();
+  
+  // M2 인트로 캐릭터 SVG
+  initDnaCircleSvgs();
+  
+  // M3 스텝 인디케이터
+  renderSimSteps();
+  updateSidebarContext();
+  
+  // 채팅 입력 엔터 키
+  const chatInput = document.getElementById('chat-input');
+  if(chatInput){
+    chatInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+  
+  // AI 검색 입력 엔터 키
+  const aiInput = document.getElementById('ai-trend-query');
+  if(aiInput){
+    aiInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') aiTrendSearch();
+    });
+  }
+  
+  // API 키 체크 (있으면 경고 숨김)
+  if(OPENAI_API_KEY && OPENAI_API_KEY !== 'YOUR_API_KEY_HERE'){
+    document.getElementById('api-warning').classList.remove('show');
+  }
+  
+  // 알림 모달: 배경 클릭 시 닫기
+  const notifyModal = document.getElementById('notify-modal');
+  if(notifyModal){
+    notifyModal.addEventListener('click', (e) => {
+      if(e.target === notifyModal) closeNotifyModal();
+    });
+  }
+});
+</script>
 </body>
 </html>
