@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chloeislovely.github.io/adaptive-startup-navigation/sitemap.xml
