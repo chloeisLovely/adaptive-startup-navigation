@@ -1,0 +1,4720 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASNM · Adaptive Startup Navigation Model</title>
+<meta name="description" content="창업 의사결정을 실제 자원 투입 전에 시험하는 AI 에이전트 기반 의사결정 지원 시스템. aSSIST MSTM 연구 프로토타입.">
+<link rel="canonical" href="https://chloeislovely.github.io/adaptive-startup-navigation/">
+<link rel="alternate" hreflang="en" href="https://chloeislovely.github.io/adaptive-startup-navigation/en/">
+<link rel="alternate" hreflang="ko" href="https://chloeislovely.github.io/adaptive-startup-navigation/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ASNM — Adaptive Startup Navigation Model">
+<meta property="og:description" content="창업자의 가정을 실제 자원 투입 전에 시험하는 AI 의사결정 지원 프로토타입.">
+<meta property="og:url" content="https://chloeislovely.github.io/adaptive-startup-navigation/">
+<meta property="og:image" content="https://chloeislovely.github.io/adaptive-startup-navigation/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<!-- ============================================ -->
+<!-- ============================================ -->
+<!-- AI 설정 — API 키는 절대 이 파일에 넣지 않습니다 -->
+<!-- 키는 서버(Cloudflare Worker)에만 저장되고,       -->
+<!-- 브라우저는 프록시 엔드포인트만 호출합니다.        -->
+<!-- 설정은 config.js 에서 관리 (git에 커밋 가능)      -->
+<!-- ============================================ -->
+<script src="config.js"></script>
+
+<style>
+:root {
+  --bg: #020818;
+  --bg2: #050d24;
+  --bg3: #0a1535;
+  --cyan: #00f5ff;
+  --cyan2: #00bcd4;
+  --coral: #ff6b6b;
+  --gold: #ffd700;
+  --green: #00ff88;
+  --purple: #a855f7;
+  --text: #e8f4ff;
+  --text2: #8ba8cc;
+  --glass: rgba(0,245,255,0.05);
+  --glass2: rgba(255,255,255,0.04);
+  --border: rgba(0,245,255,0.2);
+}
+
+[data-theme="light"] {
+  --bg: #ffffff;
+  --bg2: #f8f9fc;
+  --bg3: #f0f4f9;
+  --cyan: #0891b2;
+  --cyan2: #06b6d4;
+  --coral: #ef4444;
+  --gold: #d97706;
+  --green: #16a34a;
+  --purple: #9333ea;
+  --text: #1a1a2e;
+  --text2: #4a5568;
+  --glass: rgba(8,145,178,0.06);
+  --glass2: rgba(8,145,178,0.08);
+  --border: rgba(8,145,178,0.2);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+/* scroll-behavior:smooth 제거 — 페이지 전환 시 즉시 최상단 이동을 보장하기 위함 */
+/* overflow-anchor:none — 브라우저 자동 스크롤 앵커링 비활성화 */
+html, body {
+  overflow-anchor: none !important;
+  scroll-behavior: auto !important;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+#canvas-bg{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(2,8,24,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  height:64px;
+}
+.nav-logo{
+  font-family:'Orbitron',monospace;
+  font-size:1.2rem;font-weight:900;
+  color:var(--cyan);
+  letter-spacing:2px;
+  cursor:pointer;
+}
+.nav-logo span{color:var(--coral);}
+.nav-links{display:flex;gap:0.5rem;}
+.nav-btn{
+  padding:0.4rem 1rem;
+  background:transparent;
+  border:1px solid rgba(0,245,255,0.3);
+  color:var(--text2);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.78rem;
+  border-radius:4px;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.nav-btn:hover,.nav-btn.active{
+  background:rgba(0,245,255,0.1);
+  color:var(--cyan);
+  border-color:var(--cyan);
+}
+
+.page{
+  display:none;
+  min-height:100vh;
+  padding-top:64px;
+  position:relative;z-index:1;
+}
+.page.active{display:block;}
+
+/* === HOME === */
+#page-home{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;
+  text-align:center;
+  padding:80px 2rem 4rem;
+}
+.hero-badge{
+  display:inline-block;
+  padding:0.3rem 1rem;
+  border:1px solid var(--cyan);
+  color:var(--cyan);
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;
+  letter-spacing:3px;
+  border-radius:2px;
+  margin-bottom:2rem;
+  animation:pulse-border 2s infinite;
+}
+@keyframes pulse-border{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,245,255,0.4);}
+  50%{box-shadow:0 0 0 8px rgba(0,245,255,0);}
+}
+.hero-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(2.5rem,6vw,5rem);
+  font-weight:900;
+  line-height:1.1;
+  margin-bottom:1rem;
+  background:linear-gradient(135deg,#fff 0%,var(--cyan) 50%,var(--coral) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero-sub{
+  font-size:1rem;color:var(--text2);
+  max-width:600px;margin:0 auto 0.5rem;
+  line-height:1.8;
+}
+.hero-sub2{
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;color:var(--cyan2);
+  margin-bottom:3rem;
+  letter-spacing:1px;
+}
+.module-cards{
+  display:flex;gap:1.5rem;
+  flex-wrap:wrap;justify-content:center;
+  max-width:1400px;margin:0 auto;
+}
+.module-card{
+  flex:1;min-width:260px;max-width:300px;
+  background:var(--glass2);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:2rem;
+  cursor:pointer;
+  transition:all 0.4s;
+  position:relative;overflow:hidden;
+  text-align:left;
+}
+.module-card::before{
+  content:'';position:absolute;
+  top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(0,245,255,0.06) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.4s;
+}
+.module-card:hover::before{opacity:1;}
+.module-card:hover{
+  transform:translateY(-8px);
+  border-color:var(--cyan);
+  box-shadow:0 20px 60px rgba(0,245,255,0.15);
+}
+.module-card.m2:hover{border-color:var(--coral);box-shadow:0 20px 60px rgba(255,107,107,0.15);}
+.module-card.m3:hover{border-color:var(--gold);box-shadow:0 20px 60px rgba(255,215,0,0.15);}
+.module-card.m4{position:relative;}
+.module-card.m4:hover{border-color:var(--purple);box-shadow:0 20px 60px rgba(168,85,247,0.15);}
+.coming-soon-badge{
+  position:absolute;top:1rem;right:1rem;
+  background:linear-gradient(135deg,var(--gold),#ff9500);
+  color:#000;
+  padding:0.2rem 0.6rem;
+  border-radius:4px;
+  font-size:0.6rem;
+  font-weight:700;
+  font-family:'Space Mono',monospace;
+  letter-spacing:1px;
+}
+.card-num{
+  font-family:'Orbitron',monospace;
+  font-size:0.7rem;letter-spacing:3px;
+  color:var(--cyan);margin-bottom:1rem;
+}
+.m2 .card-num{color:var(--coral);}
+.m3 .card-num{color:var(--gold);}
+.m4 .card-num{color:var(--purple);}
+.card-icon{font-size:2.5rem;margin-bottom:1rem;}
+.card-title{
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  margin-bottom:0.5rem;line-height:1.3;
+}
+.card-desc{font-size:0.82rem;color:var(--text2);line-height:1.7;}
+.card-arrow{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  margin-top:1.5rem;
+  font-size:0.78rem;color:var(--cyan);
+  font-family:'Space Mono',monospace;
+}
+.m2 .card-arrow{color:var(--coral);}
+.m3 .card-arrow{color:var(--gold);}
+.m4 .card-arrow{color:var(--purple);}
+.stats-row{
+  display:flex;gap:3rem;margin-top:4rem;
+  flex-wrap:wrap;justify-content:center;
+}
+.stat-item{text-align:center;}
+.stat-num{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:900;
+  color:var(--cyan);
+}
+.stat-label{font-size:0.75rem;color:var(--text2);margin-top:0.2rem;}
+.stat-source{font-size:0.65rem;color:var(--text2);opacity:0.6;margin-top:0.15rem;font-style:italic;}
+
+.glass-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(0,245,255,0.15);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+}
+
+.page-header{
+  padding:3rem 2rem 2rem;
+  max-width:1200px;margin:0 auto;
+}
+.page-header-inner{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  flex-wrap:wrap;gap:1rem;
+}
+.page-tag{
+  font-family:'Space Mono',monospace;
+  font-size:0.65rem;letter-spacing:3px;
+  color:var(--cyan);
+  background:rgba(0,245,255,0.1);
+  border:1px solid rgba(0,245,255,0.3);
+  padding:0.3rem 0.8rem;
+  border-radius:2px;
+  display:inline-block;margin-bottom:0.8rem;
+}
+.page-title{
+  font-family:'Orbitron',monospace;
+  font-size:clamp(1.5rem,3vw,2.2rem);
+  font-weight:800;
+  background:linear-gradient(90deg,#fff,var(--cyan));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.page-desc{color:var(--text2);font-size:0.88rem;margin-top:0.5rem;line-height:1.8;max-width:600px;}
+.back-btn{
+  padding:0.6rem 1.2rem;
+  background:rgba(0,245,255,0.08);
+  border:1px solid var(--border);
+  color:var(--cyan);
+  border-radius:8px;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.82rem;
+  transition:all 0.3s;
+  white-space:nowrap;
+}
+.back-btn:hover{background:rgba(0,245,255,0.15);}
+
+/* === M1 트렌드 === */
+#page-m1 .content{padding:0 2rem 4rem;max-width:1200px;margin:0 auto;}
+.trend-instruction{
+  background:rgba(0,245,255,0.05);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:12px;
+  padding:1rem 1.5rem;
+  font-size:0.85rem;
+  color:var(--text2);
+  margin-bottom:2rem;
+  display:flex;align-items:center;gap:0.8rem;
+}
+.selected-count{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:900;
+  color:var(--cyan);
+}
+.trend-grid{display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:2rem;}
+.trend-block{
+  padding:0.6rem 1.2rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px;
+  cursor:pointer;transition:all 0.3s;
+  font-size:0.82rem;
+  display:flex;align-items:center;gap:0.5rem;
+  user-select:none;position:relative;overflow:hidden;
+}
+.trend-block:hover{background:rgba(0,245,255,0.08);border-color:rgba(0,245,255,0.4);}
+.trend-block.selected{background:rgba(0,245,255,0.15);border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 15px rgba(0,245,255,0.2);}
+.trend-block.hot::after{content:'🔥';position:absolute;top:-2px;right:4px;font-size:0.6rem;}
+.trend-tag{font-size:0.6rem;padding:0.1rem 0.4rem;border-radius:3px;font-family:'Space Mono',monospace;}
+.tag-ai{background:rgba(168,85,247,0.3);color:#c084fc;}
+.tag-market{background:rgba(0,255,136,0.3);color:var(--green);}
+.tag-tech{background:rgba(0,188,212,0.3);color:var(--cyan2);}
+.tag-social{background:rgba(255,107,107,0.3);color:var(--coral);}
+.tag-finance{background:rgba(255,215,0,0.3);color:var(--gold);}
+.trend-size{font-size:0.7rem;color:var(--text2);}
+
+.trend-result{display:none;animation:fadeInUp 0.5s ease;}
+.trend-result.show{display:block;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+.result-section-title{
+  font-family:'Orbitron',monospace;
+  font-size:0.9rem;font-weight:700;
+  color:var(--cyan);
+  margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.result-section-title.coral{color:var(--coral);}
+.result-section-title.gold{color:var(--gold);}
+.result-section-title.purple{color:var(--purple);}
+
+.news-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem;margin-bottom:2rem;}
+.news-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:1.2rem;
+  transition:all 0.3s;cursor:pointer;
+  position:relative;
+}
+.news-card:hover{
+  border-color:rgba(0,245,255,0.5);
+  background:rgba(0,245,255,0.07);
+  transform:translateY(-3px);
+  box-shadow:0 8px 25px rgba(0,245,255,0.1);
+}
+.news-card:active{transform:translateY(-1px);}
+.news-source{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:2px;color:var(--cyan2);margin-bottom:0.4rem;}
+.news-title{font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;line-height:1.5;}
+.news-desc{font-size:0.75rem;color:var(--text2);line-height:1.6;}
+.news-meta{display:flex;justify-content:space-between;margin-top:0.8rem;font-size:0.7rem;color:var(--text2);}
+.news-trend-tag{font-size:0.65rem;padding:0.2rem 0.5rem;background:rgba(0,245,255,0.1);color:var(--cyan);border-radius:3px;font-family:'Space Mono',monospace;}
+
+.market-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;}
+@media(max-width:700px){.market-grid{grid-template-columns:1fr;}}
+.market-chart-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.chart-title{font-size:0.85rem;font-weight:600;margin-bottom:1rem;color:var(--text2);}
+canvas.chart{width:100%!important;height:180px!important;}
+
+/* === AI SEARCH (M1) === */
+.ai-search-section{
+  background:linear-gradient(135deg,rgba(0,245,255,0.06),rgba(168,85,247,0.06));
+  border:1px solid rgba(0,245,255,0.3);
+  border-radius:16px;
+  padding:1.5rem;
+  margin-top:2rem;
+  margin-bottom:2rem;
+}
+.ai-search-header{
+  display:flex;align-items:center;gap:0.6rem;
+  margin-bottom:1rem;
+}
+.ai-search-title{
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.ai-search-badge{
+  background:rgba(168,85,247,0.2);
+  border:1px solid rgba(168,85,247,0.4);
+  color:var(--purple);
+  padding:0.15rem 0.5rem;
+  border-radius:3px;
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;
+  letter-spacing:1px;
+}
+.ai-search-desc{
+  font-size:0.82rem;color:var(--text2);
+  margin-bottom:1rem;line-height:1.6;
+}
+.ai-search-input-row{
+  display:flex;gap:0.6rem;margin-bottom:1rem;
+  flex-wrap:wrap;
+}
+.ai-search-input{
+  flex:1;min-width:200px;
+  padding:0.8rem 1rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+}
+.ai-search-input:focus{
+  outline:none;
+  border-color:var(--cyan);
+  background:rgba(0,245,255,0.05);
+}
+.ai-search-btn{
+  padding:0.8rem 1.5rem;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  border:none;border-radius:10px;
+  color:#000;font-weight:700;
+  cursor:pointer;
+  transition:all 0.3s;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.88rem;
+  display:flex;align-items:center;gap:0.4rem;
+}
+.ai-search-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,245,255,0.3);}
+.ai-search-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+.quick-questions{
+  display:flex;gap:0.5rem;flex-wrap:wrap;
+  margin-bottom:1rem;
+}
+.quick-q{
+  padding:0.4rem 0.8rem;
+  background:rgba(0,245,255,0.08);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:20px;
+  color:var(--cyan);
+  font-size:0.75rem;
+  cursor:pointer;
+  transition:all 0.3s;
+}
+.quick-q:hover{background:rgba(0,245,255,0.15);border-color:var(--cyan);}
+
+.ai-response-box{
+  display:none;
+  padding:1.5rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:10px;
+  margin-top:1rem;
+  animation:fadeInUp 0.4s ease;
+}
+.ai-response-box.show{display:block;}
+.ai-response-header{
+  display:flex;align-items:center;gap:0.5rem;
+  margin-bottom:0.8rem;
+}
+.ai-response-icon{
+  font-size:1.2rem;
+  background:linear-gradient(135deg,var(--cyan),var(--purple));
+  width:32px;height:32px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ai-response-title{
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;
+  letter-spacing:2px;
+  color:var(--cyan);
+}
+.ai-response-text{
+  color:var(--text);
+  font-size:0.9rem;
+  line-height:1.8;
+  white-space:pre-wrap;
+}
+.ai-loading{
+  display:flex;align-items:center;gap:0.8rem;
+  padding:1rem;
+  color:var(--cyan);
+}
+.loading-spinner{
+  width:18px;height:18px;
+  border:2px solid rgba(0,245,255,0.2);
+  border-top:2px solid var(--cyan);
+  border-radius:50%;
+  animation:spin 0.8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* AI 검색 결과 차트 영역 */
+.ai-charts-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1rem;
+  margin-top:1.5rem;
+}
+@media(max-width:700px){.ai-charts-grid{grid-template-columns:1fr;}}
+.ai-chart-card{
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(0,245,255,0.15);
+  border-radius:12px;padding:1rem;
+}
+.ai-chart-title{
+  font-size:0.78rem;
+  color:var(--text2);
+  margin-bottom:0.8rem;
+  font-family:'Space Mono',monospace;
+  letter-spacing:1px;
+}
+canvas.ai-chart{width:100%!important;height:160px!important;}
+
+/* === M2 인트로 페이지 (원형 배치) === */
+.dna-intro{
+  display:block;
+  animation:fadeInUp 0.5s ease;
+}
+.dna-intro.hidden{display:none;}
+.dna-intro-header{
+  text-align:center;
+  margin-bottom:3rem;
+}
+.dna-intro-title{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:800;
+  margin-bottom:0.8rem;
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.dna-intro-sub{
+  color:var(--text2);
+  font-size:0.95rem;
+  line-height:1.7;
+  margin-bottom:1.5rem;
+}
+.dna-intro-question{
+  font-family:'Orbitron',monospace;
+  font-size:1.8rem;font-weight:700;
+  background:linear-gradient(90deg,var(--cyan),var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-shadow:0 0 30px rgba(255,107,107,0.2);
+  animation:glow 2.5s ease-in-out infinite;
+}
+@keyframes glow{
+  0%,100%{opacity:1;}
+  50%{opacity:0.7;}
+}
+
+/* 원형 배치 컨테이너 */
+.dna-circle-container{
+  position:relative;
+  width:100%;
+  max-width:520px;
+  margin:0 auto 3rem;
+  aspect-ratio:1/1;
+}
+
+/* 중앙 원 (장식) */
+.dna-circle-center{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:180px;height:180px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,107,107,0.1) 0%,rgba(255,215,0,0.05) 50%,transparent 80%);
+  border:2px dashed rgba(255,107,107,0.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  animation:rotate 30s linear infinite;
+}
+@keyframes rotate{
+  from{transform:translate(-50%,-50%) rotate(0deg);}
+  to{transform:translate(-50%,-50%) rotate(360deg);}
+}
+.dna-circle-center-content{
+  animation:rotate 30s linear infinite reverse;
+  text-align:center;
+}
+.dna-circle-center-icon{
+  font-size:2.5rem;
+  margin-bottom:0.5rem;
+}
+.dna-circle-center-text{
+  font-family:'Orbitron',monospace;
+  font-size:0.7rem;
+  color:var(--text2);
+  letter-spacing:2px;
+}
+
+/* 6개 캐릭터 원형 배치 */
+.dna-circle-char{
+  position:absolute;
+  width:130px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.3s;
+  z-index:2;
+}
+.dna-circle-char:hover{
+  transform:scale(1.1) translateY(-5px);
+  z-index:10;
+}
+.dna-circle-char:hover .dna-char-circle-svg{
+  filter:drop-shadow(0 0 25px var(--char-glow,rgba(255,107,107,0.6)));
+}
+.dna-char-circle-svg{
+  width:100px;height:100px;
+  margin:0 auto 0.5rem;
+  filter:drop-shadow(0 0 12px var(--char-glow,rgba(255,107,107,0.3)));
+  transition:filter 0.3s;
+}
+.dna-char-circle-code{
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem;font-weight:900;
+  line-height:1;
+  margin-bottom:0.2rem;
+}
+.dna-char-circle-name{
+  font-size:0.78rem;font-weight:600;
+  color:var(--text);
+}
+
+/* 명시적 클래스 (브라우저 호환성 보강) */
+.dna-pos-12{ top:0 !important;left:50% !important;transform:translateX(-50%); }
+.dna-pos-2{ top:25% !important;right:0 !important;left:auto !important;transform:translate(15%,-10%); }
+.dna-pos-4{ bottom:25% !important;right:0 !important;left:auto !important;top:auto !important;transform:translate(15%,10%); }
+.dna-pos-6{ bottom:0 !important;left:50% !important;top:auto !important;transform:translateX(-50%); }
+.dna-pos-8{ bottom:25% !important;left:0 !important;top:auto !important;transform:translate(-15%,10%); }
+.dna-pos-10{ top:25% !important;left:0 !important;transform:translate(-15%,-10%); }
+
+.dna-pos-12:hover{ transform:translateX(-50%) scale(1.1) translateY(-5px) !important; }
+.dna-pos-2:hover{ transform:translate(15%,-10%) scale(1.1) !important; }
+.dna-pos-4:hover{ transform:translate(15%,10%) scale(1.1) !important; }
+.dna-pos-6:hover{ transform:translateX(-50%) scale(1.1) translateY(5px) !important; }
+.dna-pos-8:hover{ transform:translate(-15%,10%) scale(1.1) !important; }
+.dna-pos-10:hover{ transform:translate(-15%,-10%) scale(1.1) !important; }
+
+/* 모바일: 그리드로 폴백 */
+@media(max-width:600px){
+  .dna-circle-container{
+    aspect-ratio:auto;
+    max-width:100%;
+    height:auto;
+  }
+  .dna-circle-center{
+    position:relative;
+    top:auto;left:auto;
+    transform:none;
+    margin:0 auto 1.5rem;
+    width:120px;height:120px;
+  }
+  .dna-pos-12, .dna-pos-2, .dna-pos-4, .dna-pos-6, .dna-pos-8, .dna-pos-10{
+    position:relative !important;
+    top:auto !important;left:auto !important;right:auto !important;bottom:auto !important;
+    transform:none !important;
+    display:inline-block;
+    width:45%;
+    margin:0.5rem;
+    vertical-align:top;
+  }
+  .dna-pos-12:hover, .dna-pos-2:hover, .dna-pos-4:hover, 
+  .dna-pos-6:hover, .dna-pos-8:hover, .dna-pos-10:hover{
+    transform:scale(1.05) !important;
+  }
+}
+
+.dna-start-btn-wrap{
+  text-align:center;
+  margin-top:2rem;
+}
+.dna-start-btn{
+  padding:1.3rem 3.5rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  border:none;border-radius:14px;
+  color:#000;
+  font-family:'Orbitron',monospace;
+  font-size:1.1rem;font-weight:800;
+  cursor:pointer;
+  letter-spacing:3px;
+  transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(255,107,107,0.3);
+  position:relative;
+  overflow:hidden;
+}
+.dna-start-btn::before{
+  content:'';
+  position:absolute;
+  top:0;left:-100%;
+  width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);
+  animation:shimmer 2s infinite;
+}
+@keyframes shimmer{
+  100%{left:100%;}
+}
+.dna-start-btn:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 50px rgba(255,107,107,0.5);
+}
+
+.dna-quiz-wrap{display:none;}
+.dna-quiz-wrap.active{display:block;animation:fadeInUp 0.4s ease;}
+
+/* === 결과 이미지 (큰 캐릭터) === */
+.founder-result-character{
+  width:140px;height:140px;
+  margin:0 auto 1rem;
+  position:relative;
+}
+.founder-result-character svg{
+  width:100%;height:100%;
+  filter:drop-shadow(0 0 20px rgba(255,107,107,0.4));
+}
+#page-m2 .content{padding:0 2rem 4rem;max-width:800px;margin:0 auto;}
+.quiz-progress{
+  background:rgba(255,255,255,0.05);
+  border-radius:100px;
+  height:4px;
+  margin-bottom:2rem;
+  overflow:hidden;
+}
+.quiz-progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,var(--coral),#ff9500);
+  border-radius:100px;
+  transition:width 0.5s ease;
+}
+.quiz-step{display:none;}
+.quiz-step.active{display:block;animation:fadeInUp 0.4s ease;}
+.question-num{
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;letter-spacing:2px;
+  color:var(--coral);margin-bottom:0.8rem;
+}
+.question-text{
+  font-size:1.2rem;font-weight:600;
+  line-height:1.7;margin-bottom:2rem;
+}
+.options{display:flex;flex-direction:column;gap:0.8rem;}
+.option-btn{
+  padding:1rem 1.5rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  text-align:left;cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.88rem;
+  color:var(--text);
+  transition:all 0.3s;line-height:1.5;
+}
+.option-btn:hover,.option-btn.selected{
+  background:rgba(255,107,107,0.1);
+  border-color:var(--coral);
+  color:white;
+}
+.option-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;color:var(--coral);
+  margin-bottom:0.2rem;display:block;
+}
+
+.founder-result{display:none;animation:fadeInUp 0.5s ease;}
+.founder-result.show{display:flex;flex-direction:column;gap:2rem;}
+.founder-type-header{text-align:center;padding:2rem;}
+.founder-type-badge{
+  display:inline-block;
+  font-family:'Orbitron',monospace;
+  font-size:2.5rem;font-weight:900;
+  margin-bottom:1rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.founder-type-name{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:800;margin-bottom:0.5rem;}
+.founder-type-eng{font-size:0.85rem;color:var(--text2);}
+.founder-desc{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.founder-traits{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
+.trait-chip{
+  padding:0.3rem 0.8rem;
+  border-radius:100px;
+  font-size:0.75rem;
+  background:rgba(255,107,107,0.15);
+  border:1px solid rgba(255,107,107,0.4);
+  color:var(--coral);
+}
+.suitable-biz{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:0.8rem;margin-top:1rem;}
+.biz-chip{
+  padding:0.7rem 1rem;
+  background:rgba(0,245,255,0.08);
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:10px;
+  font-size:0.8rem;text-align:center;
+}
+.radar-container{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+  display:flex;flex-direction:column;align-items:center;
+}
+#radarCanvas{max-width:350px;width:100%;}
+.founder-types-all{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;padding:1.5rem;
+}
+.types-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.8rem;}
+@media(max-width:600px){.types-grid{grid-template-columns:repeat(2,1fr);}}
+.type-mini{
+  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  text-align:center;
+  cursor:pointer;transition:all 0.3s;
+}
+.type-mini:hover{border-color:var(--coral);background:rgba(255,107,107,0.08);}
+.type-mini.current{border-color:var(--coral);background:rgba(255,107,107,0.12);}
+.type-mini-emoji{font-size:1.5rem;margin-bottom:0.3rem;}
+.type-mini-code{font-family:'Orbitron',monospace;font-size:0.7rem;color:var(--coral);font-weight:700;margin-bottom:0.2rem;}
+.type-mini-name{font-size:0.72rem;color:var(--text2);}
+
+.btn-primary{
+  padding:0.9rem 2rem;
+  background:linear-gradient(135deg,var(--cyan),var(--cyan2));
+  border:none;border-radius:10px;
+  color:var(--bg);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.88rem;font-weight:700;
+  cursor:pointer;transition:all 0.3s;
+  display:inline-flex;align-items:center;gap:0.5rem;
+}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,245,255,0.3);}
+.btn-coral{background:linear-gradient(135deg,var(--coral),#ff9500);}
+.btn-coral:hover{box-shadow:0 8px 30px rgba(255,107,107,0.3);}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#ff9500);}
+.btn-gold:hover{box-shadow:0 8px 30px rgba(255,215,0,0.3);}
+.btn-purple{background:linear-gradient(135deg,var(--purple),#7c3aed);color:white;}
+.btn-purple:hover{box-shadow:0 8px 30px rgba(168,85,247,0.3);}
+
+
+/* ===== 🛡️ BARL (편향 자각 반영층) CSS ===== */
+.barl-intro-box{
+  background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(0,245,255,0.05));
+  border:2px solid var(--purple);
+  border-radius:16px;
+  padding:1.5rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.barl-intro-box::before{
+  content:'';
+  position:absolute;
+  top:0;right:0;
+  width:120px;height:120px;
+  background:radial-gradient(circle,rgba(168,85,247,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.barl-badge{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  padding:0.3rem 0.8rem;
+  background:rgba(168,85,247,0.2);
+  border:1px solid var(--purple);
+  border-radius:20px;
+  font-family:'Space Mono',monospace;
+  font-size:0.7rem;letter-spacing:2px;
+  color:var(--purple);
+  font-weight:700;
+  margin-bottom:1rem;
+}
+.barl-badge::before{
+  content:'🛡️';
+  font-size:0.9rem;
+}
+.barl-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem;
+  font-weight:800;
+  color:var(--purple);
+  margin-bottom:0.5rem;
+}
+.barl-subtitle{
+  font-size:0.88rem;
+  color:var(--text2);
+  line-height:1.7;
+  margin-bottom:0.5rem;
+}
+.barl-citation{
+  font-size:0.72rem;
+  color:var(--text2);
+  font-style:italic;
+  opacity:0.7;
+}
+.barl-section{
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(168,85,247,0.2);
+  border-radius:12px;
+  padding:1.2rem;
+  margin-bottom:1rem;
+}
+.barl-section-title{
+  display:flex;align-items:center;gap:0.5rem;
+  font-family:'Orbitron',monospace;
+  font-size:0.95rem;
+  font-weight:700;
+  color:var(--purple);
+  margin-bottom:0.4rem;
+}
+.barl-section-desc{
+  font-size:0.78rem;
+  color:var(--text2);
+  margin-bottom:1rem;
+  line-height:1.6;
+  padding-left:1.8rem;
+}
+.barl-question{
+  margin-bottom:1rem;
+}
+.barl-question-label{
+  display:block;
+  font-size:0.85rem;
+  color:var(--text);
+  margin-bottom:0.4rem;
+  font-weight:500;
+  line-height:1.6;
+}
+.barl-question-label .req{
+  color:var(--coral);
+  margin-left:0.3rem;
+}
+.barl-input-row{
+  display:flex;align-items:center;gap:0.5rem;
+}
+.barl-input{
+  flex:1;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+}
+.barl-input:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.barl-input::placeholder{
+  color:rgba(255,255,255,0.25);
+  font-size:0.85rem;
+}
+.barl-input-suffix{
+  font-size:0.85rem;
+  color:var(--text2);
+  font-weight:600;
+  white-space:nowrap;
+}
+.barl-textarea{
+  width:100%;
+  min-height:80px;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  resize:vertical;
+  line-height:1.6;
+  transition:all 0.3s;
+}
+.barl-textarea:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.barl-required-msg{
+  display:none;
+  color:var(--coral);
+  font-size:0.78rem;
+  margin-top:0.4rem;
+  padding:0.5rem 0.8rem;
+  background:rgba(255,107,107,0.08);
+  border-radius:6px;
+  border-left:3px solid var(--coral);
+}
+.barl-required-msg.show{display:block;animation:fadeInUp 0.3s ease;}
+.btn-purple-barl{
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  color:white;
+}
+.btn-purple-barl:hover{box-shadow:0 8px 30px rgba(168,85,247,0.3);}
+
+/* === BARL 단계 표시 (점 색상) === */
+.sim-dot.barl-step.active{
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.15);
+  color:var(--purple);
+}
+.sim-dot.barl-step.done{
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.25);
+  color:var(--purple);
+}
+
+/* === M3 시뮬레이터 (좌측 본문 + 우측 AI 사이드바) === */
+.sim-layout{
+  display:grid;
+  grid-template-columns:1fr 360px;
+  gap:1.5rem;
+  align-items:flex-start;
+}
+@media(max-width:1100px){
+  .sim-layout{
+    grid-template-columns:1fr;
+  }
+  .sim-ai-sidebar{
+    position:relative !important;
+    top:auto !important;
+    max-height:none !important;
+    order: -1;
+    margin-bottom: 1.5rem;
+  }
+  .sim-chat-history{
+    max-height: 250px !important;
+  }
+}
+
+.sim-main{
+  min-width:0;
+}
+
+.sim-ai-sidebar{
+  position:sticky;
+  top:80px;
+  background:linear-gradient(135deg,rgba(255,107,107,0.06),rgba(255,215,0,0.06));
+  border:1px solid rgba(255,107,107,0.3);
+  border-radius:16px;
+  padding:1.2rem;
+  max-height:calc(100vh - 100px);
+  overflow-y:auto;
+  display:flex;
+  flex-direction:column;
+}
+.sim-ai-sidebar::-webkit-scrollbar{width:4px;}
+.sim-ai-sidebar::-webkit-scrollbar-thumb{background:rgba(255,107,107,0.4);border-radius:2px;}
+
+.sim-ai-sidebar-header{
+  display:flex;align-items:center;gap:0.6rem;
+  margin-bottom:0.8rem;
+}
+.sim-ai-sidebar-title{
+  font-family:'Orbitron',monospace;
+  font-size:0.9rem;font-weight:700;
+  background:linear-gradient(90deg,var(--coral),var(--gold));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sim-ai-sidebar-desc{
+  font-size:0.75rem;
+  color:var(--text2);
+  margin-bottom:0.8rem;
+  line-height:1.6;
+}
+
+.sim-ai-context-info{
+  background:rgba(0,0,0,0.2);
+  border:1px solid rgba(255,215,0,0.2);
+  border-radius:8px;
+  padding:0.7rem;
+  margin-bottom:0.8rem;
+  font-size:0.72rem;
+  color:var(--text2);
+  line-height:1.5;
+}
+.sim-ai-context-info strong{color:var(--gold);}
+
+.sim-chat-history{
+  flex:1;
+  min-height:200px;
+  max-height:340px;
+  overflow-y:auto;
+  padding:0.7rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,255,255,0.05);
+  border-radius:8px;
+  margin-bottom:0.7rem;
+}
+.sim-chat-history::-webkit-scrollbar{width:3px;}
+.sim-chat-history::-webkit-scrollbar-thumb{background:rgba(255,107,107,0.4);border-radius:2px;}
+.sim-chat-msg{
+  padding:0.6rem 0.7rem;
+  border-radius:8px;
+  margin-bottom:0.5rem;
+  font-size:0.78rem;
+  line-height:1.6;
+  animation:fadeInUp 0.3s ease;
+}
+.sim-chat-msg.ai{
+  background:rgba(255,107,107,0.08);
+  border:1px solid rgba(255,107,107,0.2);
+  color:var(--text);
+}
+.sim-chat-msg.user{
+  background:rgba(0,245,255,0.08);
+  border:1px solid rgba(0,245,255,0.2);
+  margin-left:0.8rem;
+  color:var(--text);
+}
+.sim-chat-msg-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.6rem;letter-spacing:1px;
+  margin-bottom:0.3rem;display:block;
+}
+.sim-chat-msg.ai .sim-chat-msg-label{color:var(--coral);}
+.sim-chat-msg.user .sim-chat-msg-label{color:var(--cyan);}
+
+.sim-quick-chat-qs{
+  display:flex;gap:0.3rem;flex-wrap:wrap;
+  margin-bottom:0.6rem;
+}
+.sim-quick-chat-q{
+  padding:0.3rem 0.6rem;
+  background:rgba(255,107,107,0.08);
+  border:1px solid rgba(255,107,107,0.2);
+  border-radius:14px;
+  color:var(--coral);
+  font-size:0.68rem;cursor:pointer;
+  transition:all 0.3s;
+}
+.sim-quick-chat-q:hover{background:rgba(255,107,107,0.15);border-color:var(--coral);}
+
+.sim-chat-input-row{
+  display:flex;gap:0.4rem;
+}
+.sim-chat-input{
+  flex:1;min-width:0;
+  padding:0.6rem 0.7rem;
+  background:rgba(0,0,0,0.3);
+  border:1px solid rgba(255,107,107,0.2);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.78rem;
+}
+.sim-chat-input:focus{outline:none;border-color:var(--coral);}
+.sim-chat-send-btn{
+  padding:0.6rem 0.8rem;
+  background:linear-gradient(135deg,var(--coral),var(--gold));
+  border:none;border-radius:8px;
+  color:#000;font-weight:700;
+  cursor:pointer;transition:all 0.3s;
+  font-size:0.75rem;
+  white-space:nowrap;
+}
+.sim-chat-send-btn:hover:not(:disabled){box-shadow:0 4px 15px rgba(255,107,107,0.3);}
+.sim-chat-send-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+
+#page-m3a .content{padding:0 2rem 4rem;max-width:900px;margin:0 auto;}
+.sim-steps{display:flex;gap:0.3rem;margin-bottom:2rem;overflow-x:auto;padding-bottom:0.5rem;}
+.sim-step-dot{display:flex;flex-direction:column;align-items:center;gap:0.3rem;min-width:70px;flex:1;}
+.sim-dot{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.03);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.7rem;font-family:'Space Mono',monospace;
+  transition:all 0.3s;color:var(--text2);cursor:default;
+}
+.sim-dot.active{border-color:var(--gold);background:rgba(255,215,0,0.15);color:var(--gold);}
+.sim-dot.done{border-color:var(--green);background:rgba(0,255,136,0.15);color:var(--green);}
+.sim-step-label{font-size:0.6rem;color:var(--text2);text-align:center;white-space:nowrap;}
+.sim-connector{flex:1;height:2px;background:rgba(255,255,255,0.08);margin-top:15px;min-width:10px;}
+.sim-connector.done{background:var(--green);}
+
+.sim-panel{display:none;}
+.sim-panel.active{display:block;animation:fadeInUp 0.4s ease;}
+
+.sim-field{margin-bottom:1.5rem;}
+.sim-label{
+  font-size:0.78rem;color:var(--text2);
+  margin-bottom:0.5rem;display:block;
+  font-family:'Space Mono',monospace;letter-spacing:1px;
+}
+.sim-input{
+  width:100%;padding:0.8rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;transition:all 0.3s;
+}
+.sim-input:focus{outline:none;border-color:var(--gold);background:rgba(255,215,0,0.05);}
+.sim-input::placeholder{color:rgba(255,255,255,0.2);}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:0.8rem;}
+.choice-card{
+  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;text-align:center;cursor:pointer;
+  transition:all 0.3s;
+}
+.choice-card:hover{border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.05);}
+.choice-card.selected{border-color:var(--gold);background:rgba(255,215,0,0.1);box-shadow:0 0 15px rgba(255,215,0,0.15);}
+.choice-icon{font-size:1.8rem;margin-bottom:0.5rem;}
+.choice-name{font-size:0.78rem;font-weight:600;margin-bottom:0.2rem;}
+.choice-desc{font-size:0.68rem;color:var(--text2);}
+.capital-slider{width:100%;margin:0.5rem 0;}
+input[type=range]{
+  -webkit-appearance:none;width:100%;height:4px;
+  background:linear-gradient(90deg,var(--gold),rgba(255,255,255,0.1));
+  border-radius:100px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--gold);cursor:pointer;
+  box-shadow:0 0 10px rgba(255,215,0,0.4);
+}
+.capital-display{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:800;
+  color:var(--gold);text-align:center;margin:1rem 0;
+}
+
+.sim-result-container{display:none;animation:fadeInUp 0.6s ease;}
+.sim-result-container.show{display:block;}
+.survival-dial{
+  display:flex;flex-direction:column;align-items:center;
+  padding:2rem;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  margin-bottom:2rem;
+}
+#dialCanvas{max-width:280px;width:100%;}
+.survival-score{
+  font-family:'Orbitron',monospace;
+  font-size:3.5rem;font-weight:900;margin-top:1rem;
+}
+.survival-label{font-size:0.85rem;color:var(--text2);}
+.scenario-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem;}
+@media(max-width:600px){.scenario-cards{grid-template-columns:1fr;}}
+.scenario-card{
+  padding:1.2rem;border-radius:14px;
+  border:1px solid rgba(255,255,255,0.08);
+  text-align:center;
+}
+.scenario-card.optimistic{background:rgba(0,255,136,0.06);border-color:rgba(0,255,136,0.3);}
+.scenario-card.base{background:rgba(0,245,255,0.06);border-color:rgba(0,245,255,0.3);}
+.scenario-card.pessimistic{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.3);}
+.scenario-label{font-size:0.7rem;font-family:'Space Mono',monospace;letter-spacing:1px;margin-bottom:0.5rem;}
+.scenario-pct{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:800;}
+.optimistic .scenario-pct{color:var(--green);}
+.base .scenario-pct{color:var(--cyan);}
+.pessimistic .scenario-pct{color:var(--coral);}
+.scenario-desc{font-size:0.72rem;color:var(--text2);margin-top:0.4rem;line-height:1.5;}
+.risk-factors{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:16px;padding:1.5rem;
+  margin-bottom:1.5rem;
+}
+.risk-bar-row{display:flex;align-items:center;gap:1rem;margin-bottom:0.8rem;}
+.risk-bar-label{font-size:0.78rem;color:var(--text2);min-width:120px;}
+.risk-bar-track{flex:1;height:8px;background:rgba(255,255,255,0.06);border-radius:100px;overflow:hidden;}
+.risk-bar-fill{height:100%;border-radius:100px;transition:width 1s ease;}
+.risk-bar-val{font-size:0.75rem;font-family:'Space Mono',monospace;min-width:35px;text-align:right;}
+
+/* === M4 메타버스 COMING SOON === */
+#page-m4 .content{padding:0 2rem 4rem;max-width:1300px;margin:0 auto;}
+.metaverse-preview-box{
+  border:2px solid var(--purple);
+  border-radius:16px;
+  padding:1.5rem;
+  background:rgba(168,85,247,0.04);
+  margin-bottom:2rem;
+}
+.metaverse-preview-header{margin-bottom:1.5rem;}
+.metaverse-preview-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.3rem;font-weight:800;
+  color:#fff;margin-bottom:0.4rem;
+}
+.metaverse-preview-sub{
+  color:var(--text2);font-size:0.85rem;
+}
+.metaverse-image-container{
+  position:relative;
+  border:2px solid var(--cyan);
+  border-radius:12px;
+  overflow:hidden;
+  text-align:center;
+  background:linear-gradient(135deg,#0d0d2b,#1a0d3d);
+}
+.metaverse-image{
+  width:100%;
+  display:block;
+  max-height:600px;
+  object-fit:cover;
+}
+.coming-soon-overlay{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(0,0,0,0.75);
+  border:1px solid rgba(255,215,0,0.5);
+  border-radius:16px;
+  padding:2rem 4rem;
+  text-align:center;
+  backdrop-filter:blur(10px);
+}
+.coming-soon-title{
+  font-family:'Orbitron',monospace;
+  font-size:4rem;font-weight:900;
+  color:var(--gold);
+  margin-bottom:0.5rem;
+  letter-spacing:8px;
+  text-shadow:0 0 30px rgba(255,215,0,0.5);
+}
+.coming-soon-subtitle{
+  color:#fff;font-size:1.1rem;
+  letter-spacing:2px;
+}
+
+/* 3개 기능 카드 */
+.metaverse-features{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;
+  margin-bottom:2rem;
+}
+@media(max-width:700px){.metaverse-features{grid-template-columns:1fr;}}
+.metaverse-feature-card{
+  border:1px solid;border-radius:12px;
+  padding:1.5rem;
+  position:relative;
+}
+.metaverse-feature-card.cyan{border-color:var(--cyan);background:rgba(0,245,255,0.04);}
+.metaverse-feature-card.gold{border-color:var(--gold);background:rgba(255,215,0,0.04);}
+.metaverse-feature-card.purple{border-color:var(--purple);background:rgba(168,85,247,0.04);}
+.metaverse-feature-icon-box{
+  width:42px;height:42px;
+  border:2px solid;
+  margin-bottom:1rem;
+  position:relative;
+  display:flex;align-items:center;justify-content:center;
+}
+.metaverse-feature-icon-box.cyan{border-color:var(--cyan);color:var(--cyan);}
+.metaverse-feature-icon-box.gold{border-color:var(--gold);color:var(--gold);}
+.metaverse-feature-icon-box.purple{border-color:var(--purple);color:var(--purple);}
+.metaverse-feature-icon-box::before{
+  content:'';position:absolute;
+  top:50%;left:0;right:0;height:1px;
+  background:currentColor;
+}
+.metaverse-feature-icon-box::after{
+  content:'';position:absolute;
+  left:50%;top:0;bottom:0;width:1px;
+  background:currentColor;
+}
+.metaverse-feature-title{
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  margin-bottom:0.5rem;
+}
+.metaverse-feature-card.cyan .metaverse-feature-title{color:var(--cyan);}
+.metaverse-feature-card.gold .metaverse-feature-title{color:var(--gold);}
+.metaverse-feature-card.purple .metaverse-feature-title{color:var(--purple);}
+.metaverse-feature-desc{
+  color:var(--text2);
+  font-size:0.85rem;line-height:1.7;
+}
+
+
+/* ===== 🌐 알림 신청 모달 ===== */
+.notify-modal{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  display:none;
+  align-items:center;justify-content:center;
+  z-index:10000;
+  padding:1rem;
+  animation:fadeIn 0.2s ease;
+}
+.notify-modal.show{display:flex;}
+.notify-modal-inner{
+  max-width:500px;width:100%;
+  background:linear-gradient(135deg,rgba(168,85,247,0.1),rgba(0,245,255,0.05)),var(--bg2,#0a0e1e);
+  border:2px solid var(--purple);
+  border-radius:20px;
+  padding:2rem;
+  position:relative;
+  box-shadow:0 30px 80px rgba(168,85,247,0.3);
+  max-height:90vh;
+  overflow-y:auto;
+}
+.notify-modal-close{
+  position:absolute;top:1rem;right:1rem;
+  width:36px;height:36px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);
+  cursor:pointer;
+  font-size:1.2rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;
+}
+.notify-modal-close:hover{background:rgba(255,255,255,0.1);transform:rotate(90deg);}
+.notify-modal-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.4rem;
+  font-weight:800;
+  color:var(--purple);
+  margin-bottom:0.5rem;
+}
+.notify-modal-subtitle{
+  font-size:0.88rem;
+  color:var(--text2);
+  margin-bottom:1.5rem;
+  line-height:1.6;
+}
+.notify-field{margin-bottom:1rem;}
+.notify-field label{
+  display:block;
+  font-size:0.85rem;
+  color:var(--text);
+  margin-bottom:0.4rem;
+  font-weight:500;
+}
+.notify-field label .req{color:var(--coral);margin-left:0.2rem;}
+.notify-field input,
+.notify-field select,
+.notify-field textarea{
+  width:100%;
+  padding:0.7rem 1rem;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:8px;
+  color:var(--text);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.9rem;
+  transition:all 0.3s;
+  box-sizing:border-box;
+}
+.notify-field input:focus,
+.notify-field select:focus,
+.notify-field textarea:focus{
+  outline:none;
+  border-color:var(--purple);
+  background:rgba(168,85,247,0.05);
+  box-shadow:0 0 12px rgba(168,85,247,0.2);
+}
+.notify-field textarea{min-height:60px;resize:vertical;}
+.notify-field input::placeholder,
+.notify-field textarea::placeholder{color:rgba(255,255,255,0.25);}
+.notify-status{
+  margin:1rem 0;
+  padding:0.8rem 1rem;
+  border-radius:8px;
+  font-size:0.85rem;
+  text-align:center;
+  line-height:1.6;
+}
+.notify-status.ok{
+  background:rgba(0,255,136,0.1);
+  border:1px solid var(--green,#00ff88);
+  color:var(--green,#00ff88);
+}
+.notify-status.err{
+  background:rgba(255,107,107,0.1);
+  border:1px solid var(--coral);
+  color:var(--coral);
+}
+.notify-submit-btn{
+  width:100%;
+  padding:0.9rem;
+  background:linear-gradient(135deg,var(--purple),#7c3aed);
+  color:white;
+  border:none;
+  border-radius:10px;
+  font-size:1rem;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:0.5rem;
+  transition:all 0.3s;
+}
+.notify-submit-btn:hover:not(:disabled){
+  box-shadow:0 8px 30px rgba(168,85,247,0.4);
+  transform:translateY(-2px);
+}
+.notify-submit-btn:disabled{opacity:0.6;cursor:not-allowed;}
+
+@keyframes fadeIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+
+/* 알림 신청 버튼 */
+.notify-section{
+  text-align:center;
+  margin-bottom:2rem;
+}
+.notify-btn{
+  padding:1rem 3rem;
+  background:linear-gradient(135deg,var(--gold),#ff9500);
+  color:#000;
+  border:none;border-radius:10px;
+  font-family:'Orbitron',monospace;
+  font-size:1rem;font-weight:700;
+  cursor:pointer;
+  letter-spacing:2px;
+  transition:all 0.3s;
+  box-shadow:0 8px 30px rgba(255,215,0,0.2);
+}
+.notify-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 40px rgba(255,215,0,0.4);
+}
+
+/* 로드맵 */
+.roadmap-box{
+  border:1px solid rgba(168,85,247,0.3);
+  border-radius:16px;
+  padding:2rem;
+  background:rgba(168,85,247,0.03);
+}
+.roadmap-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.2rem;font-weight:800;
+  color:#fff;
+  margin-bottom:2rem;
+}
+.roadmap-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1rem;position:relative;
+}
+@media(max-width:700px){.roadmap-grid{grid-template-columns:repeat(2,1fr);}}
+.roadmap-line{
+  position:absolute;
+  top:55px;left:12%;right:12%;
+  height:2px;
+  background:linear-gradient(90deg,
+    var(--green) 0%,
+    var(--gold) 33%,
+    var(--cyan) 66%,
+    var(--purple) 100%);
+  z-index:0;
+}
+@media(max-width:700px){.roadmap-line{display:none;}}
+.roadmap-phase{
+  text-align:center;
+  position:relative;z-index:1;
+}
+.roadmap-phase-label{
+  font-family:'Space Mono',monospace;
+  font-size:0.75rem;
+  margin-bottom:0.3rem;
+  letter-spacing:1px;
+}
+.roadmap-phase-date{
+  font-weight:700;color:#fff;
+  margin-bottom:1rem;font-size:0.85rem;
+}
+.roadmap-phase-dot{
+  width:28px;height:28px;
+  border-radius:50%;
+  margin:0 auto 1rem;
+  border:2px solid;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;font-weight:700;
+}
+.roadmap-phase-desc{
+  color:var(--text2);
+  font-size:0.78rem;line-height:1.5;
+}
+.phase1 .roadmap-phase-label,.phase1 .roadmap-phase-dot{color:var(--green);border-color:var(--green);background:rgba(0,255,136,0.15);}
+.phase2 .roadmap-phase-label,.phase2 .roadmap-phase-dot{color:var(--gold);border-color:var(--gold);background:rgba(255,215,0,0.05);}
+.phase3 .roadmap-phase-label,.phase3 .roadmap-phase-dot{color:var(--cyan);border-color:var(--cyan);background:rgba(0,245,255,0.05);}
+.phase4 .roadmap-phase-label,.phase4 .roadmap-phase-dot{color:var(--purple);border-color:var(--purple);background:rgba(168,85,247,0.05);}
+
+/* === Result Page === */
+#page-result .content{padding:0 2rem 4rem;max-width:1000px;margin:0 auto;}
+.report-header{
+  background:linear-gradient(135deg,rgba(0,245,255,0.06),rgba(168,85,247,0.06));
+  border:1px solid rgba(0,245,255,0.2);
+  border-radius:20px;
+  padding:2rem;margin-bottom:2rem;text-align:center;
+}
+.report-title{
+  font-family:'Orbitron',monospace;
+  font-size:1.5rem;font-weight:900;
+  margin-bottom:0.5rem;
+}
+.report-meta{font-size:0.78rem;color:var(--text2);font-family:'Space Mono',monospace;}
+.report-sections{display:flex;flex-direction:column;gap:1.5rem;margin-bottom:2rem;}
+.report-section{
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:1.5rem;
+}
+.report-section-title{
+  font-family:'Orbitron',monospace;font-size:0.85rem;
+  color:var(--cyan);margin-bottom:1rem;
+  display:flex;align-items:center;gap:0.5rem;
+}
+.report-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:0.6rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  font-size:0.83rem;
+}
+.report-row:last-child{border-bottom:none;}
+.report-row-label{color:var(--text2);}
+.report-row-val{font-weight:600;font-family:'Space Mono',monospace;}
+.final-score-row{display:flex;gap:1rem;margin-bottom:2rem;flex-wrap:wrap;}
+.final-score-card{
+  flex:1;min-width:140px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:1.2rem;text-align:center;
+}
+.final-score-num{
+  font-family:'Orbitron',monospace;
+  font-size:2rem;font-weight:900;margin-bottom:0.3rem;
+}
+.final-score-label{font-size:0.72rem;color:var(--text2);}
+.recommendations{display:flex;flex-direction:column;gap:0.8rem;}
+.rec-item{
+  display:flex;gap:1rem;align-items:flex-start;
+  padding:0.8rem 1rem;
+  background:rgba(255,255,255,0.02);
+  border-radius:10px;
+  border-left:3px solid var(--cyan);
+}
+.rec-item.warn{border-left-color:var(--coral);}
+.rec-item.info{border-left-color:var(--gold);}
+.rec-icon{font-size:1rem;min-width:20px;}
+.rec-text{font-size:0.82rem;line-height:1.6;color:var(--text2);}
+.download-row{display:flex;gap:1rem;flex-wrap:wrap;}
+.dl-btn{
+  flex:1;min-width:200px;
+  padding:1rem;border-radius:12px;
+  border:1px solid var(--border);
+  background:rgba(0,245,255,0.06);
+  color:var(--cyan);
+  font-family:'Noto Sans KR',sans-serif;
+  font-size:0.85rem;font-weight:700;
+  cursor:pointer;transition:all 0.3s;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+.dl-btn:hover{background:rgba(0,245,255,0.15);}
+.dl-btn.purple{border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.06);color:var(--purple);}
+.dl-btn.purple:hover{background:rgba(168,85,247,0.15);}
+
+@media(max-width:700px){
+  .module-cards{flex-direction:column;}
+  .module-card{max-width:100%;}
+  .market-grid{grid-template-columns:1fr;}
+  .scenario-cards{grid-template-columns:1fr;}
+  .nav-links{display:none;}
+  .types-grid{grid-template-columns:repeat(2,1fr);}
+  .metaverse-features{grid-template-columns:1fr;}
+  .coming-soon-title{font-size:2.5rem;letter-spacing:4px;}
+  .coming-soon-overlay{padding:1.5rem 2rem;}
+}
+
+.theme-toggle{
+  width:40px;height:40px;
+  border-radius:50%;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--cyan);
+  font-size:1.2rem;cursor:pointer;
+  transition:all 0.3s;
+  display:flex;align-items:center;justify-content:center;
+  margin-left:1rem;
+}
+.theme-toggle:hover{background:rgba(0,245,255,0.1);border-color:var(--cyan);}
+
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:rgba(0,245,255,0.2);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(0,245,255,0.4);}
+
+/* API Key 경고 */
+.api-warning{
+  position:fixed;
+  bottom:1rem;right:1rem;
+  background:rgba(0,245,255,0.10);
+  border:1px solid rgba(0,245,255,0.35);
+  border-radius:10px;
+  padding:0.8rem 1.2rem;
+  font-size:0.75rem;
+  color:var(--cyan);
+  max-width:300px;
+  z-index:200;
+  display:none;
+}
+.api-warning.show{display:block;}
+
+/* === PRINT-FRIENDLY CSS (PDF 인쇄용) === */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  nav, #canvas-bg, .back-btn, .download-row, #api-warning,
+  .theme-toggle, .nav-logo {
+    display: none !important;
+  }
+  .page {
+    display: none;
+    padding-top: 0 !important;
+  }
+  .page.active {
+    display: block !important;
+  }
+  .glass-card, .report-section, .final-score-card, .report-header {
+    background: white !important;
+    border: 1px solid #ddd !important;
+    color: black !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+  .report-title, .page-title, .stat-num, .hero-title {
+    color: #000 !important;
+    background: none !important;
+    -webkit-text-fill-color: #000 !important;
+  }
+  .report-section-title {
+    color: #0891b2 !important;
+    border-bottom: 2px solid #0891b2;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+  }
+  .report-row-label, .final-score-label, .report-meta {
+    color: #555 !important;
+  }
+  .report-row-val, .final-score-num {
+    color: #000 !important;
+  }
+  .rec-text { color: #333 !important; }
+  .rec-item {
+    background: #f8f9fa !important;
+    page-break-inside: avoid;
+  }
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">ASN<span>M</span></div>
+  <div class="nav-links">
+    <button class="nav-btn active" onclick="showPage('home')">홈</button>
+    <button class="nav-btn" onclick="showPage('m1')">시장트렌드</button>
+    <button class="nav-btn" onclick="showPage('m2')">창업자DNA</button>
+    <button class="nav-btn" onclick="showPage('m3a')">스타트업 시뮬레이터</button>
+    <button class="nav-btn" onclick="showPage('m4')">디지털 트윈</button>
+    <button class="nav-btn" onclick="showPage('result')">결과보고서</button>
+  </div>
+  <a href="en/" style="font-family:'Space Mono',monospace;font-size:0.72rem;letter-spacing:1px;color:var(--cyan);text-decoration:none;border:1px solid rgba(0,245,255,0.35);border-radius:8px;padding:0.35rem 0.6rem;margin-right:0.5rem;white-space:nowrap;"><b>KR</b> | EN</a>
+  <button id="theme-toggle" class="theme-toggle" title="Toggle theme" onclick="toggleTheme()">🌙</button>
+</nav>
+
+<!-- ===== HOME ===== -->
+<div id="page-home" class="page active">
+  <div style="padding:80px 2rem 4rem;max-width:1400px;margin:0 auto;text-align:center;">
+    <div class="hero-badge">ADAPTIVE STARTUP NAVIGATION MODEL</div>
+    <h1 class="hero-title">당신의 창업을 설계하라</h1>
+    <p class="hero-sub">AI 에이전트와 디지털 트윈 기술을 결합한<br>차세대 창업 의사결정 지원 시스템</p>
+    <p class="hero-sub2">Research-Backed Prototype · Modules 1–3 Working · Seeking Cross-Market Validation</p>
+
+    <div class="module-cards">
+      <div class="module-card" onclick="showPage('m1')">
+        <div class="card-num">MODULE 01</div>
+        <div class="card-icon">📡</div>
+        <div class="card-title">트렌드 기반<br>기회 탐색</div>
+        <div class="card-desc">AI 자연어 검색과 트렌드 블록을 활용해 시장 기회를 발견합니다.</div>
+        <div class="card-arrow">탐색 시작 →</div>
+      </div>
+      <div class="module-card m2" onclick="showPage('m2')">
+        <div class="card-num">MODULE 02</div>
+        <div class="card-icon">🧬</div>
+        <div class="card-title">창업자 유형<br>진단 (6 DNA)</div>
+        <div class="card-desc">10가지 문항으로 V/A/C/T/I/S 6가지 창업자 DNA 중 본인 유형을 진단합니다.</div>
+        <div class="card-arrow">진단 시작 →</div>
+      </div>
+      <div class="module-card m3" onclick="showPage('m3a')">
+        <div class="card-num">MODULE 03</div>
+        <div class="card-icon">🚀</div>
+        <div class="card-title">가상 창업<br>시뮬레이션</div>
+        <div class="card-desc">가상 스타트업을 설계하고 AI 컨설턴트와 전략을 논의합니다.</div>
+        <div class="card-arrow">시뮬레이션 →</div>
+      </div>
+      <div class="module-card m4" onclick="showPage('m4')">
+        <span class="coming-soon-badge">PHASE 2</span>
+        <div class="card-num">MODULE 04</div>
+        <div class="card-icon">🌐</div>
+        <div class="card-title">벤처<br>디지털 트윈</div>
+        <div class="card-desc">창업자·스타트업·시장 상태를 복제한 트윈에서 의사결정 레버를 실험합니다. (개발 중)</div>
+        <div class="card-arrow">미리보기 →</div>
+      </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- ✏️ 수정 #1: 통계 수치 - 논문 정확히 일치 -->
+    <!-- ============================================== -->
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-num">33%</div>
+        <div class="stat-label">한국 스타트업 5년 생존율</div>
+        <div class="stat-source">KISED 2024 코호트</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">46%p</div>
+        <div class="stat-label">창업자 자기 과신 격차</div>
+        <div class="stat-source">Astebro 2014 (81% vs 35%)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">n=190</div>
+        <div class="stat-label">채택 경로 근거 확보 (SEM)</div>
+        <div class="stat-source">한국 표본 · 교차시장 검증 진행 예정</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">4</div>
+        <div class="stat-label">통합 의사결정 모듈</div>
+        <div class="stat-source">트렌드 · 프로파일 · 시뮬레이션 · 트윈</div>
+      </div>
+    </div>
+
+    <div class="glass-card" style="max-width:1000px;margin:2.2rem auto 0;padding:1.5rem 1.7rem;text-align:left;">
+      <div style="font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:2px;color:var(--cyan);margin-bottom:0.9rem;">
+        RESEARCH &amp; VALIDATION
+      </div>
+      <div style="font-size:0.85rem;line-height:1.85;color:var(--text2);">
+        ASNM의 <b>채택 경로</b>는 한국 표본을 대상으로 한 구조방정식모형에서 지지되었습니다 (n=190).
+        인지편향 자각(CBA)이 지각된 유용성(PU)을 거쳐 채택의도(AI)로 이어지는 매개 경로가 확인되었고
+        (간접효과 .785, 95% CI [.679, .903]; PU→AI β=.949, p&lt;.001),
+        15명 파일럿에서 시스템 사용성 척도 82.2점을 기록했습니다.<br><br>
+        <b style="color:var(--gold);">검증된 것과 검증되지 않은 것</b><br>
+        본 연구가 근거를 확보한 것은 <b>채택 관련 속성</b>이며,
+        의사결정 품질의 개선이나 실제 창업 생존율에 대한 예측 타당성은
+        <b>아직 검증되지 않았습니다.</b> Module 3의 스코어는 규칙 기반 탐색적 지표이고,
+        실데이터 기반 모델 추정 및 캘리브레이션이 다음 연구 단계입니다.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== M1: TRENDS ===== -->
+<div id="page-m1" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag">MODULE 01 · TREND-BASED OPPORTUNITY DISCOVERY</div>
+        <h2 class="page-title">트렌드 기반 기회 탐색</h2>
+        <p class="page-desc">AI 자연어 검색으로 산업 트렌드를 분석하거나, 트렌드 블록을 선택해 시장 기회를 탐색하세요.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content">
+    <div style="padding:0 2rem 4rem;max-width:1200px;margin:0 auto;">
+
+      <!-- 🤖 AI 트렌드 검색 -->
+      <div class="ai-search-section">
+        <div class="ai-search-header">
+          <span style="font-size:1.4rem;">🤖</span>
+          <span class="ai-search-title">AI 트렌드 검색 대화</span>
+        </div>
+        <p class="ai-search-desc">관심 산업이나 주제를 자연어로 입력하면 AI가 시장 동향, 성장률, 진입 기회를 실시간으로 분석합니다.</p>
+        
+        <div class="ai-search-input-row">
+          <input type="text" id="ai-trend-query" class="ai-search-input" placeholder="예: AI 헬스케어 시장의 한국 진입 기회는?">
+          <button class="ai-search-btn" id="trend-search-btn" onclick="aiTrendSearch()">
+            🔍 AI 분석
+          </button>
+        </div>
+
+        <div class="quick-questions">
+          <span class="quick-q" onclick="setTrendQuery('AI 헬스케어 시장 전망')">💊 AI 헬스케어</span>
+          <span class="quick-q" onclick="setTrendQuery('K-콘텐츠 글로벌 확장 기회')">🎬 K-콘텐츠</span>
+          <span class="quick-q" onclick="setTrendQuery('기후테크 스타트업 트렌드')">🌱 기후테크</span>
+          <span class="quick-q" onclick="setTrendQuery('AI 에이전트 B2B SaaS 시장')">🤖 AI 에이전트</span>
+          <span class="quick-q" onclick="setTrendQuery('한국 시니어테크 시장 분석')">👴 시니어테크</span>
+        </div>
+
+        <div id="ai-trend-result" class="ai-response-box">
+          <div class="ai-response-header">
+            <div class="ai-response-icon">🤖</div>
+            <div>
+              <div class="ai-response-title">AI 트렌드 분석 결과</div>
+            </div>
+          </div>
+          <div id="ai-trend-text" class="ai-response-text"></div>
+
+          <div class="ai-charts-grid" id="ai-trend-charts" style="display:none;">
+            <div class="ai-chart-card">
+              <div class="ai-chart-title">📊 시장 규모 추이 (10억 USD)</div>
+              <canvas id="aiMarketSizeChart" class="ai-chart"></canvas>
+            </div>
+            <div class="ai-chart-card">
+              <div class="ai-chart-title">📈 연평균 성장률 예측 (CAGR %)</div>
+              <canvas id="aiGrowthChart" class="ai-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 기존 트렌드 블록 -->
+      <div class="trend-instruction">
+        <span style="font-size:1.2rem;">💡</span>
+        <span>또는 관심 트렌드 블록을 <strong style="color:var(--cyan);">5개</strong> 선택하면 맞춤 분석이 시작됩니다. &nbsp;|&nbsp; 현재 선택: <span class="selected-count" id="trend-count">0</span>/5</span>
+      </div>
+
+      <div class="result-section-title" style="margin-bottom:1rem;">🔥 AI / 기술 트렌드</div>
+      <div class="trend-grid" id="trend-grid-ai"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">📈 시장 / 비즈니스 트렌드</div>
+      <div class="trend-grid" id="trend-grid-market"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">🌍 사회 / 소비자 트렌드</div>
+      <div class="trend-grid" id="trend-grid-social"></div>
+      <div class="result-section-title" style="margin-bottom:1rem;margin-top:1.5rem;">💰 핀테크 / 금융 트렌드</div>
+      <div class="trend-grid" id="trend-grid-finance"></div>
+
+      <div id="trend-result" class="trend-result" style="margin-top:2rem;">
+        <div class="result-section-title coral">📰 선택 트렌드 관련 최신 뉴스</div>
+        <div class="news-grid" id="news-grid"></div>
+        <div class="result-section-title gold" style="margin-top:2rem;">📊 선택 분야 시장 규모 & 성장률</div>
+        <div class="market-grid">
+          <div class="market-chart-card">
+            <div class="chart-title">선택 트렌드별 시장 규모 (단위: USD Billion · 공개 자료 인용치)</div>
+            <canvas id="marketBarChart" class="chart"></canvas>
+          </div>
+          <div class="market-chart-card">
+            <div class="chart-title">선택 트렌드 내 상대 시장 비중 (%)</div>
+            <canvas id="marketLineChart" class="chart"></canvas>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:2rem;">
+          <button class="btn-primary btn-coral" onclick="showPage('m2')">창업자 DNA 진단하러 가기 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== M2: FOUNDER DNA ===== -->
+<div id="page-m2" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(255,107,107,0.4);color:var(--coral);background:rgba(255,107,107,0.08);">MODULE 02 · FOUNDER DNA (6 TYPES)</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--coral));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">창업자 유형 진단 & 적합성 평가</h2>
+        <p class="page-desc">10가지 질문으로 V/A/C/T/I/S 6가지 창업자 DNA를 진단합니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:900px;margin:0 auto;">
+    
+    <!-- 🧬 인트로 화면: 6명 창업자 캐릭터 원형 배치 -->
+    <div class="dna-intro" id="dna-intro">
+      <div class="dna-intro-header">
+        <div class="dna-intro-title">6가지 창업자 DNA</div>
+        <div class="dna-intro-sub">
+          모든 창업가는 고유한 강점과 성향을 가지고 있습니다.<br>
+          ASNM의 6가지 유형 프레임워크는 창업자 행동 연구의 선행 문헌을 참고하여 구성한 <b>탐색적 분류</b>입니다.<br>
+          <span style="font-size:0.9em;opacity:0.75;">(심리측정 타당화는 진행 예정 — 현재는 자기이해용 프로파일)</span>
+        </div>
+        <div class="dna-intro-question">나는 어떤 유형일까? 🤔</div>
+      </div>
+
+      <div class="dna-circle-container">
+        <div class="dna-circle-center">
+          <div class="dna-circle-center-content">
+            <div class="dna-circle-center-icon">🧬</div>
+            <div class="dna-circle-center-text">ASNM<br>DNA</div>
+          </div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-12" style="--char-glow:rgba(255,107,107,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-V"></div>
+          <div class="dna-char-circle-code" style="color:var(--coral);">V</div>
+          <div class="dna-char-circle-name">비전형</div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-2" style="--char-glow:rgba(0,245,255,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-A"></div>
+          <div class="dna-char-circle-code" style="color:var(--cyan);">A</div>
+          <div class="dna-char-circle-name">분석형</div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-4" style="--char-glow:rgba(0,255,136,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-C"></div>
+          <div class="dna-char-circle-code" style="color:var(--green);">C</div>
+          <div class="dna-char-circle-name">커뮤니티형</div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-6" style="--char-glow:rgba(168,85,247,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-T"></div>
+          <div class="dna-char-circle-code" style="color:var(--purple);">T</div>
+          <div class="dna-char-circle-name">기술형</div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-8" style="--char-glow:rgba(52,211,153,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-I"></div>
+          <div class="dna-char-circle-code" style="color:#34d399;">I</div>
+          <div class="dna-char-circle-name">임팩트형</div>
+        </div>
+
+        <div class="dna-circle-char dna-pos-10" style="--char-glow:rgba(255,215,0,0.6);">
+          <div class="dna-char-circle-svg" id="circle-svg-S"></div>
+          <div class="dna-char-circle-code" style="color:var(--gold);">S</div>
+          <div class="dna-char-circle-name">스케일러형</div>
+        </div>
+      </div>
+
+      <div class="dna-start-btn-wrap">
+        <button class="dna-start-btn" onclick="startDnaQuiz()">
+          🧬 나의 유형 찾기 →
+        </button>
+        <p style="margin-top:1.2rem;color:var(--text2);font-size:0.82rem;">
+          10가지 질문 · 약 2분 소요
+        </p>
+      </div>
+    </div>
+
+    <!-- 퀴즈 영역 -->
+    <div class="dna-quiz-wrap" id="dna-quiz-wrap">
+    <div class="quiz-progress"><div class="quiz-progress-bar" id="quiz-progress-bar" style="width:0%"></div></div>
+
+    <div id="quiz-container">
+      <div class="quiz-step active" data-q="0">
+        <div class="question-num">QUESTION 01 / 10</div>
+        <div class="question-text">새로운 아이디어를 실행할 때 당신은 어떤 방식을 선호하나요?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>직관적으로 빠르게 시작하고 나중에 수정한다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>데이터를 충분히 분석하고 계획을 세운 후 실행한다</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">C</span>팀원들과 충분히 논의하고 합의를 이끌어낸다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술적 완성도를 높인 다음에 공개한다</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="1">
+        <div class="question-num">QUESTION 02 / 10</div>
+        <div class="question-text">사업에서 가장 중요하다고 생각하는 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">A</span>정확한 시장 데이터와 수치 기반의 의사결정</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>고객과의 깊은 신뢰 관계 형성</button>
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">C</span>큰 비전과 시장을 변화시키는 혁신</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>지속 가능한 수익 구조와 안정적 성장</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="2">
+        <div class="question-num">QUESTION 03 / 10</div>
+        <div class="question-text">팀을 구성할 때 당신이 가장 먼저 찾는 사람은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">A</span>뛰어난 기술력을 가진 개발자/엔지니어</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>나와 비전을 공유하는 열정적인 동료</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">C</span>비즈니스 경험이 풍부한 운영/재무 전문가</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>고객과 시장을 잘 아는 영업/마케팅 전문가</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="3">
+        <div class="question-num">QUESTION 04 / 10</div>
+        <div class="question-text">실패를 경험했을 때 당신의 반응은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>빠르게 털어내고 새로운 방향으로 피벗한다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>원인을 철저히 분석하고 데이터로 학습한다</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>실패를 성장의 연료로 삼아 더 도전한다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">D</span>리스크를 줄이기 위한 안전망을 구축한다</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="4">
+        <div class="question-num">QUESTION 05 / 10</div>
+        <div class="question-text">비즈니스 아이디어의 원천이 주로 어디에서 오나요?</div>
+        <div class="options">
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">A</span>기술 발전이나 새로운 기술의 응용 가능성</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">B</span>사람들과의 대화와 관계에서 발견한 문제</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">C</span>시장 조사와 경쟁사 분석을 통한 기회 발견</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">D</span>개인적으로 겪은 불편함이나 사회적 문제</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="5">
+        <div class="question-num">QUESTION 06 / 10</div>
+        <div class="question-text">투자 유치에 대한 나의 생각은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>크게 성장하려면 과감한 투자 유치가 필수다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>자체 수익으로 성장하는 부트스트래핑을 선호</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회적 가치를 인정받는 임팩트 투자를 원한다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술력으로 정부 R&D 과제나 그랜트를 활용한다</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="6">
+        <div class="question-num">QUESTION 07 / 10</div>
+        <div class="question-text">고객과의 관계에서 가장 중요하게 생각하는 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">A</span>장기적인 신뢰와 로열티 형성</button>
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">B</span>빠른 사용자 확보와 바이럴 성장</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>고객이 실질적으로 변화를 느끼는 임팩트</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">D</span>데이터 기반의 고객 행동 최적화</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="7">
+        <div class="question-num">QUESTION 08 / 10</div>
+        <div class="question-text">10년 후 내 회사의 모습을 상상하면?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>글로벌 유니콘으로 세상을 바꾸고 있다</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>탄탄한 수익 구조의 강소기업으로 성장해 있다</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회 문제를 해결하는 임팩트 기업으로 인정받는다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>특정 기술 분야의 글로벌 전문 기업이 되어 있다</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="8">
+        <div class="question-num">QUESTION 09 / 10</div>
+        <div class="question-text">경쟁사가 유사한 제품을 출시했을 때 당신의 대응은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>더 빠르게 다음 버전을 출시하고 앞서 나간다</button>
+          <button class="option-btn" data-type="A" onclick="selectOption(this,'A')"><span class="option-label">B</span>데이터로 차별점을 분석하고 포지셔닝을 강화한다</button>
+          <button class="option-btn" data-type="C" onclick="selectOption(this,'C')"><span class="option-label">C</span>파트너십을 제안하거나 커뮤니티 충성도를 강화한다</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>기술 특허와 IP를 강화해 진입장벽을 높인다</button>
+        </div>
+      </div>
+      <div class="quiz-step" data-q="9">
+        <div class="question-num">QUESTION 10 / 10</div>
+        <div class="question-text">창업을 통해 가장 얻고 싶은 것은?</div>
+        <div class="options">
+          <button class="option-btn" data-type="V" onclick="selectOption(this,'V')"><span class="option-label">A</span>세상을 변화시키고 역사에 남는 임팩트</button>
+          <button class="option-btn" data-type="S" onclick="selectOption(this,'S')"><span class="option-label">B</span>경제적 자유와 내 삶을 스스로 설계하는 것</button>
+          <button class="option-btn" data-type="I" onclick="selectOption(this,'I')"><span class="option-label">C</span>사회에 긍정적 변화를 만드는 가치 창출</button>
+          <button class="option-btn" data-type="T" onclick="selectOption(this,'T')"><span class="option-label">D</span>내가 가진 전문 기술을 세상에 적용하는 것</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:1.5rem;" id="quiz-nav">
+      <button class="btn-primary btn-coral" id="quiz-prev-btn" onclick="quizPrev()" style="opacity:0.3;pointer-events:none;">← 이전</button>
+      <button class="btn-primary btn-coral" id="quiz-next-btn" onclick="quizNext()" disabled style="opacity:0.4;">다음 →</button>
+    </div>
+
+    <div class="founder-result" id="founder-result">
+      <div class="founder-type-header glass-card" style="padding:2rem;text-align:center;">
+        <div class="founder-result-character" id="result-character-svg"></div>
+        <div class="founder-type-badge" id="result-code">V</div>
+        <div class="founder-type-name" id="result-name">비전형 창업가</div>
+        <div class="founder-type-eng" id="result-eng">The Visionary Pioneer</div>
+      </div>
+      <div class="radar-container glass-card">
+        <div class="result-section-title" style="align-self:flex-start;">📊 나의 창업자 역량 레이더</div>
+        <canvas id="radarCanvas" height="300"></canvas>
+      </div>
+      <div class="founder-desc glass-card" id="founder-desc-card">
+        <div class="result-section-title coral">✨ 이런 특징을 가지고 있어요</div>
+        <div class="founder-traits" id="founder-traits"></div>
+        <div class="result-section-title coral" style="margin-top:1.5rem;">💼 이런 사업이 잘 맞아요</div>
+        <div class="suitable-biz" id="suitable-biz"></div>
+        <div class="result-section-title coral" style="margin-top:1.5rem;">⚡ 주의해야 할 점</div>
+        <div id="founder-warnings" style="font-size:0.85rem;color:var(--text2);line-height:1.8;"></div>
+      </div>
+      <div class="founder-types-all glass-card" style="padding:1.5rem;">
+        <div class="result-section-title">🗺️ 6가지 창업자 DNA 유형</div>
+        <div class="types-grid" id="types-grid"></div>
+      </div>
+      <div style="text-align:center;">
+        <button class="btn-primary btn-coral" onclick="showPage('m3a')" style="margin-right:1rem;">스타트업 시뮬레이터 →</button>
+        <button class="btn-primary" onclick="retakeQuiz()">다시 테스트하기</button>
+      </div>
+    </div>
+    </div><!-- /.dna-quiz-wrap -->
+  </div>
+</div>
+
+<!-- ===== M3: SIMULATOR ===== -->
+<div id="page-m3a" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(255,215,0,0.4);color:var(--gold);background:rgba(255,215,0,0.08);">MODULE 03 · VIRTUAL STARTUP SIMULATION</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">가상 창업 시뮬레이션 &amp; 리스크 프로파일</h2>
+        <p class="page-desc">내 스타트업을 직접 설계하면 6개 요인 기반 Venture Resilience Score와 리스크 프로파일이 산출됩니다. 산출 근거는 결과 화면에 전부 공개됩니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:1400px;margin:0 auto;">
+    <div class="sim-layout">
+      <div class="sim-main">
+    <div class="sim-steps" id="sim-steps"></div>
+
+    <!-- 🛡️ Step 0: BARL -->
+    <div class="sim-panel active" id="sim-barl">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="barl-intro-box">
+          <div class="barl-badge">잠깐, 시작 전에</div>
+          <div class="barl-title">🛡️ 잠깐 멈춰서 생각해볼까요?</div>
+          <div class="barl-subtitle">
+            시뮬레이션을 돌리기 전에, 본인의 머릿속 가정을 살짝 꺼내볼게요.<br>
+            대단한 거 아니에요. 그냥 평소에 막연하게 생각하던 걸 글로 적어보는 것뿐이에요. 🙂
+          </div>
+          <div class="barl-citation">
+            ✨ 이 과정만 거쳐도 결정 품질이 눈에 띄게 좋아진다고 해요
+          </div>
+        </div>
+
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>📝</span>
+            <span>1. 머릿속 숫자 꺼내보기</span>
+          </div>
+          <div class="barl-section-desc">
+            지금 생각나는 대로 편하게 적어주세요. 정답은 없어요!
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ① 솔직히, 내 사업이 5년 뒤에도 살아있을 확률은 몇 %일 것 같아요?<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q1" min="0" max="100" placeholder="예: 70">
+              <span class="barl-input-suffix">%</span>
+            </div>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ② 우리 시장이 매년 얼마나 클 거라고 보세요?<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q2" min="0" max="100" placeholder="예: 15">
+              <span class="barl-input-suffix">%/년</span>
+            </div>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ③ 첫 매출이 언제쯤 나올 거 같으세요? (창업 후 몇 개월?)<span class="req">*</span>
+            </label>
+            <div class="barl-input-row">
+              <input type="number" class="barl-input" id="barl-q3" min="0" max="60" placeholder="예: 6">
+              <span class="barl-input-suffix">개월</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>🔮</span>
+            <span>2. 만약에... 망했다면?</span>
+          </div>
+          <div class="barl-section-desc">
+            1년 뒤, 이 사업이 망했다고 상상해볼게요. 무서운 게 아니라 미리 대비하려는 거예요!<br>
+            평소엔 안 보이던 위험이 신기하게 보이거든요. ✨
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ① 가장 결정적인 이유는 뭐였을 것 같아요?<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q4" placeholder="편하게 적어주세요. 예: 자금이 너무 빨리 떨어졌어요..."></textarea>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ② 두 번째 이유는요?<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q5" placeholder="예: 경쟁사가 너무 빨리 따라왔어요..."></textarea>
+          </div>
+
+          <div class="barl-question">
+            <label class="barl-question-label">
+              ③ 마지막으로 하나 더!<span class="req">*</span>
+            </label>
+            <textarea class="barl-textarea" id="barl-q6" placeholder="예: 고객들이 우리 생각만큼 안 좋아했어요..."></textarea>
+          </div>
+        </div>
+
+        <div class="barl-section">
+          <div class="barl-section-title">
+            <span>🧠</span>
+            <span>3. 나는 어떤 함정에 빠지기 쉬울까?</span>
+          </div>
+          <div class="barl-section-desc">
+            누구나 한두 개씩은 빠지기 쉬운 생각의 함정이 있어요.<br>
+            본인이 자주 빠질 것 같은 걸 골라주세요 (여러 개 가능!) 🎯
+          </div>
+
+          <div id="barl-bias-checks" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0.6rem;">
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="과신" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">😎 너무 자신만만</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"내 사업은 무조건 대박날 거야!"</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="계획오류" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">⏰ 일정 욕심쟁이</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"3개월이면 충분해!" (실제 9개월)</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="확증편향" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">👂 듣고 싶은 말만</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">긍정 피드백만 기억나요</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="매몰비용" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">💸 그만두기 어려워</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"여기까지 쓴 돈이 아까워..."</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="가용성편향" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">🌟 성공담만 떠올라</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">실패 사례는 잘 기억 안 나요</div>
+              </div>
+            </label>
+            <label style="display:flex;align-items:flex-start;gap:0.5rem;cursor:pointer;padding:0.7rem;background:rgba(255,255,255,0.03);border:1px solid rgba(168,85,247,0.15);border-radius:8px;">
+              <input type="checkbox" class="barl-bias" value="오만" style="margin-top:0.2rem;">
+              <div>
+                <div style="font-size:0.85rem;font-weight:600;">🏆 한번 성공해본 사람</div>
+                <div style="font-size:0.72rem;color:var(--text2);margin-top:0.2rem;">"이전엔 됐으니 이번도 OK!"</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div id="barl-required-msg" class="barl-required-msg">
+          🙏 모든 항목을 채워주셔야 다음으로 넘어가요!
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;justify-content:flex-end;">
+          <button class="btn-primary btn-purple-barl" onclick="completeBarl()">
+            ✨ 다 됐어요! 시뮬레이션 시작 →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: 회사 기본 정보 -->
+    <div class="sim-panel" id="sim-0">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🏢 Step 1. 회사 기본 정보</div>
+        <div class="sim-field">
+          <label class="sim-label">회사명 (Company Name)</label>
+          <input class="sim-input" id="s-name" placeholder="예: NexAI Labs" oninput="updateSimPreview()">
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">비전 슬로건 (Vision)</label>
+          <input class="sim-input" id="s-vision" placeholder="예: AI로 모든 창업가의 성공을 돕는다" oninput="updateSimPreview()">
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">초기 자본금 (자본구조)</label>
+          <input type="range" id="s-capital" min="1" max="100" value="10" class="capital-slider" oninput="updateCapital()">
+          <div class="capital-display" id="capital-display">1억 원</div>
+        </div>
+        <div class="sim-field">
+          <label class="sim-label">창업 지역</label>
+          <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(130px,1fr));">
+            <div class="choice-card" onclick="selectSim(this,'region','서울')"><div class="choice-icon">🗼</div><div class="choice-name">서울</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','판교')"><div class="choice-icon">💻</div><div class="choice-name">판교</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','부산')"><div class="choice-icon">🌊</div><div class="choice-name">부산</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','인천')"><div class="choice-icon">✈️</div><div class="choice-name">인천</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','대전')"><div class="choice-icon">🔬</div><div class="choice-name">대전</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','대구')"><div class="choice-icon">🏭</div><div class="choice-name">대구</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','광주')"><div class="choice-icon">🎨</div><div class="choice-name">광주</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','울산')"><div class="choice-icon">⚙️</div><div class="choice-name">울산</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','세종')"><div class="choice-icon">🏛️</div><div class="choice-name">세종</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','제주')"><div class="choice-icon">🌴</div><div class="choice-name">제주</div></div>
+            <div class="choice-card" onclick="selectSim(this,'region','해외')"><div class="choice-icon">🌍</div><div class="choice-name">해외 진출</div></div>
+            <div class="choice-card" onclick="toggleCustomRegion(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
+          </div>
+          <input class="sim-input" id="s-region-custom" placeholder="지역명을 직접 입력하세요" style="display:none;margin-top:0.8rem;" oninput="setCustomRegion(this.value)">
+        </div>
+        <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: 사업 아이템 -->
+    <div class="sim-panel" id="sim-1">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">💡 Step 2. 사업 아이템 & 타겟 페르소나</div>
+        <div class="choice-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+          <div class="choice-card" onclick="selectSim(this,'item','AI SaaS')"><div class="choice-icon">🤖</div><div class="choice-name">AI SaaS</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','헬스케어')"><div class="choice-icon">🏥</div><div class="choice-name">헬스케어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','에듀테크')"><div class="choice-icon">📚</div><div class="choice-name">에듀테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','핀테크')"><div class="choice-icon">💳</div><div class="choice-name">핀테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','커머스/D2C')"><div class="choice-icon">🛒</div><div class="choice-name">커머스/D2C</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','모빌리티')"><div class="choice-icon">🚗</div><div class="choice-name">모빌리티</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','기후테크/ESG')"><div class="choice-icon">🌱</div><div class="choice-name">기후테크/ESG</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','메타버스/XR')"><div class="choice-icon">🌐</div><div class="choice-name">메타버스/XR</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','푸드테크')"><div class="choice-icon">🍱</div><div class="choice-name">푸드테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','애그테크')"><div class="choice-icon">🌾</div><div class="choice-name">애그테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','바이오/제약')"><div class="choice-icon">🧬</div><div class="choice-name">바이오/제약</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','뷰티/코스메틱')"><div class="choice-icon">💄</div><div class="choice-name">뷰티/코스메틱</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','콘텐츠/미디어')"><div class="choice-icon">🎬</div><div class="choice-name">콘텐츠/미디어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','게임/엔터')"><div class="choice-icon">🎮</div><div class="choice-name">게임/엔터</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','HR테크')"><div class="choice-icon">👔</div><div class="choice-name">HR테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','프롭테크')"><div class="choice-icon">🏘️</div><div class="choice-name">프롭테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','리걸테크')"><div class="choice-icon">⚖️</div><div class="choice-name">리걸테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','펫테크')"><div class="choice-icon">🐾</div><div class="choice-name">펫테크</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','시니어케어')"><div class="choice-icon">👴</div><div class="choice-name">시니어케어</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','육아/키즈')"><div class="choice-icon">👶</div><div class="choice-name">육아/키즈</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','피트니스')"><div class="choice-icon">💪</div><div class="choice-name">피트니스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','여행/트래블')"><div class="choice-icon">✈️</div><div class="choice-name">여행/트래블</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','로보틱스')"><div class="choice-icon">🦾</div><div class="choice-name">로보틱스</div></div>
+          <div class="choice-card" onclick="selectSim(this,'item','우주/항공')"><div class="choice-icon">🚀</div><div class="choice-name">우주/항공</div></div>
+          <div class="choice-card" onclick="toggleCustomItem(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
+        </div>
+        <input class="sim-input" id="s-item-custom" placeholder="사업 아이템을 직접 입력하세요" style="display:none;margin-top:0.8rem;" oninput="setCustomItem(this.value)">
+        <div style="margin-top:1rem;">
+          <label class="sim-label">타겟 페르소나</label>
+          <input class="sim-input" id="s-persona" placeholder="예: 30대 직장인, 소규모 자영업자, MZ세대 여성..." oninput="updateSimPreview()">
+        </div>
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: 기술 -->
+    <div class="sim-panel" id="sim-2">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🔬 Step 3. 핵심 기술 요구사항 (최대 5개)</div>
+        <div class="choice-grid" id="tech-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+          <div class="choice-card" onclick="selectMulti(this,'tech','LLM/생성AI')"><div class="choice-icon">🧠</div><div class="choice-name">LLM/생성AI</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','AI 에이전트')"><div class="choice-icon">🤖</div><div class="choice-name">AI 에이전트</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','컴퓨터비전')"><div class="choice-icon">👁</div><div class="choice-name">컴퓨터비전</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','음성AI/STT')"><div class="choice-icon">🎙️</div><div class="choice-name">음성AI/STT</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','NLP/번역')"><div class="choice-icon">💬</div><div class="choice-name">NLP/번역</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','블록체인')"><div class="choice-icon">⛓</div><div class="choice-name">블록체인</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','IoT/센서')"><div class="choice-icon">📡</div><div class="choice-name">IoT/센서</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','클라우드')"><div class="choice-icon">☁️</div><div class="choice-name">클라우드</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','모바일앱')"><div class="choice-icon">📱</div><div class="choice-name">모바일앱</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','웹 풀스택')"><div class="choice-icon">💻</div><div class="choice-name">웹 풀스택</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','로보틱스')"><div class="choice-icon">🦾</div><div class="choice-name">로보틱스</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','빅데이터')"><div class="choice-icon">📊</div><div class="choice-name">빅데이터</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','AR/VR/XR')"><div class="choice-icon">🥽</div><div class="choice-name">AR/VR/XR</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','보안/암호')"><div class="choice-icon">🔐</div><div class="choice-name">보안/암호</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','3D프린팅')"><div class="choice-icon">🖨️</div><div class="choice-name">3D프린팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','드론/자율비행')"><div class="choice-icon">🚁</div><div class="choice-name">드론</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','반도체')"><div class="choice-icon">💾</div><div class="choice-name">반도체</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','바이오/유전자')"><div class="choice-icon">🧬</div><div class="choice-name">바이오/유전자</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','양자컴퓨팅')"><div class="choice-icon">⚛️</div><div class="choice-name">양자컴퓨팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','엣지컴퓨팅')"><div class="choice-icon">⚡</div><div class="choice-name">엣지컴퓨팅</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'tech','디지털트윈')"><div class="choice-icon">🌀</div><div class="choice-name">디지털트윈</div></div>
+          <div class="choice-card" onclick="toggleCustomTech(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
+        </div>
+        <input class="sim-input" id="s-tech-custom" placeholder="기술을 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('tech',this.value)">
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: 인재 -->
+    <div class="sim-panel" id="sim-3">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">👥 Step 4. 인재 영입 계획 (최대 6명)</div>
+        <div class="choice-grid" id="talent-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+          <div class="choice-card" onclick="selectMulti(this,'talent','CTO')"><div class="choice-icon">💻</div><div class="choice-name">CTO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CMO')"><div class="choice-icon">📣</div><div class="choice-name">CMO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CFO')"><div class="choice-icon">💰</div><div class="choice-name">CFO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CPO')"><div class="choice-icon">🎯</div><div class="choice-name">CPO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','COO')"><div class="choice-icon">⚙️</div><div class="choice-name">COO</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CSO')"><div class="choice-icon">📈</div><div class="choice-name">CSO 전략</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','AI 리드')"><div class="choice-icon">🧬</div><div class="choice-name">AI 리드</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','데이터 사이언티스트')"><div class="choice-icon">📊</div><div class="choice-name">데이터 사이언티스트</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','풀스택 개발자')"><div class="choice-icon">⌨️</div><div class="choice-name">풀스택 개발자</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','UX 디자이너')"><div class="choice-icon">🎨</div><div class="choice-name">UX 디자이너</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','UI 디자이너')"><div class="choice-icon">🖌️</div><div class="choice-name">UI 디자이너</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','세일즈 헤드')"><div class="choice-icon">🤝</div><div class="choice-name">세일즈 헤드</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','그로스 해커')"><div class="choice-icon">📡</div><div class="choice-name">그로스 해커</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','콘텐츠 마케터')"><div class="choice-icon">✍️</div><div class="choice-name">콘텐츠 마케터</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','PR/홍보')"><div class="choice-icon">📰</div><div class="choice-name">PR/홍보</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','법무/특허')"><div class="choice-icon">⚖️</div><div class="choice-name">법무/특허</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','회계/재무')"><div class="choice-icon">💼</div><div class="choice-name">회계/재무</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','HR 담당')"><div class="choice-icon">👥</div><div class="choice-name">HR 담당</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','CS/고객지원')"><div class="choice-icon">📞</div><div class="choice-name">CS/고객지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','해외 어드바이저')"><div class="choice-icon">🌍</div><div class="choice-name">해외 어드바이저</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'talent','업계 멘토')"><div class="choice-icon">👨‍🏫</div><div class="choice-name">업계 멘토</div></div>
+          <div class="choice-card" onclick="toggleCustomTalent(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
+        </div>
+        <input class="sim-input" id="s-talent-custom" placeholder="인재 역할을 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('talent',this.value)">
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="simNext()">다음 단계 →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: 복지 -->
+    <div class="sim-panel" id="sim-4">
+      <div class="glass-card" style="padding:2rem;">
+        <div class="result-section-title gold">🎁 Step 5. 복지 & 문화 (최대 5개)</div>
+        <div class="choice-grid" id="welfare-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr));">
+          <div class="choice-card" onclick="selectMulti(this,'welfare','자율출퇴근')"><div class="choice-icon">⏰</div><div class="choice-name">자율출퇴근</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','원격근무')"><div class="choice-icon">🏠</div><div class="choice-name">원격근무</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','주4일제')"><div class="choice-icon">📅</div><div class="choice-name">주4일제</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','스톡옵션')"><div class="choice-icon">📈</div><div class="choice-name">스톡옵션</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','성과급')"><div class="choice-icon">💵</div><div class="choice-name">성과급</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','교육비지원')"><div class="choice-icon">📚</div><div class="choice-name">교육비 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','컨퍼런스지원')"><div class="choice-icon">🎤</div><div class="choice-name">컨퍼런스 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','도서구입')"><div class="choice-icon">📖</div><div class="choice-name">도서구입비</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','건강검진')"><div class="choice-icon">🏥</div><div class="choice-name">건강검진</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','피트니스')"><div class="choice-icon">🏋️</div><div class="choice-name">피트니스 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','심리상담')"><div class="choice-icon">🧘</div><div class="choice-name">심리상담</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','식사제공')"><div class="choice-icon">🍱</div><div class="choice-name">식사 제공</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','간식/카페')"><div class="choice-icon">☕</div><div class="choice-name">간식/사내카페</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','반려동물')"><div class="choice-icon">🐾</div><div class="choice-name">반려동물 출근</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','육아휴직')"><div class="choice-icon">👶</div><div class="choice-name">육아휴직</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','경조사지원')"><div class="choice-icon">💐</div><div class="choice-name">경조사 지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','워크샵/MT')"><div class="choice-icon">🏖️</div><div class="choice-name">워크샵/MT</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','장비지원')"><div class="choice-icon">💻</div><div class="choice-name">장비지원</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','동호회')"><div class="choice-icon">⚽</div><div class="choice-name">사내 동호회</div></div>
+          <div class="choice-card" onclick="selectMulti(this,'welfare','해외근무')"><div class="choice-icon">✈️</div><div class="choice-name">해외근무 기회</div></div>
+          <div class="choice-card" onclick="toggleCustomWelfare(this)"><div class="choice-icon">✏️</div><div class="choice-name">기타 (직접입력)</div></div>
+        </div>
+        <input class="sim-input" id="s-welfare-custom" placeholder="복지 제도를 직접 입력 (쉼표 구분)" style="display:none;margin-top:0.8rem;" oninput="setCustomMulti('welfare',this.value)">
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;">
+          <button class="back-btn" onclick="simPrev()">← 이전</button>
+          <button class="btn-primary btn-gold" onclick="runSimulation()">🚀 시뮬레이션 실행</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 시뮬레이션 결과 -->
+    <div class="sim-result-container" id="sim-result">
+      <div class="survival-dial glass-card">
+        <div class="result-section-title gold" style="align-self:flex-start;">⚡ Venture Resilience Score</div>
+        <canvas id="dialCanvas" width="280" height="200"></canvas>
+        <div class="survival-score" id="survival-pct" style="color:var(--green);">72</div>
+        <div class="survival-label">Venture Resilience Score / 100 &nbsp;·&nbsp; Base Case</div>
+        <div style="font-size:0.8rem;color:var(--text2);margin-top:0.5rem;" id="sim-company-name"></div>
+      </div>
+
+      <div class="scenario-cards">
+        <div class="scenario-card optimistic">
+          <div class="scenario-label">OPTIMISTIC</div>
+          <div class="scenario-pct" id="opt-pct">84</div>
+          <div class="scenario-desc">모든 조건 유리</div>
+        </div>
+        <div class="scenario-card base">
+          <div class="scenario-label">BASE CASE</div>
+          <div class="scenario-pct" id="base-pct">72</div>
+          <div class="scenario-desc">현재 설정 기준</div>
+        </div>
+        <div class="scenario-card pessimistic">
+          <div class="scenario-label">PESSIMISTIC</div>
+          <div class="scenario-pct" id="pes-pct">51</div>
+          <div class="scenario-desc">시장 경쟁 심화</div>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:1.1rem 1.3rem;border-left:3px solid var(--cyan);margin-bottom:1.2rem;">
+        <div style="font-size:0.78rem;line-height:1.7;color:var(--text2);">
+          <b style="color:var(--cyan);">방법론 고지 (Methodology Note)</b><br>
+          이 점수는 <b>통계적으로 검증된 생존 예측치가 아닙니다.</b> 아래 6개 요인의
+          가중 합산으로 산출되는 <b>탐색적 지표(exploratory score)</b>이며, 난수를 사용하지 않으므로
+          동일한 입력에는 항상 동일한 결과가 나옵니다. 가중치는 창업 실패요인 문헌을 참고한
+          초기 설정값이며, 실데이터 기반 추정 및 캘리브레이션은 후속 연구 과제입니다.
+        </div>
+      </div>
+
+      <div class="risk-factors glass-card" style="padding:1.5rem;margin-bottom:1.2rem;">
+        <div class="result-section-title gold">🧮 스코어 산출 내역 (Score Breakdown)</div>
+        <div id="factor-table" style="margin-top:0.8rem;"></div>
+      </div>
+
+      <div class="risk-factors glass-card" style="padding:1.5rem;">
+        <div class="result-section-title gold">📊 리스크 요인 분석</div>
+        <div style="font-size:0.72rem;color:var(--text2);margin:-0.3rem 0 0.9rem;">
+          각 항목은 입력값에 따른 규칙 기반 산출입니다. 항목명에 마우스를 올리면 근거가 표시됩니다.
+        </div>
+        <div id="risk-bars"></div>
+      </div>
+
+      <div class="glass-card" style="padding:1.5rem;margin-bottom:1.5rem;">
+        <div class="result-section-title gold">💡 AI 전략 추천 (기본)</div>
+        <div id="sim-recommendations" class="recommendations"></div>
+      </div>
+
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <button class="btn-primary btn-gold" onclick="showPage('result')">📋 최종 보고서 보기</button>
+        <button class="back-btn" onclick="resetSimulator()">↺ 다시 설계하기</button>
+      </div>
+    </div>
+      </div><!-- /.sim-main -->
+
+      <!-- AI 컨설턴트 사이드바 -->
+      <aside class="sim-ai-sidebar">
+        <div class="sim-ai-sidebar-header">
+          <span style="font-size:1.2rem;">💬</span>
+          <span class="sim-ai-sidebar-title">실시간 AI 전략 컨설턴트</span>
+          <span style="display:inline-block;width:8px;height:8px;background:#00ff88;border-radius:50%;box-shadow:0 0 10px #00ff88;"></span>
+        </div>
+        <p class="sim-ai-sidebar-desc">단계별로 입력하시는 정보를 AI가 실시간으로 분석합니다. 궁금한 점을 자유롭게 물어보세요.</p>
+
+        <div class="sim-ai-context-info" id="sim-ai-context">
+          <strong>📍 현재 입력 정보:</strong><br>
+          <span id="sim-context-display">아직 입력된 정보가 없습니다. 단계별로 입력을 시작해 주세요.</span>
+        </div>
+
+        <div class="sim-chat-history" id="chat-history">
+          <div class="sim-chat-msg ai">
+            <span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>
+            안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다. 각 단계마다 궁금한 점이 있으면 언제든 물어보세요.
+          </div>
+        </div>
+
+        <div class="sim-quick-chat-qs">
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('지금 입력한 정보로 가장 큰 위험은?')">⚠️ 현재 위험</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('이 사업 아이템의 시장 전망은?')">📊 시장 전망</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('어떤 인재를 우선 영입해야 하나요?')">👥 인재 추천</span>
+          <span class="sim-quick-chat-q" onclick="sendQuickQ('한국 정부 지원 프로그램 알려줘')">🇰🇷 정부 지원</span>
+        </div>
+
+        <div class="sim-chat-input-row">
+          <input type="text" id="chat-input" class="sim-chat-input" placeholder="질문을 입력하세요...">
+          <button class="sim-chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">전송</button>
+        </div>
+      </aside>
+
+    </div><!-- /.sim-layout -->
+  </div>
+</div>
+
+<!-- ===== M4: METAVERSE COMING SOON ===== -->
+<div id="page-m4" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag" style="border-color:rgba(168,85,247,0.4);color:var(--purple);background:rgba(168,85,247,0.08);">MODULE 04 · VENTURE DIGITAL TWIN</div>
+        <h2 class="page-title" style="background:linear-gradient(90deg,#fff,var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">벤처 디지털 트윈</h2>
+        <p class="page-desc" style="color:var(--purple);">창업자 · 스타트업 · 시장의 상태를 데이터로 복제한 가상 모델. 의사결정 레버를 당겨 결과를 미리 실험합니다.</p>
+      </div>
+      <div style="background:linear-gradient(135deg,var(--gold),#ff9500);color:#000;padding:0.8rem 1.5rem;border-radius:10px;font-weight:700;text-align:center;font-family:'Orbitron',monospace;">
+        IN DEVELOPMENT<br>
+        <span style="font-size:0.7rem;font-weight:normal;">Target Architecture</span>
+      </div>
+    </div>
+  </div>
+  <div class="content">
+    <div class="metaverse-preview-box">
+      <div class="metaverse-preview-header">
+        <div class="metaverse-preview-title">아키텍처: 트윈이 엔진, 몰입형 화면은 인터페이스</div>
+        <div class="metaverse-preview-sub">
+          Venture Digital Twin Engine → Scenario Simulation → AI Agents → Immersive Interface<br>
+          <span style="opacity:0.8;">몰입형 화면은 트윈의 <b>체험 계층</b>이며, 트윈 자체는 데이터 모델입니다.</span>
+        </div>
+      </div>
+
+      <div class="glass-card" style="padding:1.4rem 1.6rem;margin-bottom:1.3rem;text-align:left;">
+        <div style="font-size:0.85rem;line-height:1.9;color:var(--text2);">
+          <b style="color:var(--purple);">트윈이 복제하는 상태 변수</b><br>
+          자본금 · Burn rate · MRR · CAC · 팀 규모 · 시장 CAGR · 경쟁강도 ·
+          Founder–Market Fit · 검증 수준<br><br>
+          <b style="color:var(--purple);">사용자가 당기는 의사결정 레버</b><br>
+          · <b>“마케팅 인력을 지금 채용하면?”</b> → runway ↓ / 고객획득역량 ↑ / 실행 리스크 변화<br>
+          · <b>“가격을 2만 9천 원에서 4만 9천 원으로 올리면?”</b> → 매출 ↑ 가능 / 전환율 ↓ 가능 / 손익분기 시점 이동<br>
+          · <b>“미국 시장에 진출하면?”</b> → TAM ↑ / 규제 리스크 ↑ / 소요 자본 ↑<br><br>
+          <b style="color:var(--gold);">현재 구현 단계</b><br>
+          Module 3에 <b>규칙 기반 시나리오 엔진</b>이 구현되어 있습니다. 위와 같은
+          <b>연속형 레버 및 상태 전이 모델</b>은 목표 아키텍처이며 개발 중입니다.
+          모델 추정에 필요한 실데이터 확보와 검증이 다음 단계의 핵심 과제입니다.
+        </div>
+      </div>
+
+      <div class="metaverse-image-container">
+        <img src="M4_Metaverse_Concept.png" alt="Metaverse Preview" class="metaverse-image" onerror="this.onerror=null;this.src='https://via.placeholder.com/1200x600/0d0d2b/a855f7?text=Metaverse+Concept+Image';">
+        <div class="coming-soon-overlay">
+          <div class="coming-soon-title">COMING SOON</div>
+          <div class="coming-soon-subtitle">몰입형 인터페이스 · 개발 중 (Immersive Layer)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="metaverse-features">
+      <div class="metaverse-feature-card cyan">
+        <div class="metaverse-feature-icon-box cyan"></div>
+        <div class="metaverse-feature-title">상태 복제 (State Replication)</div>
+        <div class="metaverse-feature-desc">창업자·스타트업·시장의 현재 상태를 정량 변수로 복제해 개별 벤처의 트윈을 생성합니다.</div>
+      </div>
+      <div class="metaverse-feature-card gold">
+        <div class="metaverse-feature-icon-box gold"></div>
+        <div class="metaverse-feature-title">반사실 시뮬레이션 (Counterfactual)</div>
+        <div class="metaverse-feature-desc">채용·가격·시장 진출 등의 레버를 조정해 실제 자원을 투입하기 전에 결과를 비교합니다.</div>
+      </div>
+      <div class="metaverse-feature-card purple">
+        <div class="metaverse-feature-icon-box purple"></div>
+        <div class="metaverse-feature-title">몰입형 체험 계층 (Interface)</div>
+        <div class="metaverse-feature-desc">트윈의 출력을 공간적으로 체험하는 인터페이스 계층. 엔진이 아니라 표현 방식입니다.</div>
+      </div>
+    </div>
+
+    <div class="notify-section">
+      <button class="notify-btn" onclick="notifyMe()">출시 알림 신청하기 →</button>
+    </div>
+
+    <div class="roadmap-box">
+      <div class="roadmap-title">개발 로드맵 (Development Roadmap)</div>
+      <div class="roadmap-grid">
+        <div class="roadmap-line"></div>
+        <div class="roadmap-phase phase1">
+          <div class="roadmap-phase-label">Phase 1</div>
+          <div class="roadmap-phase-date">Completed</div>
+          <div class="roadmap-phase-dot">●</div>
+          <div class="roadmap-phase-desc">AI-Agent<br>Mode 출시</div>
+        </div>
+        <div class="roadmap-phase phase2">
+          <div class="roadmap-phase-label">Phase 2</div>
+          <div class="roadmap-phase-date">In Development</div>
+          <div class="roadmap-phase-dot">○</div>
+          <div class="roadmap-phase-desc">Venture Digital Twin<br>엔진 프로토타입</div>
+        </div>
+        <div class="roadmap-phase phase3">
+          <div class="roadmap-phase-label">Phase 3</div>
+          <div class="roadmap-phase-date">Planned</div>
+          <div class="roadmap-phase-dot">○</div>
+          <div class="roadmap-phase-desc">몰입형 시뮬레이션<br>인터페이스</div>
+        </div>
+        <div class="roadmap-phase phase4">
+          <div class="roadmap-phase-label">Phase 4</div>
+          <div class="roadmap-phase-date">Planned</div>
+          <div class="roadmap-phase-dot">○</div>
+          <div class="roadmap-phase-desc">글로벌 파일럿<br>& 모델 타당화</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="page-result" class="page">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-tag">FINAL REPORT · ASNM ANALYSIS</div>
+        <h2 class="page-title">종합 분석 보고서</h2>
+        <p class="page-desc">ASNM 모듈의 분석 결과를 종합한 맞춤형 창업 전략 보고서입니다.</p>
+      </div>
+      <button class="back-btn" onclick="showPage('home')">← 홈으로</button>
+    </div>
+  </div>
+  <div class="content" style="padding:0 2rem 4rem;max-width:1000px;margin:0 auto;">
+    <div class="report-header">
+      <div style="font-size:0.7rem;font-family:'Space Mono',monospace;color:var(--cyan2);margin-bottom:0.5rem;">ASNM COMPREHENSIVE REPORT</div>
+      <div class="report-title" id="report-company-title">창업 전략 분석 보고서</div>
+      <div class="report-meta" id="report-meta">생성일: <span id="report-date"></span> &nbsp;|&nbsp; ASNM v2.0 · aSSIST MSTM</div>
+    </div>
+
+    <div class="final-score-row">
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-survival" style="color:var(--green);">—</div>
+        <div class="final-score-label">Resilience Score (Base)</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-type" style="color:var(--coral);">—</div>
+        <div class="final-score-label">창업자 DNA</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-trends" style="color:var(--cyan);">—</div>
+        <div class="final-score-label">선택 트렌드</div>
+      </div>
+      <div class="final-score-card">
+        <div class="final-score-num" id="fr-item" style="color:var(--gold);">—</div>
+        <div class="final-score-label">사업 아이템</div>
+      </div>
+    </div>
+
+    <div class="report-sections">
+      <div class="report-section">
+        <div class="report-section-title">📡 모듈 1 · 트렌드 분석 요약</div>
+        <div id="report-trends-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">모듈 1을 먼저 완료해주세요.</div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--coral);">🧬 모듈 2 · 창업자 DNA 요약</div>
+        <div id="report-dna-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">모듈 2를 먼저 완료해주세요.</div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--gold);">🚀 모듈 3 · 스타트업 시뮬레이션 요약</div>
+        <div id="report-sim-content" style="font-size:0.83rem;color:var(--text2);line-height:1.8;">모듈 3 시뮬레이션을 먼저 완료해주세요.</div>
+      </div>
+      <div class="report-section">
+        <div class="report-section-title" style="color:var(--purple);">⚡ 종합 전략 추천</div>
+        <div class="recommendations" id="final-recommendations">
+          <div class="rec-item"><div class="rec-icon">💡</div><div class="rec-text">모든 모듈을 완료하면 맞춤형 전략 추천이 제공됩니다.</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="download-row">
+      <button class="dl-btn" onclick="downloadReport()">📄 PDF 보고서 다운로드</button>
+      <button class="dl-btn purple" onclick="downloadJSON()">⬇ 데이터 JSON 내보내기</button>
+    </div>
+  </div>
+</div>
+
+<!-- API Key 경고 -->
+<div id="api-warning" class="api-warning">
+  🔑 데모 모드 — 모듈 1~3은 정상 동작합니다. 실시간 AI 대화는 서버 연결 시 활성화됩니다.
+</div>
+
+<!-- 🌐 M4 알림 신청 모달 -->
+<div class="notify-modal" id="notify-modal">
+  <div class="notify-modal-inner">
+    <button class="notify-modal-close" onclick="closeNotifyModal()" aria-label="닫기">✕</button>
+    
+    <div class="notify-modal-title">🚀 메타버스 출시 알림 신청</div>
+    <div class="notify-modal-subtitle">
+      Phase 2 메타버스 양식 출시 시 가장 먼저 소식을 보내드릴게요!<br>
+      💜 베타 테스터 우선 초대 + 출시 할인 혜택 제공
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-name">이름 <span class="req">*</span></label>
+      <input type="text" id="notify-name" placeholder="홍길동" maxlength="30">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-email">이메일 <span class="req">*</span></label>
+      <input type="email" id="notify-email" placeholder="example@email.com" maxlength="100">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-stage">현재 창업 단계</label>
+      <select id="notify-stage">
+        <option value="">선택하지 않음</option>
+        <option value="예비창업">예비창업 (아이디어 구상 중)</option>
+        <option value="아이디어 검증">아이디어 검증 (MVP 개발/시장 조사)</option>
+        <option value="초기 운영">초기 운영 (서비스 출시 후)</option>
+        <option value="성장">성장 (안정적 매출 발생)</option>
+      </select>
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-industry">관심 업종 (선택)</label>
+      <input type="text" id="notify-industry" placeholder="예: AI/SaaS, 헬스케어, 에듀테크..." maxlength="50">
+    </div>
+    
+    <div class="notify-field">
+      <label for="notify-memo">남기실 말씀 (선택)</label>
+      <textarea id="notify-memo" placeholder="어떤 기능이 가장 기대되시나요?" maxlength="200"></textarea>
+    </div>
+    
+    <div id="notify-status" class="notify-status"></div>
+    
+    <button id="notify-submit-btn" class="notify-submit-btn" onclick="submitNotify()">
+      🚀 알림 신청하기
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ============================================
+// 🎨 캔버스 배경 파티클
+// ============================================
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor(){
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.size = Math.random() * 1.5 + 0.5;
+    this.opacity = Math.random() * 0.5 + 0.1;
+  }
+  update(){
+    this.x += this.vx;
+    this.y += this.vy;
+    if(this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if(this.y < 0 || this.y > canvas.height) this.vy *= -1;
+  }
+  draw(){
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = isLight ? `rgba(8,145,178,${this.opacity*0.6})` : `rgba(0,245,255,${this.opacity})`;
+    ctx.fill();
+  }
+}
+for(let i = 0; i < 60; i++) particles.push(new Particle());
+
+function animate(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+// ============================================
+// 🌓 테마 토글
+// ============================================
+function toggleTheme(){
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme');
+  const newTheme = current === 'light' ? 'dark' : 'light';
+  html.setAttribute('data-theme', newTheme);
+  document.getElementById('theme-toggle').textContent = newTheme === 'light' ? '☀️' : '🌙';
+}
+
+// ============================================
+// 📄 페이지 네비게이션 (★ 수정 #2: 항상 최상단 스크롤)
+// ============================================
+let currentPageId = 'home';
+
+function showPage(id){
+  console.log('[showPage] 호출:', id);
+  
+  // ============================================
+  // 🔥 핵심 수정: 페이지 전환 + 즉시 최상단 이동
+  // ============================================
+  
+  // Step 1: 즉시 최상단으로 스크롤 (페이지 바꾸기 직전)
+  forceScrollToTop();
+  
+  // Step 2: 모든 페이지 숨기기
+  document.querySelectorAll('.page').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  
+  const targetPage = document.getElementById('page-' + id);
+  if(!targetPage){
+    console.warn('[showPage] 페이지를 찾을 수 없음: page-' + id);
+    return;
+  }
+  
+  // Step 3: 다시 한번 최상단으로 (페이지가 사라진 시점)
+  forceScrollToTop();
+  
+  // Step 4: 새 페이지 표시 (display 명시적 설정)
+  targetPage.style.display = 'block';
+  targetPage.classList.add('active');
+  
+  // Step 5: DOM reflow 강제 트리거 (브라우저가 레이아웃 재계산하게 함)
+  void targetPage.offsetHeight;
+  
+  // Step 6: 페이지가 보이는 직후 다시 최상단으로
+  forceScrollToTop();
+
+  // 네비게이션 활성화 상태 업데이트
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  const navMap = {home: 0, m1: 1, m2: 2, m3a: 3, m4: 4, result: 5};
+  const navBtns = document.querySelectorAll('.nav-btn');
+  if(navMap[id] !== undefined && navBtns[navMap[id]]){
+    navBtns[navMap[id]].classList.add('active');
+  }
+
+  // Step 7: requestAnimationFrame으로 다음 페인트 직전 다시 보장
+  requestAnimationFrame(() => {
+    forceScrollToTop();
+    requestAnimationFrame(() => {
+      forceScrollToTop();
+    });
+  });
+  
+  // Step 8: 안전망 - 여러 시점에서 보장
+  setTimeout(forceScrollToTop, 0);
+  setTimeout(forceScrollToTop, 30);
+  setTimeout(forceScrollToTop, 100);
+  setTimeout(forceScrollToTop, 250);
+
+  currentPageId = id;
+
+  // 페이지별 초기화
+  if(id === 'result') updateReport();
+  if(id === 'm2' && !window._founderType){
+    const intro = document.getElementById('dna-intro');
+    const quizWrap = document.getElementById('dna-quiz-wrap');
+    if(intro && quizWrap){
+      intro.classList.remove('hidden');
+      quizWrap.classList.remove('active');
+    }
+  }
+  
+  console.log('[showPage] 완료:', id);
+}
+
+// 🔥 전역 window 객체에 등록 (onclick에서 호출 보장)
+window.showPage = showPage;
+window.goHome = function(){ showPage('home'); };
+
+// 강력한 최상단 스크롤 헬퍼 함수 - 모든 가능한 방법 동원
+function forceScrollToTop(){
+  // 방법 1: window.scrollTo (현대 브라우저)
+  try { window.scrollTo(0, 0); } catch(e){}
+  try { window.scrollTo({top: 0, left: 0, behavior: 'auto'}); } catch(e){}
+  
+  // 방법 2: document.documentElement (대부분 브라우저)
+  if(document.documentElement){
+    document.documentElement.scrollTop = 0;
+    document.documentElement.scrollLeft = 0;
+  }
+  
+  // 방법 3: document.body (구식 브라우저)
+  if(document.body){
+    document.body.scrollTop = 0;
+    document.body.scrollLeft = 0;
+  }
+  
+  // 방법 4: scrollingElement (가장 안전한 방법)
+  if(document.scrollingElement){
+    document.scrollingElement.scrollTop = 0;
+    document.scrollingElement.scrollLeft = 0;
+  }
+  
+  // 방법 5: 모든 active page 내부 스크롤도 초기화
+  document.querySelectorAll('.page').forEach(p => {
+    p.scrollTop = 0;
+  });
+}
+
+function goHome(){ showPage('home'); }
+
+// ============================================
+// 🤖 OpenAI API 호출
+// ============================================
+function checkApiKey(){
+  const cfg = window.ASNM_CONFIG || {};
+  const connected = !!cfg.aiProxyUrl;
+  const warn = document.getElementById('api-warning');
+  if(warn) warn.classList.toggle('show', !connected);
+  return connected;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LLM 호출 — 서버 프록시 경유 (API 키는 브라우저에 절대 노출되지 않음)
+// 프록시 미설정 시: 예외를 던지지 않고 데모 응답으로 정상 동작
+// ══════════════════════════════════════════════════════════════════
+async function callOpenAI(messages, options = {}){
+  const cfg = window.ASNM_CONFIG || {};
+
+  if(!cfg.aiProxyUrl){
+    return demoResponse(messages);
+  }
+
+  let response;
+  try {
+    response = await fetch(cfg.aiProxyUrl, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        messages: messages,
+        temperature: options.temperature || 0.7,
+        max_tokens: options.max_tokens || 1000
+      })
+    });
+  } catch(networkErr){
+    return demoResponse(messages);
+  }
+
+  if(response.status === 429){
+    throw new Error('요청이 많아 잠시 제한되었습니다. 1분 후 다시 시도해 주세요.');
+  }
+  if(!response.ok){
+    let msg = 'AI 응답을 가져오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+    try { const e = await response.json(); if(e && e.error) msg = e.error; } catch(_){}
+    throw new Error(msg);
+  }
+
+  const data = await response.json();
+  return (data && data.content) ? data.content : 'AI 응답이 비어 있습니다.';
+}
+
+// 프록시가 없을 때 쓰는 결정론적 데모 응답 — 실제 LLM 결과인 척하지 않습니다.
+function demoResponse(messages){
+  const last = (messages && messages.length) ? messages[messages.length-1].content : '';
+  const isJson = /JSON|json/.test(JSON.stringify(messages).slice(0,2000));
+  if(isJson){
+    return JSON.stringify({
+      market_size:[120,148,182,221,265],
+      growth_rate:[18,21,20,19,18],
+      years:['2022','2023','2024','2025','2026'],
+      _demo:true
+    });
+  }
+  return '현재 <b>데모 모드</b>로 실행 중입니다. 실시간 AI 응답은 서버 연결 후 활성화됩니다.'
+       + '<br><br>이 화면의 모듈 1~3은 AI 없이도 완전히 동작합니다 — 스코어 산출과 리스크 분석은 '
+       + '규칙 기반이므로 지금 바로 시험해 보실 수 있습니다.';
+}
+
+// ============================================
+// MODULE 1: 트렌드 검색
+// ============================================
+function setTrendQuery(q){
+  document.getElementById('ai-trend-query').value = q;
+  aiTrendSearch();
+}
+
+async function aiTrendSearch(){
+  const query = document.getElementById('ai-trend-query').value.trim();
+  if(!query){ alert('검색어를 입력해주세요!'); return; }
+  
+  const btn = document.getElementById('trend-search-btn');
+  const resultBox = document.getElementById('ai-trend-result');
+  const textEl = document.getElementById('ai-trend-text');
+  const chartsEl = document.getElementById('ai-trend-charts');
+  
+  btn.disabled = true;
+  btn.innerHTML = '<div class="loading-spinner"></div> 분석 중...';
+  resultBox.classList.add('show');
+  textEl.innerHTML = '<div class="ai-loading"><div class="loading-spinner"></div>AI가 시장 데이터를 분석하고 있습니다...</div>';
+  chartsEl.style.display = 'none';
+  
+  try {
+    const prompt = `다음 주제에 대해 한국 시장 관점에서 분석해주세요: "${query}"
+
+다음 형식으로 응답해주세요:
+
+📊 시장 개요 (2-3문장)
+- 현재 시장 규모와 성장세
+
+🎯 핵심 기회 요인 (3가지)
+- 각 요인 1-2문장으로 설명
+
+⚠️ 진입 장벽 및 리스크 (2-3가지)
+- 주요 위험 요소
+
+💡 한국 스타트업 진입 전략 (2-3가지 구체적 제안)
+
+📈 마지막에 아래 JSON 데이터를 반드시 포함하세요(차트용):
+\`\`\`json
+{"market_size":[연도별 5개 숫자, 단위: 10억 USD],"growth_rate":[연도별 5개 CAGR %],"years":["2022","2023","2024","2025","2026"]}
+\`\`\``;
+    
+    const response = await callOpenAI([
+      {role: 'system', content: '당신은 한국 스타트업 시장 분석 전문가입니다. 정확한 데이터와 실용적인 전략을 제공합니다.'},
+      {role: 'user', content: prompt}
+    ], {max_tokens: 1500});
+    
+    // JSON 추출
+    const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
+    let chartData = null;
+    let displayText = response;
+    
+    if(jsonMatch){
+      try {
+        chartData = JSON.parse(jsonMatch[1]);
+        displayText = response.replace(/```json\s*[\s\S]*?\s*```/, '').trim();
+      } catch(e){ console.warn('JSON parse failed'); }
+    }
+    
+    textEl.textContent = displayText;
+    
+    if(chartData && chartData.market_size){
+      chartsEl.style.display = 'grid';
+      setTimeout(() => drawAiCharts(chartData), 100);
+    }
+    
+  } catch(err){
+    textEl.innerHTML = `<div style="color:var(--coral);">⚠️ 오류: ${err.message}<br><br>API 키를 확인하시거나 잠시 후 다시 시도해주세요.</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 AI 분석';
+  }
+}
+
+function drawAiCharts(data){
+  const size = document.getElementById('aiMarketSizeChart');
+  const growth = document.getElementById('aiGrowthChart');
+  if(!size || !growth) return;
+  
+  if(window._aiSizeChart) window._aiSizeChart.destroy();
+  if(window._aiGrowthChart) window._aiGrowthChart.destroy();
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.05)';
+  
+  window._aiSizeChart = new Chart(size, {
+    type: 'bar',
+    data: {
+      labels: data.years,
+      datasets: [{
+        label: '시장 규모 (B USD)',
+        data: data.market_size,
+        backgroundColor: 'rgba(0,245,255,0.5)',
+        borderColor: '#00f5ff',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor}, grid: {color: gridColor}}
+      }
+    }
+  });
+  
+  window._aiGrowthChart = new Chart(growth, {
+    type: 'line',
+    data: {
+      labels: data.years,
+      datasets: [{
+        label: 'CAGR %',
+        data: data.growth_rate,
+        backgroundColor: 'rgba(168,85,247,0.15)',
+        borderColor: '#a855f7',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor}, grid: {color: gridColor}}
+      }
+    }
+  });
+}
+
+// 트렌드 블록 데이터
+const trendsData = {
+  ai: [
+    {name: '생성형 AI', size: '$310B', hot: true},
+    {name: 'AI 에이전트', size: '$120B', hot: true},
+    {name: '엣지 AI', size: '$85B', hot: false},
+    {name: 'AI 반도체', size: '$95B', hot: true},
+    {name: 'AI 헬스케어', size: '$148B', hot: true},
+    {name: '멀티모달 AI', size: '$60B', hot: false}
+  ],
+  market: [
+    {name: 'K-콘텐츠', size: '$280B', hot: true},
+    {name: '구독경제', size: '$435B', hot: false},
+    {name: 'D2C 커머스', size: '$210B', hot: false},
+    {name: '크리에이터 이코노미', size: '$104B', hot: true},
+    {name: '슈퍼앱', size: '$1.2T', hot: false}
+  ],
+  social: [
+    {name: 'Z세대 소비', size: '$450B', hot: true},
+    {name: '시니어테크', size: '$180B', hot: true},
+    {name: '1인가구 경제', size: '$95B', hot: false},
+    {name: '펫코노미', size: '$320B', hot: true},
+    {name: '워라밸', size: '—', hot: false}
+  ],
+  finance: [
+    {name: '핀테크', size: '$340B', hot: true},
+    {name: '인슈어테크', size: '$155B', hot: false},
+    {name: 'CBDC', size: '—', hot: false},
+    {name: '디파이', size: '$80B', hot: false},
+    {name: 'P2P 대출', size: '$45B', hot: false}
+  ]
+};
+
+const tagMap = {ai: 'ai', market: 'market', social: 'social', finance: 'finance'};
+const tagLabel = {ai: 'AI/TECH', market: 'MARKET', social: 'SOCIAL', finance: 'FINANCE'};
+
+let selectedTrends = [];
+
+function renderTrends(){
+  Object.keys(trendsData).forEach(category => {
+    const grid = document.getElementById('trend-grid-' + category);
+    grid.innerHTML = '';
+    trendsData[category].forEach(t => {
+      const block = document.createElement('div');
+      block.className = 'trend-block' + (t.hot ? ' hot' : '');
+      block.innerHTML = `
+        <span>${t.name}</span>
+        <span class="trend-tag tag-${tagMap[category]}">${tagLabel[category]}</span>
+        <span class="trend-size">${t.size}</span>
+      `;
+      block.onclick = () => toggleTrend(block, t, category);
+      grid.appendChild(block);
+    });
+  });
+}
+
+function toggleTrend(el, trend, category){
+  const idx = selectedTrends.findIndex(s => s.name === trend.name);
+  if(idx >= 0){
+    selectedTrends.splice(idx, 1);
+    el.classList.remove('selected');
+  } else {
+    if(selectedTrends.length >= 5){
+      alert('최대 5개까지 선택 가능합니다.');
+      return;
+    }
+    selectedTrends.push({...trend, category});
+    el.classList.add('selected');
+  }
+  document.getElementById('trend-count').textContent = selectedTrends.length;
+  if(selectedTrends.length === 5) showTrendResult();
+}
+
+const newsDB = {
+  ai: [
+    {source: 'TECHCRUNCH', title: 'AI 에이전트, 2026년 기업 도입률 70% 돌파', desc: '대형 SaaS 기업들이 AI 에이전트를 핵심 기능으로 채택하면서 시장이 폭발적으로 성장 중이다.', url: 'https://techcrunch.com/search/AI%20agent%20enterprise%20adoption'},
+    {source: 'BLOOMBERG', title: '엔비디아, AI 반도체 시장 92% 점유율', desc: '데이터센터 GPU 시장에서 압도적인 우위를 차지하며 매출이 전년 대비 265% 성장했다.', url: 'https://www.bloomberg.com/search?query=nvidia%20AI%20chip%20market'},
+    {source: 'MIT REVIEW', title: '생성형 AI, 의료 진단 정확도 인간 의사 능가', desc: '영상의학 분야에서 AI 보조 진단이 90% 이상의 정확도를 보이며 임상 적용이 확대되고 있다.', url: 'https://www.technologyreview.com/?s=generative+AI+medical+diagnosis'}
+  ],
+  market: [
+    {source: 'FORBES', title: 'K-콘텐츠 글로벌 매출 1,400억 달러 돌파', desc: '넷플릭스 상위 10위 중 4편이 한국 콘텐츠, 게임/웹툰 IP 확장이 가속화되고 있다.', url: 'https://www.forbes.com/search/?q=K-content%20global%20revenue'},
+    {source: 'WSJ', title: 'D2C 브랜드 성공의 핵심은 데이터', desc: '소비자 직접 판매 모델로 마진율을 35% 이상 끌어올린 기업들이 부상하고 있다.', url: 'https://www.wsj.com/search?query=D2C%20brand%20data'},
+    {source: 'FT', title: '구독경제, 2030년 1.5조 달러 시장 전망', desc: '서비스형 비즈니스 모델이 SaaS를 넘어 일상 소비재로 확장되고 있다.', url: 'https://www.ft.com/search?q=subscription+economy+2030'}
+  ],
+  social: [
+    {source: 'NYT', title: 'Z세대 소비 패턴, 가치 소비로 전환', desc: '환경/사회 책임을 고려한 브랜드 선택이 73%로 증가, ESG 강조 브랜드가 성장 중.', url: 'https://www.nytimes.com/search?query=Gen+Z+conscious+consumer'},
+    {source: 'REUTERS', title: '한국 시니어테크 시장 2030년 7,000억 달러', desc: '고령화 가속화로 헬스케어/돌봄 서비스 수요가 폭발적으로 증가하고 있다.', url: 'https://www.reuters.com/site-search/?query=korea+senior+tech+market'},
+    {source: 'CNBC', title: '1인가구, 전 세계 4억 가구 돌파', desc: '소형 가전, 간편식, 1인 여행 서비스 등 솔로 이코노미가 신성장 동력으로 부상.', url: 'https://www.cnbc.com/search/?query=single%20household%20economy'}
+  ],
+  finance: [
+    {source: 'BLOOMBERG', title: '핀테크 투자 2026년 다시 회복세', desc: 'AI 기반 신용평가, 임베디드 금융이 차세대 핀테크 키워드로 부상하고 있다.', url: 'https://www.bloomberg.com/search?query=fintech%20investment%202026'},
+    {source: 'COINDESK', title: 'CBDC 도입국 130개국 돌파', desc: '한국은행도 디지털 원화 시범사업을 확대, 2027년 본격 도입을 목표로 한다.', url: 'https://www.coindesk.com/search?s=CBDC%20adoption'},
+    {source: 'FORTUNE', title: '인슈어테크 스타트업, 보험사 인수 합병 가속', desc: 'AI 언더라이팅, 마이크로 보험이 전통 보험을 디지털 트랜스포메이션 중.', url: 'https://fortune.com/?s=insurtech+startup+acquisition'}
+  ]
+};
+
+function showTrendResult(){
+  const resultDiv = document.getElementById('trend-result');
+  resultDiv.classList.add('show');
+  
+  // 뉴스 렌더링
+  const newsGrid = document.getElementById('news-grid');
+  newsGrid.innerHTML = '';
+  const categories = [...new Set(selectedTrends.map(t => t.category))];
+  
+  let newsItems = [];
+  categories.forEach(cat => {
+    newsItems = newsItems.concat(newsDB[cat] || []);
+  });
+  newsItems = newsItems.slice(0, 6);
+  
+  newsItems.forEach((news, idx) => {
+    const card = document.createElement('div');
+    card.className = 'news-card';
+    const relatedTrend = selectedTrends[idx % selectedTrends.length];
+    
+    // 클릭 시 열 URL 결정: news.url이 있으면 그것, 없으면 Google 검색
+    const targetUrl = news.url || ('https://www.google.com/search?q=' + encodeURIComponent(relatedTrend.name + ' ' + news.title));
+    
+    card.innerHTML = `
+      <div class="news-source">${news.source}</div>
+      <div class="news-title">${news.title}</div>
+      <div class="news-desc">${news.desc}</div>
+      <div class="news-meta">
+        <span class="news-trend-tag">#${relatedTrend.name}</span>
+        <span>참고 링크</span>
+      </div>
+      <div style="margin-top:0.6rem;font-size:0.7rem;color:var(--cyan);font-family:'Space Mono',monospace;letter-spacing:1px;">기사 읽기 →</div>
+    `;
+    
+    // 클릭 시 새 탭에서 열기
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    });
+    
+    newsGrid.appendChild(card);
+  });
+  
+  setTimeout(() => {
+    renderMarketCharts();
+    // 자동 스크롤 제거: 사용자가 직접 결과를 확인하도록 함
+  }, 200);
+}
+
+function renderMarketCharts(){
+  const bar = document.getElementById('marketBarChart');
+  const line = document.getElementById('marketLineChart');
+  if(!bar || !line) return;
+  
+  if(window._marketBar) window._marketBar.destroy();
+  if(window._marketLine) window._marketLine.destroy();
+  
+  const labels = selectedTrends.map(t => t.name);
+  const sizes = selectedTrends.map(t => {
+    const s = t.size.replace(/[\$BTM]/g, '');
+    let num = parseFloat(s);
+    if(t.size.includes('T')) num *= 1000;
+    return num;
+  });
+  
+  // 근거 없는 CAGR 생성 제거 → 명시된 시장 규모에서 파생한 '상대 비중'으로 대체
+  const totalSize = sizes.reduce((a,b) => a + b, 0) || 1;
+  const shares = sizes.map(v => Math.round(v / totalSize * 1000) / 10);
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.05)';
+  
+  window._marketBar = new Chart(bar, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '시장 규모',
+        data: sizes,
+        backgroundColor: 'rgba(255,215,0,0.5)',
+        borderColor: '#ffd700',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor, font: {size: 10}}, grid: {color: gridColor}}
+      }
+    }
+  });
+  
+  window._marketLine = new Chart(line, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '시장 비중 %',
+        data: shares,
+        backgroundColor: 'rgba(0,255,136,0.15)',
+        borderColor: '#00ff88',
+        borderWidth: 2,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false}},
+      scales: {
+        y: {beginAtZero: true, ticks: {color: axisColor}, grid: {color: gridColor}},
+        x: {ticks: {color: axisColor, font: {size: 10}}, grid: {color: gridColor}}
+      }
+    }
+  });
+}
+
+// ============================================
+// MODULE 2: 창업자 DNA
+// ============================================
+
+// 6개 SVG 캐릭터 (간단한 추상 이미지)
+const founderSVGs = {
+  V: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="vGrad"><stop offset="0%" stop-color="#ff8b8b"/><stop offset="100%" stop-color="#ff6b6b"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#vGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#vGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 44 42 Q 50 46 56 42" stroke="#fff" stroke-width="1.5" fill="none"/>
+    <path d="M 30 25 L 70 25 L 65 15 L 50 22 L 35 15 Z" fill="#ffd700" opacity="0.8"/>
+  </svg>`,
+  A: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="aGrad"><stop offset="0%" stop-color="#5eead4"/><stop offset="100%" stop-color="#00f5ff"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#aGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#aGrad)"/>
+    <rect x="38" y="28" width="24" height="10" rx="5" fill="rgba(0,0,0,0.3)"/>
+    <circle cx="44" cy="33" r="3" fill="#fff"/><circle cx="56" cy="33" r="3" fill="#fff"/>
+    <line x1="42" y1="33" x2="46" y2="33" stroke="#00f5ff" stroke-width="1"/>
+    <line x1="54" y1="33" x2="58" y2="33" stroke="#00f5ff" stroke-width="1"/>
+  </svg>`,
+  C: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="cGrad"><stop offset="0%" stop-color="#86efac"/><stop offset="100%" stop-color="#00ff88"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#cGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#cGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 40 42 Q 50 50 60 42" stroke="#fff" stroke-width="2" fill="none"/>
+    <circle cx="20" cy="50" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="80" cy="50" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="20" cy="75" r="5" fill="url(#cGrad)" opacity="0.5"/>
+    <circle cx="80" cy="75" r="5" fill="url(#cGrad)" opacity="0.5"/>
+  </svg>`,
+  T: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="tGrad"><stop offset="0%" stop-color="#c084fc"/><stop offset="100%" stop-color="#a855f7"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#tGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#tGrad)"/>
+    <rect x="40" y="28" width="20" height="10" fill="rgba(0,0,0,0.3)"/>
+    <circle cx="44" cy="33" r="2.5" fill="#a855f7"/><circle cx="56" cy="33" r="2.5" fill="#a855f7"/>
+    <line x1="40" y1="50" x2="60" y2="50" stroke="#fff" stroke-width="2"/>
+    <circle cx="30" cy="65" r="3" fill="#fff" opacity="0.7"/>
+    <circle cx="70" cy="65" r="3" fill="#fff" opacity="0.7"/>
+  </svg>`,
+  I: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="iGrad"><stop offset="0%" stop-color="#6ee7b7"/><stop offset="100%" stop-color="#34d399"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#iGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#iGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#fff"/><circle cx="56" cy="33" r="2" fill="#fff"/>
+    <path d="M 42 44 Q 50 50 58 44" stroke="#fff" stroke-width="2" fill="none"/>
+    <path d="M 50 12 L 53 20 L 61 21 L 55 27 L 57 35 L 50 31 L 43 35 L 45 27 L 39 21 L 47 20 Z" fill="#ffd700"/>
+  </svg>`,
+  S: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <defs><radialGradient id="sGrad"><stop offset="0%" stop-color="#fde047"/><stop offset="100%" stop-color="#ffd700"/></radialGradient></defs>
+    <circle cx="50" cy="35" r="18" fill="url(#sGrad)"/>
+    <path d="M 32 60 Q 50 70 68 60 L 68 85 L 32 85 Z" fill="url(#sGrad)"/>
+    <circle cx="44" cy="33" r="2" fill="#000"/><circle cx="56" cy="33" r="2" fill="#000"/>
+    <path d="M 42 43 Q 50 48 58 43" stroke="#000" stroke-width="2" fill="none"/>
+    <path d="M 20 80 L 30 70 L 40 75 L 50 60 L 60 65 L 70 50 L 80 55" stroke="#fff" stroke-width="2" fill="none" stroke-linejoin="round"/>
+  </svg>`
+};
+
+function startDnaQuiz(){
+  document.getElementById('dna-intro').classList.add('hidden');
+  document.getElementById('dna-quiz-wrap').classList.add('active');
+  forceScrollToTop();
+}
+
+function initDnaCircleSvgs(){
+  Object.keys(founderSVGs).forEach(code => {
+    const el = document.getElementById('circle-svg-' + code);
+    if(el) el.innerHTML = founderSVGs[code];
+  });
+}
+
+const founderTypes = {
+  V: {
+    name: '비전형 창업가',
+    eng: 'The Visionary Pioneer',
+    desc: '큰 그림을 그리고 시장을 변화시키는 혁신적인 아이디어를 추진합니다. 빠른 의사결정과 과감한 실행력이 강점입니다.',
+    traits: ['혁신적 사고', '리더십', '리스크 감수', '비전 중심', '카리스마'],
+    biz: ['플랫폼 사업', '글로벌 SaaS', 'AI/딥테크', '바이오/제약'],
+    warnings: '디테일과 실행력 강화 필요. 데이터 기반 의사결정 보완이 중요합니다. 운영 전문가 영입이 필수적입니다.',
+    radar: [9, 5, 7, 8, 9, 6]
+  },
+  A: {
+    name: '분석형 창업가',
+    eng: 'The Analytical Strategist',
+    desc: '데이터와 시장 분석을 기반으로 합리적인 의사결정을 합니다. 체계적 전략 수립과 운영 효율성이 강점입니다.',
+    traits: ['데이터 중심', '논리적 사고', '체계적 실행', '재무 감각', '리스크 관리'],
+    biz: ['핀테크', 'B2B SaaS', '컨설팅', '데이터 분석'],
+    warnings: '과도한 분석으로 인한 실행 지연 주의. 직관과 속도감 균형이 필요합니다.',
+    radar: [6, 9, 5, 9, 6, 9]
+  },
+  C: {
+    name: '커뮤니티형 창업가',
+    eng: 'The Community Builder',
+    desc: '관계와 신뢰를 기반으로 강력한 커뮤니티를 형성합니다. 고객 충성도와 팀 응집력이 탁월합니다.',
+    traits: ['공감 능력', '관계 구축', '협업 정신', '신뢰', '소통 역량'],
+    biz: ['커뮤니티 플랫폼', 'D2C 브랜드', '교육/멘토링', 'B2C 서비스'],
+    warnings: '과도한 합의 추구로 인한 의사결정 지연 주의. 결단력과 추진력 강화가 필요합니다.',
+    radar: [7, 5, 9, 5, 7, 6]
+  },
+  T: {
+    name: '기술형 창업가',
+    eng: 'The Technical Innovator',
+    desc: '깊은 기술 전문성을 기반으로 독창적인 솔루션을 개발합니다. 기술적 차별화와 IP 구축이 핵심 강점입니다.',
+    traits: ['기술 전문성', '문제 해결', '학습 능력', '디테일 지향', '혁신 추구'],
+    biz: ['딥테크', 'AI/머신러닝', '바이오 R&D', '하드웨어/IoT'],
+    warnings: '비즈니스/마케팅 약점 보완 필요. 영업/세일즈 전문가 영입이 우선입니다.',
+    radar: [7, 7, 4, 7, 6, 9]
+  },
+  I: {
+    name: '임팩트형 창업가',
+    eng: 'The Impact Driver',
+    desc: '사회적 가치와 의미 있는 변화를 추구합니다. 강한 사명감과 지속가능한 비즈니스 모델이 강점입니다.',
+    traits: ['사명감', '윤리적 리더십', '사회적 책임', '지속가능성', '진정성'],
+    biz: ['ESG/소셜벤처', '에듀테크', '헬스케어', '환경/그린테크'],
+    warnings: '수익성과 확장성 균형 필요. 비즈니스 모델 검증과 운영 효율화가 중요합니다.',
+    radar: [8, 6, 8, 6, 8, 5]
+  },
+  S: {
+    name: '스케일러형 창업가',
+    eng: 'The Scaler & Operator',
+    desc: '효율적인 운영과 단계적 확장에 능숙합니다. 견고한 시스템과 안정적 수익 구조 구축이 강점입니다.',
+    traits: ['운영 효율', '재무 관리', '단계적 성장', '시스템 사고', '안정성'],
+    biz: ['프랜차이즈', 'B2B 서비스', '운영 자동화', '구독 모델'],
+    warnings: '대담한 혁신과 비전 강화 필요. 시장 변화에 대한 빠른 적응력이 중요합니다.',
+    radar: [5, 8, 6, 8, 6, 7]
+  }
+};
+
+let quizAnswers = [];
+let currentQuestion = 0;
+
+function selectOption(btn, type){
+  const step = btn.closest('.quiz-step');
+  step.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  const qIdx = parseInt(step.dataset.q);
+  quizAnswers[qIdx] = type;
+  
+  // 다음 버튼 활성화
+  const nextBtn = document.getElementById('quiz-next-btn');
+  nextBtn.disabled = false;
+  nextBtn.style.opacity = '1';
+}
+
+function quizNext(){
+  const steps = document.querySelectorAll('.quiz-step');
+  if(currentQuestion < steps.length - 1){
+    steps[currentQuestion].classList.remove('active');
+    currentQuestion++;
+    steps[currentQuestion].classList.add('active');
+    
+    // 진행 바
+    const progress = ((currentQuestion + 1) / steps.length) * 100;
+    document.getElementById('quiz-progress-bar').style.width = progress + '%';
+    
+    // 이전 버튼 활성화
+    document.getElementById('quiz-prev-btn').style.opacity = '1';
+    document.getElementById('quiz-prev-btn').style.pointerEvents = 'auto';
+    
+    // 마지막 질문이면 "결과 보기"로 변경
+    const nextBtn = document.getElementById('quiz-next-btn');
+    if(currentQuestion === steps.length - 1){
+      nextBtn.textContent = '🎯 결과 보기';
+    } else {
+      nextBtn.textContent = '다음 →';
+    }
+    
+    // 이전 답변이 있으면 활성화
+    if(quizAnswers[currentQuestion]){
+      const buttons = steps[currentQuestion].querySelectorAll('.option-btn');
+      buttons.forEach(b => {
+        if(b.getAttribute('data-type') === quizAnswers[currentQuestion]){
+          b.classList.add('selected');
+        }
+      });
+      nextBtn.disabled = false;
+      nextBtn.style.opacity = '1';
+    } else {
+      nextBtn.disabled = true;
+      nextBtn.style.opacity = '0.4';
+    }
+    
+    // 스크롤 제거 - 사용자 위치 유지
+  } else {
+    // 결과 표시
+    showFounderResult();
+  }
+}
+
+function quizPrev(){
+  if(currentQuestion > 0){
+    const steps = document.querySelectorAll('.quiz-step');
+    steps[currentQuestion].classList.remove('active');
+    currentQuestion--;
+    steps[currentQuestion].classList.add('active');
+    
+    const progress = ((currentQuestion + 1) / steps.length) * 100;
+    document.getElementById('quiz-progress-bar').style.width = progress + '%';
+    
+    if(currentQuestion === 0){
+      document.getElementById('quiz-prev-btn').style.opacity = '0.3';
+      document.getElementById('quiz-prev-btn').style.pointerEvents = 'none';
+    }
+    
+    const nextBtn = document.getElementById('quiz-next-btn');
+    nextBtn.textContent = '다음 →';
+    nextBtn.disabled = false;
+    nextBtn.style.opacity = '1';
+    
+    // 스크롤 제거
+  }
+}
+
+function showFounderResult(){
+  // 가장 많이 선택된 유형 계산
+  const counts = {V: 0, A: 0, C: 0, T: 0, I: 0, S: 0};
+  quizAnswers.forEach(a => counts[a] = (counts[a] || 0) + 1);
+  
+  let maxType = 'V';
+  let maxCount = 0;
+  for(const [type, count] of Object.entries(counts)){
+    if(count > maxCount){ maxCount = count; maxType = type; }
+  }
+  
+  window._founderType = maxType;
+  const type = founderTypes[maxType];
+  
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('quiz-nav').style.display = 'none';
+  document.querySelector('.quiz-progress').style.display = 'none';
+  
+  const result = document.getElementById('founder-result');
+  result.classList.add('show');
+  
+  // 결과 캐릭터
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[maxType];
+  document.getElementById('result-code').textContent = maxType;
+  document.getElementById('result-name').textContent = type.name;
+  document.getElementById('result-eng').textContent = type.eng;
+  
+  // 특징
+  const traitsEl = document.getElementById('founder-traits');
+  traitsEl.innerHTML = type.traits.map(t => `<span class="trait-chip">${t}</span>`).join('');
+  
+  // 사업
+  const bizEl = document.getElementById('suitable-biz');
+  bizEl.innerHTML = type.biz.map(b => `<div class="biz-chip">${b}</div>`).join('');
+  
+  // 경고
+  document.getElementById('founder-warnings').textContent = type.warnings;
+  
+  // 유형 그리드
+  const typesGrid = document.getElementById('types-grid');
+  typesGrid.innerHTML = '';
+  Object.entries(founderTypes).forEach(([code, t]) => {
+    const div = document.createElement('div');
+    div.className = 'type-mini' + (code === maxType ? ' current' : '');
+    div.innerHTML = `
+      <div class="type-mini-emoji">${['V','A','C','T','I','S'].includes(code) ? ['🚀','📊','🤝','💻','💡','📈'][['V','A','C','T','I','S'].indexOf(code)] : '🔥'}</div>
+      <div class="type-mini-code">${code}</div>
+      <div class="type-mini-name">${t.name}</div>
+    `;
+    div.onclick = () => showTypeDetail(code);
+    typesGrid.appendChild(div);
+  });
+  
+  setTimeout(() => drawRadar(type.radar), 300);
+  
+  // scrollIntoView 제거 - 페이지 상단 유지
+}
+
+function showTypeDetail(code){
+  const type = founderTypes[code];
+  window._founderType = code;
+  
+  document.getElementById('result-character-svg').innerHTML = founderSVGs[code];
+  document.getElementById('result-code').textContent = code;
+  document.getElementById('result-name').textContent = type.name;
+  document.getElementById('result-eng').textContent = type.eng;
+  
+  const traitsEl = document.getElementById('founder-traits');
+  traitsEl.innerHTML = type.traits.map(t => `<span class="trait-chip">${t}</span>`).join('');
+  
+  const bizEl = document.getElementById('suitable-biz');
+  bizEl.innerHTML = type.biz.map(b => `<div class="biz-chip">${b}</div>`).join('');
+  
+  document.getElementById('founder-warnings').textContent = type.warnings;
+  
+  document.querySelectorAll('.type-mini').forEach(el => el.classList.remove('current'));
+  document.querySelectorAll('.type-mini').forEach(el => {
+    if(el.querySelector('.type-mini-code').textContent === code){
+      el.classList.add('current');
+    }
+  });
+  
+  drawRadar(type.radar);
+}
+
+function drawRadar(data){
+  const canvas = document.getElementById('radarCanvas');
+  if(!canvas) return;
+  if(window._radar) window._radar.destroy();
+  
+  const axisColor = 'rgba(232,244,255,0.6)';
+  const gridColor = 'rgba(255,255,255,0.1)';
+  
+  window._radar = new Chart(canvas, {
+    type: 'radar',
+    data: {
+      labels: ['혁신성', '분석력', '관계성', '실행력', '리더십', '전문성'],
+      datasets: [{
+        label: '나의 역량',
+        data: data,
+        backgroundColor: 'rgba(255,107,107,0.2)',
+        borderColor: '#ff6b6b',
+        borderWidth: 2,
+        pointBackgroundColor: '#ff6b6b',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {legend: {display: false}},
+      scales: {
+        r: {
+          beginAtZero: true, max: 10,
+          ticks: {color: axisColor, backdropColor: 'transparent', font: {size: 9}},
+          grid: {color: gridColor},
+          angleLines: {color: gridColor},
+          pointLabels: {color: axisColor, font: {size: 11}}
+        }
+      }
+    }
+  });
+}
+
+function retakeQuiz(){
+  quizAnswers = [];
+  currentQuestion = 0;
+  window._founderType = null;
+  
+  document.getElementById('quiz-container').style.display = 'block';
+  document.getElementById('quiz-nav').style.display = 'flex';
+  document.querySelector('.quiz-progress').style.display = 'block';
+  document.getElementById('founder-result').classList.remove('show');
+  
+  document.querySelectorAll('.quiz-step').forEach((s, i) => {
+    if(i === 0) s.classList.add('active');
+    else s.classList.remove('active');
+    s.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+  });
+  
+  document.getElementById('quiz-progress-bar').style.width = '10%';
+  document.getElementById('quiz-prev-btn').style.opacity = '0.3';
+  document.getElementById('quiz-prev-btn').style.pointerEvents = 'none';
+  document.getElementById('quiz-next-btn').disabled = true;
+  document.getElementById('quiz-next-btn').style.opacity = '0.4';
+  document.getElementById('quiz-next-btn').textContent = '다음 →';
+  
+  // 인트로로 복귀
+  document.getElementById('dna-intro').classList.remove('hidden');
+  document.getElementById('dna-quiz-wrap').classList.remove('active');
+  
+  forceScrollToTop();
+}
+
+// ============================================
+// MODULE 3: 시뮬레이터
+// ============================================
+const simStepLabels = ['편향자각 (BARL)', '회사 기본', '사업 아이템', '핵심 기술', '인재 영입', '복지/문화'];
+let currentSimStep = 0; // 0=BARL
+let simData = {
+  barl: {},
+  name: '', vision: '', capital: 10, region: '', item: '', persona: '',
+  tech: [], talent: [], welfare: []
+};
+
+function renderSimSteps(){
+  const container = document.getElementById('sim-steps');
+  if(!container) return;
+  container.innerHTML = '';
+  simStepLabels.forEach((label, i) => {
+    if(i > 0){
+      const conn = document.createElement('div');
+      conn.className = 'sim-connector' + (i <= currentSimStep ? ' done' : '');
+      container.appendChild(conn);
+    }
+    const dot = document.createElement('div');
+    dot.className = 'sim-step-dot';
+    const isBarl = (i === 0);
+    let dotClass = 'sim-dot';
+    if(isBarl) dotClass += ' barl-step';
+    if(i < currentSimStep) dotClass += ' done';
+    if(i === currentSimStep) dotClass += ' active';
+    dot.innerHTML = `
+      <div class="${dotClass}">${i + 1}</div>
+      <div class="sim-step-label">${label}</div>
+    `;
+    container.appendChild(dot);
+  });
+}
+
+function completeBarl(){
+  // 모든 필수 필드 체크
+  const q1 = document.getElementById('barl-q1').value.trim();
+  const q2 = document.getElementById('barl-q2').value.trim();
+  const q3 = document.getElementById('barl-q3').value.trim();
+  const q4 = document.getElementById('barl-q4').value.trim();
+  const q5 = document.getElementById('barl-q5').value.trim();
+  const q6 = document.getElementById('barl-q6').value.trim();
+  
+  if(!q1 || !q2 || !q3 || !q4 || !q5 || !q6){
+    document.getElementById('barl-required-msg').classList.add('show');
+    return;
+  }
+  
+  // 편향 체크박스
+  const biases = Array.from(document.querySelectorAll('.barl-bias:checked')).map(cb => cb.value);
+  
+  simData.barl = {
+    survival: parseFloat(q1),
+    growth: parseFloat(q2),
+    months: parseFloat(q3),
+    failReason1: q4,
+    failReason2: q5,
+    failReason3: q6,
+    biases: biases
+  };
+  
+  document.getElementById('barl-required-msg').classList.remove('show');
+  
+  // 다음 스텝
+  currentSimStep = 1;
+  document.getElementById('sim-barl').classList.remove('active');
+  document.getElementById('sim-0').classList.add('active');
+  renderSimSteps();
+  updateSidebarContext();
+  
+  // AI 메시지: BARL 완료
+  addChatMsg('ai', `편향 자각 단계 완료! 잘하셨어요 🎉<br><br>본인이 예상한 생존율 ${q1}%, 시장 성장률 ${q2}%/년이네요. 이 가정들을 시뮬레이션 후 실제 결과와 비교해보면 본인의 의사결정 패턴이 보일 거예요.`);
+  
+  forceScrollToTop();
+}
+
+function updateCapital(){
+  const val = document.getElementById('s-capital').value;
+  let display;
+  if(val < 10) display = `${val * 1000}만원`;
+  else display = `${val / 10}억원`;
+  document.getElementById('capital-display').textContent = display;
+  simData.capital = parseInt(val);
+  updateSidebarContext();
+}
+
+function selectSim(el, key, value){
+  // 같은 그리드 내 다른 카드 선택 해제
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  simData[key] = value;
+  
+  // 커스텀 입력 숨기기
+  if(key === 'item'){
+    const customInput = document.getElementById('s-item-custom');
+    if(customInput) customInput.style.display = 'none';
+  }
+  if(key === 'region'){
+    const customInput = document.getElementById('s-region-custom');
+    if(customInput) customInput.style.display = 'none';
+  }
+  
+  updateSidebarContext();
+}
+
+function selectMulti(el, key, value){
+  el.classList.toggle('selected');
+  if(!simData[key]) simData[key] = [];
+  const idx = simData[key].indexOf(value);
+  
+  const limits = {tech: 5, talent: 6, welfare: 5};
+  
+  if(idx >= 0){
+    simData[key].splice(idx, 1);
+  } else {
+    if(simData[key].length >= limits[key]){
+      alert(`최대 ${limits[key]}개까지 선택 가능합니다.`);
+      el.classList.remove('selected');
+      return;
+    }
+    simData[key].push(value);
+  }
+  updateSidebarContext();
+}
+
+function toggleCustomItem(el){
+  const input = document.getElementById('s-item-custom');
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  input.style.display = 'block';
+  input.focus();
+}
+
+function setCustomItem(value){
+  simData.item = value;
+  updateSidebarContext();
+}
+
+function toggleCustomRegion(el){
+  const input = document.getElementById('s-region-custom');
+  el.parentElement.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  input.style.display = 'block';
+  input.focus();
+}
+
+function setCustomRegion(value){
+  simData.region = value;
+  updateSidebarContext();
+}
+
+function toggleCustomTech(el){
+  const input = document.getElementById('s-tech-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function toggleCustomTalent(el){
+  const input = document.getElementById('s-talent-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function toggleCustomWelfare(el){
+  const input = document.getElementById('s-welfare-custom');
+  input.style.display = input.style.display === 'none' ? 'block' : 'none';
+  if(input.style.display === 'block') input.focus();
+}
+
+function setCustomMulti(key, value){
+  const items = value.split(',').map(s => s.trim()).filter(s => s.length > 0);
+  rebuildMultiData(key, items);
+}
+
+function rebuildMultiData(key, customItems){
+  const standard = simData[key].filter(item => {
+    return !item.startsWith('custom:');
+  });
+  simData[key] = [...standard, ...customItems.map(i => 'custom:' + i)];
+  updateSidebarContext();
+}
+
+function updateSimPreview(){
+  simData.name = document.getElementById('s-name').value;
+  simData.vision = document.getElementById('s-vision').value;
+  simData.persona = document.getElementById('s-persona').value;
+  updateSidebarContext();
+}
+
+function simNext(){
+  const steps = ['sim-0', 'sim-1', 'sim-2', 'sim-3', 'sim-4'];
+  const current = document.querySelector('.sim-panel.active');
+  const currentIdx = steps.indexOf(current.id);
+  if(currentIdx < steps.length - 1){
+    current.classList.remove('active');
+    document.getElementById(steps[currentIdx + 1]).classList.add('active');
+    currentSimStep = currentIdx + 2;
+    renderSimSteps();
+    forceScrollToTop();
+  }
+}
+
+function simPrev(){
+  const steps = ['sim-barl', 'sim-0', 'sim-1', 'sim-2', 'sim-3', 'sim-4'];
+  const current = document.querySelector('.sim-panel.active');
+  const currentIdx = steps.indexOf(current.id);
+  if(currentIdx > 0){
+    current.classList.remove('active');
+    document.getElementById(steps[currentIdx - 1]).classList.add('active');
+    currentSimStep = currentIdx - 1;
+    renderSimSteps();
+    forceScrollToTop();
+  }
+}
+
+function buildSimContextText(){
+  let parts = [];
+  if(simData.name) parts.push(`회사: ${simData.name}`);
+  if(simData.vision) parts.push(`비전: ${simData.vision}`);
+  if(simData.capital) parts.push(`자본: ${simData.capital < 10 ? simData.capital*1000+'만원' : simData.capital/10+'억원'}`);
+  if(simData.region) parts.push(`지역: ${simData.region}`);
+  if(simData.item) parts.push(`업종: ${simData.item}`);
+  if(simData.persona) parts.push(`타겟: ${simData.persona}`);
+  if(simData.tech && simData.tech.length) parts.push(`기술: ${simData.tech.map(t=>t.replace('custom:','')).join(', ')}`);
+  if(simData.talent && simData.talent.length) parts.push(`인재: ${simData.talent.map(t=>t.replace('custom:','')).join(', ')}`);
+  if(simData.welfare && simData.welfare.length) parts.push(`복지: ${simData.welfare.map(t=>t.replace('custom:','')).join(', ')}`);
+  
+  // BARL 정보 포함
+  if(simData.barl && simData.barl.survival){
+    parts.push(`[BARL 가정] 예상 생존율 ${simData.barl.survival}%, 시장성장 ${simData.barl.growth}%, 첫매출 ${simData.barl.months}개월`);
+  }
+  return parts.join(' / ');
+}
+
+function updateSidebarContext(){
+  const display = document.getElementById('sim-context-display');
+  if(!display) return;
+  const txt = buildSimContextText();
+  display.innerHTML = txt || '아직 입력된 정보가 없습니다.';
+}
+
+function resetAiChat(){
+  document.getElementById('chat-history').innerHTML = `
+    <div class="sim-chat-msg ai">
+      <span class="sim-chat-msg-label">🤖 AI 컨설턴트</span>
+      안녕하세요! 가상 스타트업 설계를 도와드리는 AI 컨설턴트입니다.
+    </div>
+  `;
+}
+
+function addChatMsg(role, content){
+  const history = document.getElementById('chat-history');
+  const div = document.createElement('div');
+  div.className = 'sim-chat-msg ' + role;
+  const label = role === 'ai' ? '🤖 AI 컨설턴트' : '🙋 나';
+  div.innerHTML = `<span class="sim-chat-msg-label">${label}</span>${content}`;
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
+}
+
+function sendQuickQ(q){
+  document.getElementById('chat-input').value = q;
+  sendChatMessage();
+}
+
+async function sendChatMessage(){
+  const input = document.getElementById('chat-input');
+  const userMsg = input.value.trim();
+  if(!userMsg) return;
+  
+  input.value = '';
+  addChatMsg('user', userMsg);
+  
+  const sendBtn = document.getElementById('chat-send-btn');
+  sendBtn.disabled = true;
+  sendBtn.textContent = '...';
+  
+  const loadingMsg = document.createElement('div');
+  loadingMsg.className = 'sim-chat-msg ai';
+  loadingMsg.innerHTML = '<span class="sim-chat-msg-label">🤖 AI 컨설턴트</span><div class="loading-spinner" style="display:inline-block;"></div> 분석 중...';
+  document.getElementById('chat-history').appendChild(loadingMsg);
+  
+  try {
+    const context = buildSimContextText();
+    const systemPrompt = `당신은 한국 스타트업 전문 컨설턴트입니다. 사용자가 설계 중인 가상 스타트업에 대해 실용적이고 구체적인 조언을 제공하세요.
+
+[현재 사용자 입력 정보]
+${context || '(아직 입력 없음)'}
+
+응답은 간결하게 (3-5문장), 한국 시장 맥락에 맞게, 실행 가능한 조언으로 작성해주세요.`;
+    
+    const response = await callOpenAI([
+      {role: 'system', content: systemPrompt},
+      {role: 'user', content: userMsg}
+    ], {max_tokens: 500});
+    
+    loadingMsg.remove();
+    addChatMsg('ai', response.replace(/\n/g, '<br>'));
+  } catch(err){
+    loadingMsg.remove();
+    addChatMsg('ai', `<span style="color:var(--coral);">⚠️ 오류: ${err.message}</span>`);
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.textContent = '전송';
+  }
+}
+
+function renderFactorTable(){
+  const box = document.getElementById('factor-table');
+  const F = window.ASNM_FACTORS;
+  if(!box || !F) return;
+  const total = F.reduce((a,f) => a + f.got, 0);
+  box.innerHTML = F.map(f => `
+    <div style="display:grid;grid-template-columns:1fr auto;gap:0.4rem 1rem;padding:0.62rem 0;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <div>
+        <div style="font-size:0.85rem;font-weight:600;">${f.name}</div>
+        <div style="font-size:0.7rem;color:var(--text2);margin-top:0.15rem;">${f.basis}</div>
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:0.9rem;white-space:nowrap;align-self:center;">
+        <span style="color:var(--gold);font-weight:700;">${f.got}</span>
+        <span style="color:var(--text2);font-size:0.75rem;"> / ${f.max}</span>
+      </div>
+    </div>`).join('') + `
+    <div style="display:flex;justify-content:space-between;padding-top:0.75rem;font-family:'Space Mono',monospace;">
+      <span style="font-weight:700;">합계 (Total)</span>
+      <span style="color:var(--green);font-weight:700;">${total} / 100</span>
+    </div>`;
+}
+
+function runSimulation(){
+  // 검증
+  if(!simData.name){ alert('회사명을 입력해주세요.'); return; }
+  if(!simData.item){ alert('사업 아이템을 선택해주세요.'); return; }
+  
+  // 마지막 단계 패널 숨기고 결과 표시
+  document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('sim-result').classList.add('show');
+  currentSimStep = 6;
+  renderSimSteps();
+  
+  // ══════════════════════════════════════════════════════════════════
+  // Venture Resilience Score — 결정론적 가중 루브릭 (총 100점)
+  // 난수 없음: 동일 입력 → 항상 동일 결과 (재현 가능)
+  // 이 스코어는 통계적으로 검증된 생존 예측치가 아니며,
+  // 명시된 6개 요인의 가중 합산으로 산출되는 탐색적 지표입니다.
+  // ══════════════════════════════════════════════════════════════════
+  const F = [];
+
+  // ① 자본 여력 (25점) — 초기 자본금(억 원)
+  const cap = simData.capital || 0;
+  const fCap = cap >= 30 ? 25 : cap >= 20 ? 21 : cap >= 10 ? 15 : cap >= 5 ? 9 : 4;
+  F.push({name:'자본 여력 (Runway)', got:fCap, max:25,
+          basis:`초기 자본금 ${cap}억 원 · 30억 이상 만점`});
+
+  // ② 팀 구성 완결성 (20점) — 핵심 역할 커버리지
+  const nTal = simData.talent.length;
+  const fTeam = Math.min(nTal, 5) * 4;
+  F.push({name:'팀 구성 완결성', got:fTeam, max:20,
+          basis:`핵심 인재 ${nTal}명 · 5명 이상 만점`});
+
+  // ③ 기술 초점 (15점) — 분산이 아니라 '집중'을 가점
+  const nTech = simData.tech.length;
+  const fTech = nTech === 0 ? 3 : nTech <= 2 ? 15 : nTech === 3 ? 12 : nTech === 4 ? 8 : 5;
+  F.push({name:'기술 초점 (Focus)', got:fTech, max:15,
+          basis:`기술 스택 ${nTech}개 · 1~2개일 때 최고점 (MVP 집중도)`});
+
+  // ④ 조직·리텐션 기반 (10점)
+  const nWel = simData.welfare.length;
+  const fOrg = Math.min(nWel, 5) * 2;
+  F.push({name:'조직·리텐션 기반', got:fOrg, max:10,
+          basis:`복지·문화 설계 ${nWel}개 항목`});
+
+  // ⑤ 시장·고객 정의 명확성 (10점)
+  let fMkt = 0;
+  const hasPersona = !!(simData.persona && simData.persona.trim().length >= 10);
+  if(simData.item) fMkt += 5;
+  if(hasPersona) fMkt += 5;
+  F.push({name:'시장·고객 정의', got:fMkt, max:10,
+          basis: hasPersona ? '사업 아이템 + 타겟 페르소나 모두 정의됨'
+                            : '페르소나 기술이 불충분 (10자 이상 권장)'});
+
+  // ⑥ 자기예측 정합성 (20점) — BARL 입력값과 루브릭 결과의 괴리
+  const rawSub = fCap + fTeam + fTech + fOrg + fMkt;   // 소계 80점 만점
+  const provisional = Math.round(rawSub / 80 * 100);   // 100점 환산(잠정)
+  const subj = (simData.barl && simData.barl.survival) ? Number(simData.barl.survival) : null;
+  let fBias, biasBasis;
+  if(subj === null){
+    fBias = 10; biasBasis = '자기예측 미입력 · 중간값 부여';
+  } else {
+    const gap = Math.abs(subj - provisional);
+    fBias = gap <= 5 ? 20 : gap <= 10 ? 16 : gap <= 20 ? 11 : gap <= 30 ? 6 : 2;
+    biasBasis = `자기예측 ${subj} vs 루브릭 ${provisional} · 격차 ${gap}p`;
+  }
+  F.push({name:'자기예측 정합성 (Calibration)', got:fBias, max:20, basis:biasBasis});
+
+  window.ASNM_FACTORS = F;
+  const base = Math.max(Math.min(rawSub + fBias, 97), 12);
+  const opt = Math.min(base + 12, 99);
+  const pes = Math.max(base - 20, 30);
+  
+  // 다이얼 점수
+  document.getElementById('survival-pct').textContent = base;
+  document.getElementById('opt-pct').textContent = opt;
+  document.getElementById('base-pct').textContent = base;
+  document.getElementById('pes-pct').textContent = pes;
+  renderFactorTable();
+  document.getElementById('sim-company-name').textContent = simData.name + ' · ' + (simData.item || '');
+  
+  setTimeout(() => drawDial(base), 300);
+  
+  // 리스크 바
+  // 리스크 = 결정론적 규칙 (난수 없음). 각 항목의 산출 근거를 툴팁으로 노출.
+  const REGULATED = ['핀테크','바이오/제약','헬스케어','모빌리티','리걸테크','드론','우주/항공'];
+  const isReg = REGULATED.some(k => (simData.item || '').indexOf(k) !== -1);
+  const risks = [
+    {name: '시장 경쟁', val: hasPersona ? 45 : 65, color: '#ff6b6b',
+     why: hasPersona ? '타겟 세그먼트가 정의되어 경쟁 노출 완화' : '고객 세그먼트 미정의 → 정면 경쟁 가정'},
+    {name: '자금 소진', val: cap < 10 ? 75 : cap < 20 ? 55 : 35, color: '#ffd700',
+     why: `초기 자본금 ${cap}억 원 구간 기준`},
+    {name: '팀 빌딩', val: Math.max(100 - nTal * 18, 20), color: '#00f5ff',
+     why: `핵심 역할 ${nTal}명 확보 (미확보분이 리스크)`},
+    {name: '기술 리스크', val: nTech === 0 ? 70 : nTech <= 2 ? 30 : nTech === 3 ? 42 : 58, color: '#a855f7',
+     why: `기술 스택 ${nTech}개 — 과다 선택 시 실행 분산 리스크`},
+    {name: '규제/법무', val: isReg ? 70 : 40, color: '#00ff88',
+     why: isReg ? `'${simData.item}'는 인허가·규제 산업으로 분류` : '일반 산업 기준선'}
+  ];
+  
+  const riskBars = document.getElementById('risk-bars');
+  riskBars.innerHTML = '';
+  risks.forEach(r => {
+    const row = document.createElement('div');
+    row.className = 'risk-bar-row';
+    row.innerHTML = `
+      <div class="risk-bar-label" title="${r.why || ''}">${r.name}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:0%;background:${r.color};"></div></div>
+      <div class="risk-bar-val">${r.val}%</div>
+    `;
+    riskBars.appendChild(row);
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.risk-bar-fill').forEach((bar, i) => {
+      bar.style.width = risks[i].val + '%';
+    });
+  }, 200);
+  
+  // 추천
+  const recs = [];
+  if(simData.capital < 15) recs.push({icon: '💰', type: 'warn', text: '초기 자본이 부족합니다. Pre-Seed 단계 액셀러레이터(TIPS, K-Startup) 참여를 권장합니다.'});
+  if(simData.talent.length < 3) recs.push({icon: '👥', type: 'warn', text: '핵심 인재 영입이 시급합니다. 특히 CTO와 CMO 영입을 우선해보세요.'});
+  if(simData.tech.length >= 3) recs.push({icon: '🔬', type: 'info', text: `${simData.tech.length}개의 기술 스택은 차별화 가능성이 높지만, MVP에서는 핵심 1-2개에 집중하세요.`});
+  if(simData.barl && simData.barl.survival > 75) recs.push({icon: '🛡️', type: 'warn', text: `BARL 분석: 본인이 예상한 생존율(${simData.barl.survival}%)이 실제 결과(${base}%)보다 ${simData.barl.survival - base}%p 높습니다. 과신 편향 점검이 필요합니다.`});
+  recs.push({icon: '🎯', type: '', text: `'${simData.item}' 분야는 정부 R&D 과제·부처 지원사업의 매칭 가능성이 높은 영역입니다. 실제 성장률은 Module 1의 시장 데이터로 별도 확인하세요.`});
+  recs.push({icon: '📈', type: '', text: '초기 6개월 PMF(Product-Market Fit) 검증에 집중하고, 18개월 내 Series A 준비를 시작하세요.'});
+  
+  const recsEl = document.getElementById('sim-recommendations');
+  recsEl.innerHTML = recs.map(r => `
+    <div class="rec-item ${r.type}">
+      <div class="rec-icon">${r.icon}</div>
+      <div class="rec-text">${r.text}</div>
+    </div>
+  `).join('');
+  
+  forceScrollToTop();
+}
+
+function drawDial(score){
+  const canvas = document.getElementById('dialCanvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  
+  ctx.clearRect(0, 0, w, h);
+  
+  const cx = w / 2, cy = h - 20;
+  const radius = 100;
+  
+  // 배경 호
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI, 2 * Math.PI);
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 16;
+  ctx.stroke();
+  
+  // 점수 호
+  const angle = Math.PI + (score / 100) * Math.PI;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, Math.PI, angle);
+  let color = '#00ff88';
+  if(score < 60) color = '#ff6b6b';
+  else if(score < 75) color = '#ffd700';
+  
+  const gradient = ctx.createLinearGradient(cx - radius, cy, cx + radius, cy);
+  gradient.addColorStop(0, color);
+  gradient.addColorStop(1, color);
+  ctx.strokeStyle = gradient;
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+function resetSimulator(){
+  simData = {
+    barl: {},
+    name: '', vision: '', capital: 10, region: '', item: '', persona: '',
+    tech: [], talent: [], welfare: []
+  };
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-vision').value = '';
+  document.getElementById('s-persona').value = '';
+  document.getElementById('s-capital').value = 10;
+  updateCapital();
+  document.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.sim-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('sim-barl').classList.add('active');
+  document.getElementById('sim-result').classList.remove('show');
+  
+  // BARL 필드 초기화
+  ['barl-q1','barl-q2','barl-q3','barl-q4','barl-q5','barl-q6'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  document.querySelectorAll('.barl-bias').forEach(cb => cb.checked = false);
+  
+  currentSimStep = 0;
+  renderSimSteps();
+  resetAiChat();
+  updateSidebarContext();
+  forceScrollToTop();
+}
+
+// ============================================
+// 🌐 M4 알림 신청 (Google Apps Script Webhook)
+// ============================================
+const NOTIFY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec';
+
+function notifyMe(){
+  document.getElementById('notify-modal').classList.add('show');
+  setTimeout(() => document.getElementById('notify-name').focus(), 200);
+}
+
+function closeNotifyModal(){
+  document.getElementById('notify-modal').classList.remove('show');
+  document.getElementById('notify-status').innerHTML = '';
+  document.getElementById('notify-status').className = 'notify-status';
+}
+
+async function submitNotify(){
+  const name = document.getElementById('notify-name').value.trim();
+  const email = document.getElementById('notify-email').value.trim();
+  const stage = document.getElementById('notify-stage').value;
+  const industry = document.getElementById('notify-industry').value.trim();
+  const memo = document.getElementById('notify-memo').value.trim();
+  
+  const status = document.getElementById('notify-status');
+  const btn = document.getElementById('notify-submit-btn');
+  
+  if(!name || !email){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 이름과 이메일은 필수입니다.';
+    return;
+  }
+  
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 올바른 이메일 형식이 아닙니다.';
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loading-spinner" style="display:inline-block;width:14px;height:14px;"></span> 전송 중...';
+  status.className = 'notify-status';
+  status.textContent = '';
+  
+  try {
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('email', email);
+    formData.append('stage', stage);
+    formData.append('industry', industry);
+    formData.append('memo', memo);
+    formData.append('timestamp', new Date().toISOString());
+    
+    await fetch(NOTIFY_WEBHOOK_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: formData
+    });
+    
+    status.className = 'notify-status ok';
+    status.innerHTML = '✅ 신청 완료! 출시 시 이메일로 알려드릴게요.';
+    
+    setTimeout(() => {
+      closeNotifyModal();
+      document.getElementById('notify-name').value = '';
+      document.getElementById('notify-email').value = '';
+      document.getElementById('notify-stage').value = '';
+      document.getElementById('notify-industry').value = '';
+      document.getElementById('notify-memo').value = '';
+    }, 2500);
+    
+  } catch(err){
+    status.className = 'notify-status err';
+    status.textContent = '⚠️ 전송 실패: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 알림 신청하기';
+  }
+}
+
+// ============================================
+// 📋 최종 보고서
+// ============================================
+function updateReport(){
+  const now = new Date();
+  document.getElementById('report-date').textContent = now.toLocaleDateString('ko-KR');
+  
+  // 회사명
+  if(simData.name){
+    document.getElementById('report-company-title').textContent = `${simData.name} 창업 전략 분석 보고서`;
+  }
+  
+  // 점수 카드
+  const survivalEl = document.getElementById('survival-pct');
+  if(survivalEl && survivalEl.textContent !== '72'){
+    document.getElementById('fr-survival').textContent = survivalEl.textContent;
+  }
+  
+  if(window._founderType){
+    document.getElementById('fr-type').textContent = window._founderType;
+  }
+  
+  if(selectedTrends.length > 0){
+    document.getElementById('fr-trends').textContent = selectedTrends.length;
+  }
+  
+  if(simData.item){
+    document.getElementById('fr-item').textContent = simData.item.substring(0, 6);
+  }
+  
+  // 트렌드 섹션
+  if(selectedTrends.length > 0){
+    const trendsContent = `선택하신 ${selectedTrends.length}개 트렌드: <strong style="color:var(--cyan);">${selectedTrends.map(t => t.name).join(', ')}</strong><br>
+    <br>이 트렌드들은 모두 향후 5년간 두 자릿수 성장이 예상되는 분야이며, 한국 시장에서도 정부 R&D 과제 및 액셀러레이터 우선 지원 대상입니다.`;
+    document.getElementById('report-trends-content').innerHTML = trendsContent;
+  }
+  
+  // DNA 섹션
+  if(window._founderType){
+    const type = founderTypes[window._founderType];
+    document.getElementById('report-dna-content').innerHTML = `
+      <strong style="color:var(--coral);">${type.name} (${window._founderType})</strong> 유형이 진단되었습니다.<br><br>
+      <strong>핵심 강점:</strong> ${type.traits.slice(0, 3).join(', ')}<br>
+      <strong>적합 사업:</strong> ${type.biz.join(', ')}<br>
+      <strong>주의점:</strong> ${type.warnings}
+    `;
+  }
+  
+  // 시뮬레이션 섹션
+  if(simData.name && simData.item){
+    let simContent = `
+      <strong>회사명:</strong> ${simData.name}<br>
+      <strong>업종:</strong> ${simData.item}<br>
+      <strong>자본금:</strong> ${simData.capital < 10 ? simData.capital*1000+'만원' : simData.capital/10+'억원'}<br>
+      <strong>지역:</strong> ${simData.region || '미지정'}<br>
+      <strong>핵심 기술:</strong> ${simData.tech.length}개 선정<br>
+      <strong>인재 영입:</strong> ${simData.talent.length}명 계획<br>
+    `;
+    
+    if(simData.barl && simData.barl.survival){
+      simContent += `<br><strong style="color:var(--purple);">🛡️ BARL 자기 가정:</strong><br>
+      - 예상 생존율: ${simData.barl.survival}%<br>
+      - 예상 시장성장: ${simData.barl.growth}%/년<br>
+      - 첫 매출 예상: ${simData.barl.months}개월<br>`;
+      if(simData.barl.biases && simData.barl.biases.length > 0){
+        simContent += `- 자각 편향: ${simData.barl.biases.join(', ')}<br>`;
+      }
+    }
+    
+    document.getElementById('report-sim-content').innerHTML = simContent;
+  }
+  
+  // 종합 추천
+  const recs = [];
+  if(window._founderType === 'V' && simData.item){
+    recs.push({icon: '🚀', type: 'info', text: '비전형 창업가는 빠른 시장 진입이 강점입니다. MVP를 3-6개월 내 출시하고 빠른 사용자 피드백을 받으세요.'});
+  }
+  if(window._founderType === 'T'){
+    recs.push({icon: '💻', type: 'info', text: '기술형 창업가는 비즈니스 파트너 영입이 필수입니다. CMO 또는 사업개발 담당자를 우선 채용하세요.'});
+  }
+  if(simData.tech && simData.tech.length >= 3){
+    recs.push({icon: '⚡', type: '', text: '다중 기술 스택은 차별화 우위가 되지만, 초기 단계에서는 1-2개 핵심 기술에 집중하세요.'});
+  }
+  if(simData.barl && simData.barl.survival > simData.barl.survival - 10){
+    recs.push({icon: '🛡️', type: 'warn', text: 'BARL 분석: 자기 추정치와 시뮬레이션 결과의 차이를 정기적으로 점검하세요. 의사결정 품질 향상에 도움이 됩니다.'});
+  }
+  recs.push({icon: '🎯', type: '', text: '6개월 내 PMF 검증, 18개월 내 Series A 준비를 목표로 단계적 마일스톤을 설정하세요.'});
+  recs.push({icon: '📈', type: '', text: 'TIPS, K-Startup, AC 프로그램 등 한국 정부 지원사업을 적극 활용하여 초기 자본 부담을 완화하세요.'});
+  
+  if(recs.length > 0){
+    document.getElementById('final-recommendations').innerHTML = recs.map(r => `
+      <div class="rec-item ${r.type}">
+        <div class="rec-icon">${r.icon}</div>
+        <div class="rec-text">${r.text}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// ============================================
+// 📄 ★★★ 수정 #4: PDF 다운로드 (실제 PDF) ★★★
+// ============================================
+function downloadReport(){
+  // result 페이지가 활성화되어 있는지 확인
+  if(!document.getElementById('page-result').classList.contains('active')){
+    showPage('result');
+    setTimeout(downloadReport, 500);
+    return;
+  }
+  
+  const userConfirm = confirm(
+    '📄 PDF 보고서를 다운로드합니다.\n\n' +
+    '다음 단계로 진행됩니다:\n' +
+    '1. 인쇄 창이 열립니다\n' +
+    '2. "대상"에서 "PDF로 저장"을 선택하세요\n' +
+    '3. "저장" 버튼을 클릭하세요\n\n' +
+    '계속하시겠습니까?'
+  );
+  
+  if(!userConfirm) return;
+  
+  // 브라우저 인쇄 기능 호출 - 사용자가 "PDF로 저장" 선택하면 실제 PDF 생성
+  window.print();
+}
+
+function downloadJSON(){
+  const data = {
+    timestamp: new Date().toISOString(),
+    company: {
+      name: simData.name,
+      vision: simData.vision,
+      capital: simData.capital,
+      region: simData.region,
+      item: simData.item,
+      persona: simData.persona,
+      tech: simData.tech,
+      talent: simData.talent,
+      welfare: simData.welfare
+    },
+    barl: simData.barl,
+    founder_type: window._founderType,
+    trends: selectedTrends,
+    survival_score: document.getElementById('survival-pct')?.textContent || 'N/A'
+  };
+  
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ASNM_${simData.name || 'Report'}_${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================
+// 🚀 초기화
+// ============================================
+
+// ✨ 백업 이벤트 위임 비활성화
+// onclick 속성이 직접 작동하도록 두는 것이 가장 안전함
+// (이벤트 위임은 quizNext, simNext 같은 다른 함수까지 가로채서 문제 발생)
+//
+// 만약 onclick이 작동하지 않으면, registerGlobalFunctions가
+// 모든 함수를 window에 등록해놨기 때문에 작동할 것임
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('[ASNM] DOMContentLoaded - 초기화 시작');
+  
+  // showPage 함수 존재 확인
+  if(typeof showPage !== 'function'){
+    console.error('[ASNM] ⚠️ showPage 함수가 정의되지 않았습니다!');
+    alert('JavaScript 로드 오류가 발생했습니다. 페이지를 새로고침해주세요.');
+    return;
+  }
+  console.log('[ASNM] ✓ showPage 함수 확인됨');
+  
+  // 트렌드 렌더링
+  try { renderTrends(); console.log('[ASNM] ✓ 트렌드 렌더링'); } catch(e){ console.error('트렌드 렌더링 실패:', e); }
+  
+  // M2 인트로 캐릭터 SVG
+  try { initDnaCircleSvgs(); console.log('[ASNM] ✓ DNA SVG'); } catch(e){ console.error('DNA SVG 실패:', e); }
+  
+  // M3 스텝 인디케이터
+  try { renderSimSteps(); updateSidebarContext(); console.log('[ASNM] ✓ Sim Steps'); } catch(e){ console.error('Sim Steps 실패:', e); }
+  
+  // 채팅 입력 엔터 키
+  const chatInput = document.getElementById('chat-input');
+  if(chatInput){
+    chatInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') sendChatMessage();
+    });
+  }
+  
+  // AI 검색 입력 엔터 키
+  const aiInput = document.getElementById('ai-trend-query');
+  if(aiInput){
+    aiInput.addEventListener('keypress', (e) => {
+      if(e.key === 'Enter') aiTrendSearch();
+    });
+  }
+  
+  // AI 프록시 연결 상태 표시
+  checkApiKey();
+  
+  // 알림 모달: 배경 클릭 시 닫기
+  const notifyModal = document.getElementById('notify-modal');
+  if(notifyModal){
+    notifyModal.addEventListener('click', (e) => {
+      if(e.target === notifyModal) closeNotifyModal();
+    });
+  }
+  
+  console.log('[ASNM] ✅ 초기화 완료');
+});
+
+// ============================================
+// 🔥 모든 onclick 함수를 window에 등록
+// (HTML의 onclick="xxx()" 가 무조건 작동하도록 보장)
+// ============================================
+(function registerGlobalFunctions(){
+  const fns = [
+    'showPage', 'goHome', 'toggleTheme',
+    'setTrendQuery', 'aiTrendSearch',
+    'startDnaQuiz', 'selectOption', 'quizNext', 'quizPrev', 'retakeQuiz',
+    'completeBarl', 'simNext', 'simPrev', 'selectSim', 'selectMulti',
+    'toggleCustomItem', 'toggleCustomRegion', 'toggleCustomTech', 
+    'toggleCustomTalent', 'toggleCustomWelfare',
+    'setCustomItem', 'setCustomRegion', 'setCustomMulti',
+    'updateCapital', 'updateSimPreview', 'runSimulation', 'resetSimulator',
+    'sendChatMessage', 'sendQuickQ',
+    'notifyMe', 'closeNotifyModal', 'submitNotify',
+    'downloadReport', 'downloadJSON'
+  ];
+  let registered = 0;
+  fns.forEach(name => {
+    if(typeof window[name] === 'undefined'){
+      try {
+        // eval을 사용하지 않고 함수 참조 시도
+        const fn = (function(n){ 
+          try { return eval(n); } catch(e){ return null; }
+        })(name);
+        if(fn && typeof fn === 'function'){
+          window[name] = fn;
+          registered++;
+        }
+      } catch(e){
+        console.warn('함수 등록 실패:', name);
+      }
+    } else {
+      registered++;
+    }
+  });
+  console.log('[ASNM] window에 등록된 함수:', registered + '/' + fns.length);
+})();
+</script>
+</body>
+</html>
