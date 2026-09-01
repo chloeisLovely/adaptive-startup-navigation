@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASNM — Adaptive Startup Navigation Model</title>
+<meta name="description" content="A decision-support system that helps first-time founders test their assumptions before they spend money on them. Working prototype with preliminary behavioral evidence (SEM, n=190). Seeking cross-market validation.">
+<link rel="canonical" href="https://chloeislovely.github.io/adaptive-startup-navigation/en/research.html">
+<link rel="alternate" hreflang="ko" href="https://chloeislovely.github.io/adaptive-startup-navigation/">
+<link rel="alternate" hreflang="en" href="https://chloeislovely.github.io/adaptive-startup-navigation/en/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="ASNM — Adaptive Startup Navigation Model">
+<meta property="og:description" content="Test your assumptions before you spend money on them.">
+<meta property="og:url" content="https://chloeislovely.github.io/adaptive-startup-navigation/en/research.html">
+<meta property="og:image" content="https://chloeislovely.github.io/adaptive-startup-navigation/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Space+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020818; --panel:rgba(255,255,255,0.022);
+  --cyan:#00f5ff; --gold:#ffd700; --green:#00ff88; --purple:#a855f7; --coral:#ff6b6b;
+  --text:#e8f4ff; --text2:#8ba8cc;
+  --line:rgba(255,255,255,0.09);
+  --maxw:1000px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:
+    radial-gradient(1200px 640px at 10% -14%, rgba(0,245,255,0.085), transparent 62%),
+    radial-gradient(900px 520px at 94% 6%, rgba(168,85,247,0.09), transparent 58%),
+    var(--bg);
+  color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  font-size:16px;line-height:1.72;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 1.6rem;}
+a{color:var(--cyan);}
+
+nav{position:sticky;top:0;z-index:30;background:rgba(2,8,24,0.87);
+  backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+.nav-in{max-width:var(--maxw);margin:0 auto;padding:0.8rem 1.6rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.logo{font-family:'Orbitron',monospace;font-weight:900;letter-spacing:2px;font-size:0.95rem;}
+.logo span{color:var(--cyan);}
+.nav-right{display:flex;align-items:center;gap:0.6rem;}
+.lang{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:1px;
+  color:var(--text2);text-decoration:none;border:1px solid var(--line);
+  border-radius:8px;padding:0.34rem 0.6rem;white-space:nowrap;}
+.lang:hover{border-color:var(--cyan);color:var(--cyan);}
+.lang b{color:var(--cyan);}
+
+.eyebrow{font-family:'Space Mono',monospace;font-size:0.69rem;letter-spacing:2.5px;
+  text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;
+  gap:0.75rem;margin-bottom:1.05rem;}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--line);}
+h1{font-family:'Orbitron',monospace;font-weight:800;
+  font-size:clamp(1.95rem,4.7vw,3.05rem);line-height:1.14;letter-spacing:-0.6px;margin-bottom:1.15rem;}
+h2{font-family:'Orbitron',monospace;font-weight:600;
+  font-size:clamp(1.16rem,2.4vw,1.5rem);letter-spacing:0.2px;margin-bottom:0.95rem;line-height:1.35;}
+h3{font-size:0.97rem;font-weight:600;margin-bottom:0.3rem;}
+p{color:var(--text2);}
+strong{color:var(--text);font-weight:600;}
+
+header.hero{padding:4.4rem 0 3rem;}
+.badge{display:inline-block;font-family:'Space Mono',monospace;font-size:0.66rem;
+  letter-spacing:2px;color:var(--gold);border:1px solid rgba(255,215,0,0.35);
+  background:rgba(255,215,0,0.06);border-radius:999px;padding:0.34rem 0.9rem;margin-bottom:1.55rem;}
+.lede{font-size:1.09rem;max-width:47rem;}
+.meta{font-family:'Space Mono',monospace;font-size:0.74rem;color:var(--text2);
+  margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid var(--line);}
+.cta-row{display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:1.85rem;}
+.btn{font-family:'Space Mono',monospace;font-size:0.77rem;letter-spacing:1px;
+  text-decoration:none;padding:0.85rem 1.4rem;border-radius:10px;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;}
+.btn-primary{background:var(--cyan);color:#02121a;font-weight:700;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 26px rgba(0,245,255,0.26);}
+.btn-ghost{border:1px solid var(--line);color:var(--text);}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+
+section{padding:3.2rem 0;border-top:1px solid var(--line);}
+.note{font-size:0.88rem;}
+
+/* ── signature: the honesty ledger ── */
+.ledger{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);
+  border-radius:14px;overflow:hidden;}
+.lcol{padding:1.55rem 1.5rem;}
+.lcol:first-child{background:rgba(0,255,136,0.045);border-right:1px solid var(--line);}
+.lcol:last-child{background:rgba(255,107,107,0.04);}
+.lhead{font-family:'Space Mono',monospace;font-size:0.71rem;letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:1.05rem;padding-bottom:0.65rem;border-bottom:1px solid var(--line);}
+.lcol:first-child .lhead{color:var(--green);}
+.lcol:last-child .lhead{color:var(--coral);}
+.ledger ul{list-style:none;}
+.ledger li{font-size:0.87rem;color:var(--text2);line-height:1.62;
+  padding-left:1.1rem;position:relative;margin-bottom:0.85rem;}
+.ledger li:last-child{margin-bottom:0;}
+.ledger li::before{position:absolute;left:0;top:0;font-family:'Space Mono',monospace;}
+.lcol:first-child li::before{content:'✓';color:var(--green);}
+.lcol:last-child li::before{content:'○';color:var(--coral);}
+
+/* ── modules ── */
+.mods{display:grid;gap:0.85rem;}
+.mod{display:grid;grid-template-columns:auto 1fr auto;gap:1.1rem;align-items:start;
+  border:1px solid var(--line);border-radius:12px;padding:1.15rem 1.3rem;background:var(--panel);}
+.mod-n{font-family:'Orbitron',monospace;font-size:0.8rem;color:var(--cyan);padding-top:0.2rem;}
+.mod p{font-size:0.87rem;line-height:1.62;}
+.tag{font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:1px;
+  padding:0.28rem 0.55rem;border-radius:6px;white-space:nowrap;align-self:center;}
+.tag.live{color:var(--green);border:1px solid rgba(0,255,136,0.4);background:rgba(0,255,136,0.07);}
+.tag.dev{color:var(--purple);border:1px solid rgba(168,85,247,0.4);background:rgba(168,85,247,0.07);}
+
+/* ── rubric table ── */
+table{width:100%;border-collapse:collapse;margin-top:1.1rem;font-size:0.86rem;}
+th,td{text-align:left;padding:0.62rem 0.7rem;border-bottom:1px solid var(--line);}
+th{font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:1px;
+  text-transform:uppercase;color:var(--text2);font-weight:400;}
+td{color:var(--text2);}
+td:first-child{color:var(--text);}
+td.num{font-family:'Space Mono',monospace;color:var(--gold);text-align:right;white-space:nowrap;}
+
+/* ── twin flow ── */
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;
+  font-family:'Space Mono',monospace;font-size:0.75rem;margin:1.25rem 0 1.5rem;}
+.flow span{border:1px solid var(--line);border-radius:8px;padding:0.5rem 0.75rem;}
+.flow span.on{border-color:rgba(0,255,136,0.45);color:var(--green);}
+.flow span.off{color:var(--text2);border-style:dashed;}
+.flow i{color:var(--text2);font-style:normal;}
+.levers{list-style:none;margin-top:0.5rem;}
+.levers li{font-size:0.88rem;color:var(--text2);border-left:2px solid var(--purple);
+  padding:0.15rem 0 0.15rem 0.9rem;margin-bottom:0.8rem;}
+
+/* ── ask ── */
+.ask{border:1px solid rgba(0,245,255,0.3);border-radius:14px;
+  background:rgba(0,245,255,0.045);padding:1.75rem;}
+.ask ol{margin:1.05rem 0 0 1.2rem;}
+.ask li{font-size:0.91rem;color:var(--text2);margin-bottom:0.85rem;}
+.ask li:last-child{margin-bottom:0;}
+
+footer{padding:2.6rem 0 3.6rem;border-top:1px solid var(--line);}
+footer p{font-family:'Space Mono',monospace;font-size:0.73rem;line-height:2;color:var(--text2);}
+footer a{text-decoration:none;}
+footer a:hover{text-decoration:underline;}
+
+@media (max-width:720px){
+  .ledger{grid-template-columns:1fr;}
+  .lcol:first-child{border-right:none;border-bottom:1px solid var(--line);}
+  .mod{grid-template-columns:auto 1fr;}
+  .tag{grid-column:2;justify-self:start;margin-top:0.5rem;}
+  header.hero{padding:2.9rem 0 2.2rem;}
+  table{font-size:0.8rem;}
+  th,td{padding:0.5rem 0.4rem;}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;}
+  html{scroll-behavior:auto;}
+}
+
+/* ── validation paths ── */
+.paths{display:grid;gap:0.85rem;margin-top:1.2rem;}
+.path{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:start;
+  border:1px solid var(--line);border-radius:12px;padding:1.2rem 1.35rem;background:var(--panel);}
+.path-n{font-family:'Orbitron',monospace;font-size:0.78rem;color:var(--cyan);padding-top:0.2rem;}
+.path p{font-size:0.87rem;line-height:1.62;margin-top:0.2rem;}
+
+/* ── commercial hypothesis ── */
+.hyp{display:grid;gap:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:1.2rem;}
+.hyp-row{display:grid;grid-template-columns:200px 1fr;gap:1.2rem;padding:1rem 1.35rem;
+  border-bottom:1px solid var(--line);background:var(--panel);}
+.hyp-row:last-child{border-bottom:none;}
+.hyp-k{font-family:'Space Mono',monospace;font-size:0.7rem;letter-spacing:1px;
+  text-transform:uppercase;color:var(--cyan);padding-top:0.2rem;}
+.hyp-v{font-size:0.88rem;color:var(--text2);line-height:1.62;}
+.chain{font-family:'Space Mono',monospace;font-size:0.76rem;color:var(--gold);}
+.caveat{font-size:0.8rem;color:var(--text2);margin-top:1rem;padding:0.85rem 1.1rem;
+  border-left:2px solid var(--coral);background:rgba(255,107,107,0.05);border-radius:0 8px 8px 0;}
+
+/* ── why not chatgpt ── */
+.why{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;margin-top:1.3rem;}
+.why div{border:1px solid var(--line);border-radius:10px;padding:0.95rem 1.1rem;
+  font-size:0.85rem;color:var(--text2);background:var(--panel);line-height:1.55;}
+.why div::before{content:'→';color:var(--cyan);margin-right:0.5rem;font-family:'Space Mono',monospace;}
+.kicker{margin-top:1.4rem;padding:1.2rem 1.4rem;border:1px solid rgba(255,215,0,0.3);
+  background:rgba(255,215,0,0.05);border-radius:12px;font-size:0.95rem;color:var(--text);line-height:1.65;}
+
+/* ── references ── */
+.refs{list-style:none;margin-top:1rem;}
+.refs li{font-size:0.82rem;color:var(--text2);line-height:1.6;padding-left:1.4rem;
+  position:relative;margin-bottom:0.75rem;}
+.refs li::before{content:'§';position:absolute;left:0;color:var(--cyan);
+  font-family:'Space Mono',monospace;font-size:0.75rem;}
+
+/* ── contact ── */
+.contact{border:1px solid var(--line);border-radius:12px;padding:1.3rem 1.5rem;
+  background:var(--panel);margin-top:1.2rem;}
+.contact a{font-family:'Space Mono',monospace;font-size:0.9rem;}
+.disclaim{font-size:0.78rem;color:var(--text2);margin-top:1.5rem;padding-top:1.2rem;
+  border-top:1px solid var(--line);line-height:1.7;}
+
+@media (max-width:720px){
+  .why{grid-template-columns:1fr;}
+  .hyp-row{grid-template-columns:1fr;gap:0.4rem;}
+  .path{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="logo">ASN<span>M</span></div>
+    <div class="nav-right">
+      <a class="lang" href="../">KR</a>
+      <a class="lang" href="./"><b>App</b></a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div class="badge">RESEARCH-BACKED PROTOTYPE · SEEKING CROSS-MARKET VALIDATION</div>
+    <h1>Test your assumptions<br>before you spend<br>money on them.</h1>
+    <p class="lede">
+      ASNM is a decision-support system for first-time founders. It asks you to
+      commit your predictions in writing, then shows you how far those predictions
+      sit from what a transparent, reproducible model returns. <strong>The gap is the product.</strong>
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="./">Open the prototype →</a>
+      <a class="btn btn-ghost" href="#status">Evidence</a>
+      <a class="btn btn-ghost" href="#next">Next validation stage</a>
+    </div>
+    <p class="meta">
+      Kyungsim (Chloe) Lee &nbsp;·&nbsp; Founder, [COMPANY NAME] &nbsp;·&nbsp; MSTM, aSSIST
+      &nbsp;·&nbsp; [DEGREE], Stony Brook University ([YEAR])
+    </p>
+  </header>
+
+  <section>
+    <div class="eyebrow">The problem</div>
+    <h2>The most expensive decisions get made when the founder knows least</h2>
+    <p>
+      Pricing, the first two hires, which market to enter — these get decided in
+      month one, when there is no evidence to reason from and no cheap way to be
+      wrong. Meanwhile the research on founder overconfidence is unusually
+      consistent: entrepreneurs predict their own survival far above realized rates,
+      and the gap does not close much with experience.
+    </p>
+    <p style="margin-top:0.9rem;">
+      Most tools respond by giving founders more information. ASNM starts elsewhere —
+      it makes the founder's own assumptions <strong>explicit, recorded, and comparable</strong>
+      against a model whose reasoning is fully visible. What matters is not the model's
+      number. It is the distance between that number and the one the founder produced
+      from memory, and whether that distance narrows over time.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Why not just ask a chatbot</div>
+    <h2>Not another answer engine</h2>
+    <p>
+      General-purpose AI generates answers. ASNM is designed to structure, preserve,
+      and compare the decision process around those answers.
+    </p>
+    <div class="why">
+      <div>Founder prediction captured <em>before</em> any model output is shown</div>
+      <div>Transparent, reproducible scoring — no randomness, published weights</div>
+      <div>Calibration gap recorded and revisitable over time</div>
+      <div>Venture state and decisions linked longitudinally</div>
+    </div>
+    <div class="kicker">
+      The long-term asset is not an AI-generated answer. It is the longitudinal dataset
+      connecting founder assumptions, venture states, decisions, and eventual outcomes —
+      and that dataset does not currently exist anywhere.
+    </div>
+  </section>
+
+  <section id="status">
+    <div class="eyebrow">Evidence</div>
+    <h2>What holds up, and what doesn't yet</h2>
+    <p class="note" style="margin-bottom:1.35rem;">
+      I would rather state this plainly than have you go looking for it. Everything
+      below marks where the evidence currently stops.
+    </p>
+    <div class="ledger">
+      <div class="lcol">
+        <div class="lhead">Supported</div>
+        <ul>
+          <li><strong>Adoption pathway (SEM, n=190, Korean sample).</strong> Preliminary evidence supports the proposed pathway: cognitive-bias awareness → perceived usefulness → adoption intention. Indirect effect .785, 95% CI [.679, .903]; PU→AI β=.949, p&lt;.001.</li>
+          <li><strong>Usability.</strong> 15-participant pilot including accelerator directors, a national startup-agency researcher, and a VC analyst. SUS 82.2.</li>
+          <li><strong>Working software.</strong> Modules 1–3 run end to end today — market exploration, founder orientation profiling, assumption elicitation, rule-based simulation, scored output, and report generation. Module 4 is the next technical development stage.</li>
+          <li><strong>Transparency.</strong> The scoring rubric is published inside the product. No randomness: identical input returns identical output.</li>
+        </ul>
+      </div>
+      <div class="lcol">
+        <div class="lhead">Not established</div>
+        <ul>
+          <li><strong>Predictive validity.</strong> The resilience score is a weighted rubric, not a trained or calibrated model. No claim is made anywhere in the product that it predicts venture survival.</li>
+          <li><strong>Founder typology.</strong> Six orientations informed by prior literature. No psychometric validation has been conducted.</li>
+          <li><strong>Decision quality.</strong> The study measured adoption-relevant properties, not whether decisions improve. That study has not been designed yet.</li>
+          <li><strong>Generalization.</strong> All 190 respondents and all 15 pilot users are based in Korea. Replication in another market is untested.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">The system</div>
+    <h2>Four modules, one pipeline</h2>
+    <div class="mods">
+      <div class="mod">
+        <div class="mod-n">01</div>
+        <div>
+          <h3>Market discovery</h3>
+          <p>Plain-language search across industry trends, plus a selectable trend interface returning comparative market sizing from cited public figures.</p>
+        </div>
+        <div class="tag live">Working</div>
+      </div>
+      <div class="mod">
+        <div class="mod-n">02</div>
+        <div>
+          <h3>Founder decision orientation profile</h3>
+          <p>A ten-item exploratory instrument mapping how a founder tends to decide under uncertainty, across six orientations. A reflection framework, not a personality diagnosis.</p>
+        </div>
+        <div class="tag live">Working</div>
+      </div>
+      <div class="mod">
+        <div class="mod-n">03</div>
+        <div>
+          <h3>Assumption elicitation &amp; venture simulation</h3>
+          <p>The founder records a survival estimate and writes a pre-mortem <em>before</em> designing anything. The engine then returns a resilience score across six weighted factors, a risk profile, and the distance between prediction and rubric.</p>
+        </div>
+        <div class="tag live">Working</div>
+      </div>
+      <div class="mod">
+        <div class="mod-n">04</div>
+        <div>
+          <h3>Venture digital twin</h3>
+          <p>A data replica of founder, venture, and market supporting counterfactual experiments. Architecture specified; engine is the next development stage.</p>
+        </div>
+        <div class="tag dev">In development</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Methodology</div>
+    <h2>The score is a rubric, and the rubric is public</h2>
+    <p class="note">
+      No black box, no trained weights, no randomness. Six factors, published openly,
+      shown to the user alongside their result. The weights are initial values drawn
+      from the venture-failure literature; estimating them from longitudinal outcome
+      data is the open research problem, not a claim being made here.
+    </p>
+    <table>
+      <thead>
+        <tr><th>Factor</th><th>What it reads</th><th style="text-align:right;">Weight</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Capital runway</td><td>Starting capital against burn assumptions</td><td class="num">25</td></tr>
+        <tr><td>Team completeness</td><td>Coverage of critical early roles</td><td class="num">20</td></tr>
+        <tr><td>Calibration</td><td>Distance between the founder's own estimate and the rubric</td><td class="num">20</td></tr>
+        <tr><td>Technical focus</td><td>Concentration of scope — narrower scores higher</td><td class="num">15</td></tr>
+        <tr><td>Market definition</td><td>Whether a specific customer has actually been named</td><td class="num">10</td></tr>
+        <tr><td>Organizational base</td><td>Retention and operating-model choices</td><td class="num">10</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:1.1rem;">
+      Calibration carries a fifth of the total deliberately. A founder who is roughly
+      right about their own odds is in a materially different position from one who is
+      thirty points optimistic — regardless of which of them scores higher elsewhere.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Target architecture</div>
+    <h2>The twin is the engine. Immersion is just the interface.</h2>
+    <div class="flow">
+      <span class="on">Digital Twin Engine</span><i>→</i>
+      <span class="on">Scenario Simulation</span><i>→</i>
+      <span class="on">AI Agents</span><i>→</i>
+      <span class="off">Immersive Layer</span>
+    </div>
+    <p>
+      The twin represents a venture as state variables — capital, burn rate, MRR, CAC,
+      headcount, market growth, competitive intensity, founder–market fit, validation
+      level. The founder pulls a lever and reads what moves:
+    </p>
+    <ul class="levers">
+      <li><strong>Hire a marketing lead now?</strong> Runway shortens, acquisition capacity rises, execution risk shifts.</li>
+      <li><strong>Move price from $29 to $49?</strong> Revenue may rise, conversion may fall, break-even moves.</li>
+      <li><strong>Enter a second market?</strong> TAM expands, regulatory exposure rises, capital requirement rises.</li>
+    </ul>
+    <p class="note">
+      Module 3 implements this as a rule-based engine today. Turning it into a
+      <strong>calibrated state-transition model estimated from longitudinal venture
+      data</strong> is the central open technical problem — and the part I would most
+      like to work on with people who do this rigorously.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Why one market first</div>
+    <h2>Korea was the test bed, not the target</h2>
+    <p>
+      The empirical work was conducted in Korea because that is where I could reach 190
+      founders and run a pilot with people who actually operate accelerator programs.
+      That makes it a strong first sample rather than a finished market thesis: high
+      startup formation, unusually dense public support infrastructure, and a five-year
+      survival rate around a third.
+    </p>
+    <p style="margin-top:0.9rem;">
+      The mechanism under test — bias awareness driving perceived usefulness driving
+      adoption — is not a claim about Korea. It is a claim about how founders relate to
+      a tool that shows them their own overconfidence. <strong>The Korean sample provides
+      the initial reference point for cross-market comparison.</strong> The next question
+      is whether the observed mechanism replicates under different funding norms,
+      institutional structures, and attitudes toward startup failure.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Commercial hypothesis</div>
+    <h2>Who this is for, and who would pay</h2>
+    <div class="hyp">
+      <div class="hyp-row">
+        <div class="hyp-k">Primary users</div>
+        <div class="hyp-v">Early-stage and first-time founders making high-uncertainty decisions.</div>
+      </div>
+      <div class="hyp-row">
+        <div class="hyp-k">Initial buyer hypothesis</div>
+        <div class="hyp-v">Accelerators, university entrepreneurship programs, and public startup-support organizations.</div>
+      </div>
+      <div class="hyp-row">
+        <div class="hyp-k">Buyer problem</div>
+        <div class="hyp-v">These organizations commit mentoring capacity, grants, program resources, and follow-on support before founder assumptions and decision risks have been systematically documented.</div>
+      </div>
+      <div class="hyp-row">
+        <div class="hyp-k">Proposed value</div>
+        <div class="hyp-v">A structured pre-decision and longitudinal assessment layer that makes assumption gaps and venture risks easier to identify, discuss, and revisit across a cohort.</div>
+      </div>
+      <div class="hyp-row">
+        <div class="hyp-k">Path under validation</div>
+        <div class="hyp-v"><span class="chain">Institutional pilot → program licensing → B2B / B2G SaaS → decision-intelligence platform</span></div>
+      </div>
+    </div>
+    <div class="caveat">
+      These are commercial hypotheses, not validated claims. Buyer fit, willingness to
+      pay, and repeat-use economics remain to be tested.
+    </div>
+  </section>
+
+  <section id="next">
+    <div class="eyebrow">Next validation stage</div>
+    <h2>Three paths, and the question of which comes first</h2>
+    <p>
+      I am currently evaluating three possible next paths. I would value guidance on
+      which is best matched to ASNM's current stage.
+    </p>
+    <div class="paths">
+      <div class="path">
+        <div class="path-n">01</div>
+        <div>
+          <h3>Research collaboration</h3>
+          <p>Replicate the behavioral findings in a U.S. context, and explore how the current rubric could be calibrated using longitudinal venture-outcome data.</p>
+        </div>
+      </div>
+      <div class="path">
+        <div class="path-n">02</div>
+        <div>
+          <h3>Institutional pilot</h3>
+          <p>Test ASNM with an accelerator, university entrepreneurship program, or startup-support organization to evaluate workflow fit, repeat use, and decision usefulness.</p>
+        </div>
+      </div>
+      <div class="path">
+        <div class="path-n">03</div>
+        <div>
+          <h3>Commercial validation</h3>
+          <p>Identify the economic buyer, willingness to pay, workflow integration, and a viable U.S. go-to-market path.</p>
+        </div>
+      </div>
+    </div>
+    <div class="ask" style="margin-top:1.4rem;">
+      Critical feedback, a pilot conversation, research collaboration, or a referral to
+      a more appropriate partner would all be valuable at this stage.
+    </div>
+  </section>
+
+  <section>
+    <div class="eyebrow">Selected references</div>
+    <h2>What this work builds on</h2>
+    <ul class="refs">
+      <li>Åstebro, T., Herz, H., Nanda, R., &amp; Weber, R. A. (2014). Seeking the roots of entrepreneurship: Insights from behavioral economics. <em>Journal of Economic Perspectives</em>, 28(3), 49–70. — entrepreneur overconfidence and entry decisions.</li>
+      <li>Klein, G. (2007). Performing a project premortem. <em>Harvard Business Review</em>, 85(9), 18–19. — prospective hindsight as a method for surfacing failure modes before commitment.</li>
+      <li>Lichtenstein, S., Fischhoff, B., &amp; Phillips, L. D. (1982). Calibration of probabilities: The state of the art to 1980. In Kahneman, Slovic, &amp; Tversky (Eds.), <em>Judgment Under Uncertainty</em>. — the calibration framework underlying Module 3's prediction-gap factor.</li>
+      <li>Brooke, J. (1996). SUS: A "quick and dirty" usability scale. In <em>Usability Evaluation in Industry</em>. — instrument used in the 15-participant pilot (score: 82.2).</li>
+      <li>Korea Institute of Startup &amp; Entrepreneurship Development (KISED). Startup survival statistics, 2024 cohort. — five-year survival baseline cited on the home page.</li>
+      <li>Lee, K. (2026). <em>Adaptive Startup Navigation Model: An AI-agent decision-support system for early-stage founders</em>. MSTM thesis, aSSIST. — source of the SEM results (n=190) and the pilot study reported here.</li>
+    </ul>
+    <p class="note" style="margin-top:1.2rem;">
+      A fuller methodology summary is available on request.
+    </p>
+  </section>
+
+  <section>
+    <div class="eyebrow">Contact</div>
+    <h2>Get in touch</h2>
+    <div class="contact">
+      <strong>Kyungsim (Chloe) Lee</strong><br>
+      Founder, [COMPANY NAME] &nbsp;·&nbsp; MSTM, aSSIST &nbsp;·&nbsp; [DEGREE], Stony Brook University ([YEAR])<br>
+      <a href="mailto:[EMAIL]">[EMAIL]</a>
+    </div>
+    <div class="disclaim">
+      ASNM is an independent research project developed by the author. It is not
+      affiliated with, sponsored by, or endorsed by Stony Brook University or any other
+      institution. Figures and study results reported here are drawn from the author's
+      MSTM thesis. No predictive claims are made about any individual venture.
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      <a href="./">Open the prototype</a> &nbsp;·&nbsp;
+      <a href="../">한국어 버전</a> &nbsp;·&nbsp;
+      <a href="../privacy.html">Privacy</a><br>
+      <span>ASNM — Adaptive Startup Navigation Model · Research prototype, v0.9 external review</span>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
