@@ -1,4 +1,24 @@
+# Secrets — never commit
 .env
-__pycache__/
-*.pyc
+.env.*
+*.key
+secrets.json
 .streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Node / Wrangler
+node_modules/
+.wrangler/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
