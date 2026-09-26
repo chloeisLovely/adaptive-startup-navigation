@@ -2619,7 +2619,10 @@ input[type=range]::-webkit-slider-thumb{
       </div>
 
       <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+        <p style="flex-basis:100%;color:var(--text2)">시뮬레이션이 완료되었습니다. 리포트로 분석을 확인하거나, 같은 데이터로 Venture World에서 월별 결정을 이어가세요.</p>
         <button class="btn-primary btn-gold" onclick="showPage('result')">📋 최종 보고서 보기</button>
+        <button class="btn-primary" data-venture-world>Venture Digital Twin 체험하기</button>
+        <p id="venture-world-status" role="status" style="flex-basis:100%"></p>
         <button class="back-btn" onclick="resetSimulator()">↺ 다시 설계하기</button>
       </div>
     </div>
@@ -2673,12 +2676,22 @@ input[type=range]::-webkit-slider-thumb{
         <p class="page-desc" style="color:var(--purple);">창업자 · 스타트업 · 시장의 상태를 데이터로 복제한 가상 모델. 의사결정 레버를 당겨 결과를 미리 실험합니다.</p>
       </div>
       <div style="background:linear-gradient(135deg,var(--gold),#ff9500);color:#000;padding:0.8rem 1.5rem;border-radius:10px;font-weight:700;text-align:center;font-family:'Orbitron',monospace;">
-        IN DEVELOPMENT<br>
-        <span style="font-size:0.7rem;font-weight:normal;">Target Architecture</span>
+        LIVE PROTOTYPE<br>
+        <span style="font-size:0.7rem;font-weight:normal;">Dual Entry · Living World</span>
       </div>
     </div>
   </div>
   <div class="content">
+    <section class="glass-card" id="digital-twin-hub" style="padding:2rem;margin-bottom:2rem">
+      <h2>VENTURE DIGITAL TWIN</h2>
+      <p>스타트업의 다음 결정을 가상 Venture World에서 실험해보세요.</p>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem">
+        <div style="flex:1;min-width:220px"><h3>Module 3 결과에서 이어서 시작</h3><p>분석 결과와 입력한 가정을 이어받습니다.</p><button class="btn-primary" data-venture-world data-requires-module3 disabled>Module 3에서 이어서</button><p id="hub-source-status" role="status"></p></div>
+        <div style="flex:1;min-width:220px"><h3>새로운 Venture World 만들기</h3><p>Module 3 없이 기본 정보를 직접 설정합니다.</p><a class="btn-primary btn-gold" href="module4/?entry=standalone&lang=ko">새 Venture World 만들기</a></div>
+      </div>
+    </section>
+    <details><summary>연구 방향과 향후 아키텍처</summary>
+
     <div class="metaverse-preview-box">
       <div class="metaverse-preview-header">
         <div class="metaverse-preview-title">아키텍처: 트윈이 엔진, 몰입형 화면은 인터페이스</div>
@@ -2765,6 +2778,7 @@ input[type=range]::-webkit-slider-thumb{
         </div>
       </div>
     </div>
+    </details>
   </div>
 </div>
 
@@ -4329,6 +4343,16 @@ function runSimulation(){
     </div>
   `).join('');
   
+  // Module 4 integration: snapshot actual completed data, without changing scoring.
+  window.dispatchEvent(new CustomEvent('asnm:module3-complete', {detail: {
+    timestamp: new Date().toISOString(),
+    company: structuredClone({name:simData.name, vision:simData.vision, capital:simData.capital,
+      region:simData.region, item:simData.item, persona:simData.persona,
+      tech:simData.tech, talent:simData.talent, welfare:simData.welfare}),
+    barl: structuredClone(simData.barl), founder_type: window._founderType,
+    founder_answers: structuredClone(quizAnswers), trends: structuredClone(selectedTrends),
+    survival_score: base, factors: structuredClone(F), risks: structuredClone(risks)
+  }}));
   forceScrollToTop();
 }
 
@@ -4733,6 +4757,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   console.log('[ASNM] window에 등록된 함수:', registered + '/' + fns.length);
 })();
+
+// Module 4 return hook: restore a completed snapshot, then use the existing report.
+window.addEventListener('asnm:restore-report', event => {
+  const raw=event.detail;
+  if(!raw?.company?.name || !raw.company.item) return;
+  simData={...simData,...structuredClone(raw.company),barl:structuredClone(raw.barl || {})};
+  selectedTrends=structuredClone(raw.trends || []);
+  window._founderType=raw.founder_type;
+  if(Array.isArray(raw.founder_answers)) quizAnswers=structuredClone(raw.founder_answers);
+  runSimulation();
+  showPage('result');
+});
 </script>
+<script type="module" src="module4/bridge.js"></script>
 </body>
 </html>

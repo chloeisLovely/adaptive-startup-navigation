@@ -5,3 +5,24 @@
 @media(max-width:920px){.workspace{grid-template-columns:150px minmax(0,1fr)}.decision-sidebar{grid-column:1/-1;border-top:1px solid var(--border)}.decision-form{grid-template-columns:repeat(3,minmax(0,1fr))}.decision-form .reason-label,.decision-form .primary{grid-column:1/-1}.cal-grid{grid-template-columns:repeat(3,minmax(0,1fr))}#world-canvas{height:360px}}
 @media(max-width:600px){.header{align-items:flex-start;flex-direction:column;gap:12px;padding:14px}.brand-title{display:block;font-size:11px}.workspace{display:block}.sidebar{display:flex;padding:9px;overflow:auto;border-bottom:1px solid var(--border);border-right:0;gap:4px}.side-label,.side-footer{display:none}.room-link{width:auto;min-width:115px;padding:10px;margin:0}.room-link small{font-size:9px}.main{padding:15px}.title-row h1{font-size:22px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.world-bottom{font-size:9px}.world-bottom span:last-child{display:none}#world-canvas{height:300px}.cal-grid,.agent-grid{grid-template-columns:1fr}.decision-form{grid-template-columns:repeat(2,minmax(0,1fr))}.setup-grid{grid-template-columns:repeat(2,minmax(0,1fr))}dialog{padding:18px}.setup-actions{bottom:-18px}.footer{padding:16px}.month{padding:8px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* V2 entry and living-campus additions; keep the original dashboard structure. */
+[hidden]{display:none!important}
+.entry-screen{max-width:1020px;margin:0 auto;padding:64px 36px 80px;min-height:calc(100vh - 145px)}
+.entry-screen h1{font-size:clamp(28px,4vw,44px);line-height:1.3;letter-spacing:-1.3px;max-width:850px;margin:18px 0;overflow-wrap:anywhere}
+.entry-lead{font-size:16px;line-height:1.8;color:var(--muted);max-width:700px}
+.entry-options{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:38px 0}
+.entry-card{background:linear-gradient(145deg,#1b303b,#121d2c);border:1px solid #3b5662;border-radius:18px;padding:30px}
+.entry-card:nth-child(2){background:linear-gradient(145deg,#322e30,#171e2d);border-color:#64574b}
+.entry-number{font:14px monospace;color:var(--gold)}.entry-card h2{font-size:22px;margin-top:28px}.entry-card p{color:var(--muted);font-size:14px;line-height:1.8;min-height:76px}
+.entry-card button{font-size:14px;padding:13px 18px;width:100%}
+.wizard-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin:30px 0}
+.wizard-grid label{display:grid;gap:10px;color:#c3d0de;font-size:14px}
+.wizard-grid input,.wizard-grid select{font-size:16px;padding:13px;border:1px solid #42556a;border-radius:8px;background:#132234;color:var(--text);width:100%}
+.wizard-progress{display:flex;gap:10px;flex-wrap:wrap;margin:28px 0}.wizard-progress span{border-top:3px solid #354659;color:var(--muted);padding:12px 0;flex:1;font-size:12px;min-width:100px}.wizard-progress .active{border-color:var(--accent);color:var(--accent)}
+.entry-actions{display:flex;gap:12px;flex-wrap:wrap;margin:28px 0 0;justify-content:flex-end}.entry-actions button{padding:13px 20px;font-size:14px}
+.welcome-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:32px 0}.welcome-grid>div{padding:23px;border:1px solid #385365;border-radius:12px;background:#142432;min-width:0}.welcome-grid dt{font-size:12px;color:var(--muted)}.welcome-grid dd{margin:12px 0 0;font-size:21px;color:#f1d1a3;overflow-wrap:anywhere}
+.persona-card{border:1px solid #7b6653;border-radius:12px;margin:14px 0;padding:16px 20px;background:linear-gradient(110deg,#2c2b2b,#142334)}.persona-card h3{margin:7px 0;font-size:15px;color:#f2cf9d}.persona-card p{font-size:13px;line-height:1.7;margin:8px 0 12px}.persona-card button{font-size:12px}
+@media(max-width:600px){.entry-screen{padding:32px 20px}.entry-options,.wizard-grid{grid-template-columns:1fr;gap:16px}.entry-card{padding:22px}.entry-card p{min-height:0}.welcome-grid{grid-template-columns:1fr 1fr}.welcome-grid>div{padding:15px}.welcome-grid dd{font-size:17px}.entry-actions{justify-content:stretch}.entry-actions button{flex:1}.wizard-progress span{min-width:40%;}.persona-card{padding:14px}}
+
+.entry-screen h1{word-break:keep-all}.entry-screen h1:focus{outline:none}
