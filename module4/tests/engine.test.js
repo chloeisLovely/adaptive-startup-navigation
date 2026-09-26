@@ -92,3 +92,26 @@ test('advisors do not mutate state and provide all five roles and four fields',a
   const s=sampleState(),copy=clone(s);const answers=await new RuleBasedProvider().advise(s,defaultDecisions(),'en');
   assert.equal(answers.length,5);for(const a of answers)for(const k of ['observation','risk','consequence','question'])assert.equal(typeof a[k],'string');assert.deepEqual(s,copy);
 });
+
+// V2 inputs reuse the original engine and state schema.
+import {fromStandalone,standaloneDefaults} from '../state/StandaloneAdapter.js';
+test('standalone defaults normalize into the shared state and preserve missing and zero expectations',()=>{
+  const input={...standaloneDefaults(),ventureName:'Independent venture',industry:'Education'};
+  const s=fromStandalone(input);assert.equal(s.provenance.source,'standalone');assert.equal(s.assumptions.expectedSurvival,undefined);
+  assert.equal(s.assumptions.expectedGrowth,undefined);assert.equal(s.venture.teamSize,1);assert.equal(s.venture.runway,20);
+  const zero=fromStandalone({...input,expectedSurvival:'0',expectedGrowth:'0',expectedDemand:'0',seed:'0'});
+  assert.equal(zero.assumptions.expectedSurvival,0);assert.equal(zero.assumptions.expectedGrowth,0);assert.equal(zero.simulation.seed,0);
+  assert.deepEqual(run(s,4),run(s,4));assert.deepEqual(decodeImport(JSON.stringify(run(s,4))).session,run(s,4));
+});
+test('standalone rejects invalid required data, currencies, ranges and fractional team/seed',()=>{
+  const valid={...standaloneDefaults(),ventureName:'Valid',industry:'Education'};
+  for(const bad of [{ventureName:''},{industry:''},{capital:''},{capital:-1},{currency:'EUR'},{retention:101},{teamSize:1.5},{seed:2.2},{expectedSurvival:'NaN'}])assert.throws(()=>fromStandalone({...valid,...bad}));
+  const krw=fromStandalone({...valid,...standaloneDefaults('KRW'),ventureName:'KRW venture',industry:'Education'});
+  assert.equal(krw.currency,'KRW');assert.equal(krw.costUnit,1000);assert.equal(krw.venture.cash,200000000);
+});
+test('source handoffs never overwrite a running session; actual BARL metadata is retained',()=>{
+  const map=new Map(),store=new StateStore({getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v)});
+  const current=run(fromStandalone({...standaloneDefaults(),ventureName:'Keep me',industry:'Software'}),2);store.save(current);
+  const raw={...source,barl:{...source.barl,months:5,biases:['optimism'],failReason1:'cash',failReason2:'demand',failReason3:'team'}};
+  store.saveSource(fromModule3(raw));assert.deepEqual(store.load(),current);assert.deepEqual(store.readSource().provenance.module3.barl,raw.barl);
+});

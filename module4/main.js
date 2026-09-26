@@ -1,3 +1,5 @@
+import {createEntry} from './ui/entry.js';
+import {personas} from './world/avatars.js';
 import {sampleState,clone,validateState,round} from './state/ASNMState.js';
 import {StateStore,createSession,decodeImport,SESSION_KEY} from './state/StateStore.js';
 import {simulateMonth,reflections} from './simulation/SimulationEngine.js';
@@ -15,7 +17,7 @@ document.documentElement.lang=lang;
 const t=(ko,en)=>lang==='ko'?ko:en;
 const app=document.getElementById('app');
 let store,session=createSession(sampleState()),world=null,activeRoom='ceo',activeTab='calibration',started=false,conflict=false,advisorRequest=0;
-let selections=defaultDecisions();
+let selections=defaultDecisions(),arrivedRoom='ceo',walking=false,pendingState=null;
 const provider=new RuleBasedProvider();
 const notify=message=>{document.getElementById('status').textContent=message;};
 const actionName=(category,action)=>decisions[category]?.find(d=>d[0]===action)?.[lang==='ko'?1:2] || action;
@@ -23,17 +25,18 @@ const categoryName={hiring:t('채용','Hiring'),product:t('제품','Product'),ma
 const tabs={calibration:t('가정 비교','Calibration'),timeline:t('결정 기록','Decision log'),agents:t('AI 자문','Advisors'),reflection:t('돌아보기','Reflection'),report:t('리포트','Report')};
 const status=el('p',{id:'status',class:'status',role:'status','aria-live':'polite'});
 const importInput=el('input',{type:'file',accept:'.json,application/json',id:'import-file',class:'sr-only','aria-label':t('JSON 가져오기','Import JSON')});
-const header=el('header',{class:'header'},el('div',{class:'brand'},el('a',{href:lang==='en'?'../en/':'../',title:'ASNM Home'},'ASN',el('span',{text:'M'})),el('div',{class:'brand-title'},el('div',{class:'eyebrow',text:'MODULE 04'}),el('div',{text:'VENTURE DIGITAL TWIN'}))),el('div',{class:'tools'},el('button',{id:'new-sample',text:t('새 샘플','New sample'),onclick:()=>openSetup(sampleState())}),el('button',{id:'load-module3',text:t('Module 3 불러오기','Load Module 3'),onclick:loadModule3}),el('label',{class:'button',for:'import-file',text:t('JSON 가져오기','Import JSON'),tabindex:'0',onkeydown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();importInput.click();}}}),importInput,el('button',{id:'export-json',text:t('JSON 내보내기','Export JSON'),onclick:()=>download(JSON.stringify(session,null,2),'ASNM-venture-session.json')}),el('button',{text:lang==='ko'?'EN':'한국어',onclick:()=>{const url=new URL(location);url.searchParams.set('lang',lang==='ko'?'en':'ko');location.assign(url.href);},'aria-label':'Change language'})));
+const header=el('header',{class:'header'},el('div',{class:'brand'},el('a',{href:lang==='en'?'../en/':'../',title:'ASNM Home'},'ASN',el('span',{text:'M'})),el('div',{class:'brand-title'},el('div',{class:'eyebrow',text:'MODULE 04'}),el('div',{text:'VENTURE DIGITAL TWIN'}))),el('div',{class:'tools'},el('button',{id:'entry-hub-button',text:t('새 Venture / 진입 화면','New venture / Entry'),onclick:showHub}),el('button',{id:'new-sample',text:t('새 샘플','New sample'),onclick:()=>requestNew(()=>openSetup(sampleState()))}),el('button',{id:'load-module3',text:t('Module 3 불러오기','Load Module 3'),onclick:loadModule3}),el('label',{class:'button',for:'import-file',text:t('JSON 가져오기','Import JSON'),tabindex:'0',onkeydown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();importInput.click();}}}),importInput,el('button',{id:'export-json',text:t('JSON 내보내기','Export JSON'),onclick:()=>download(JSON.stringify(session,null,2),'ASNM-venture-session.json')}),el('button',{text:lang==='ko'?'EN':'한국어',onclick:()=>{const url=new URL(location);url.searchParams.set('lang',lang==='ko'?'en':'ko');location.assign(url.href);},'aria-label':'Change language'})));
 const sidebar=el('nav',{class:'sidebar','aria-label':t('연구실 이동','Navigate rooms')},el('p',{class:'side-label',text:'CAMPUS DIRECTORY'}),...rooms.map((r,i)=>el('button',{class:'room-link','data-room':r.id,'aria-pressed':i===0,onclick:()=>selectRoom(r.id)},el('span',{class:'dot',style:`background:${r.color}`}),el('span',{},el('strong',{text:r.name}),el('small',{text:r[lang]})))),el('div',{class:'side-footer'},el('div',{class:'eyebrow',text:'DECISION LAB'}),t('예측을 확정하고, 결정하고, 결과를 관찰하세요.','Commit predictions. Decide. Observe the outcome.'),el('br'),el('span',{class:'mono',id:'seed-label'})));
 const title=el('h1',{id:'venture-title'}),monthBadge=el('div',{class:'month mono',id:'month-label'}),source=el('p',{class:'source',id:'source-label'});
 const canvas=el('canvas',{id:'world-canvas',tabindex:'0','aria-label':t('3D 스타트업 캠퍼스. 마우스로 회전, 휠 확대, WASD 이동. 왼쪽 버튼으로도 방을 선택할 수 있습니다.','3D startup campus. Drag to orbit, wheel to zoom, WASD to pan. Room navigation is also available through buttons.')});
 const worldShell=el('section',{class:'world-shell'},el('div',{class:'world-top'},el('strong',{text:'VENTURE CAMPUS'}),el('span',{text:'LIVE SCENARIO ENVIRONMENT'})),canvas,el('div',{class:'world-controls'},el('button',{id:'overview',text:t('전체 보기','Overview'),onclick:()=>world?.overview()})),el('div',{class:'world-bottom'},el('span',{},el('i',{class:'live-dot'}),t('방을 클릭해 의사결정 패널 열기','Click a room to explore decisions')),el('span',{text:t('드래그 회전 · 휠 확대 · WASD 이동','DRAG orbit · SCROLL zoom · WASD pan')})));
+const interaction=el('section',{id:'persona-card',class:'persona-card','aria-live':'polite'});
 const metrics=el('section',{class:'metrics',id:'metrics','aria-label':t('월별 지표','Monthly metrics')});
 const roomDetail=el('section',{id:'room-detail','aria-live':'polite'});
 const tabBar=el('div',{class:'detail-tabs',role:'tablist','aria-label':t('분석 보기','Analysis views')},...Object.entries(tabs).map(([id,label])=>el('button',{class:'tab',id:'tab-'+id,role:'tab','aria-selected':id===activeTab,'aria-controls':'analysis-panel',onclick:()=>{activeTab=id;renderPanel();},text:label})));
 const panel=el('section',{class:'tab-panel',id:'analysis-panel',role:'tabpanel','aria-labelledby':'tab-calibration'});
 const disclaimer=el('p',{class:'notice',text:t('연구 프로토타입 · 모든 결과는 명시된 가정과 규칙에 따른 시나리오입니다. 실제 생존확률이나 미래 실적의 예측이 아닙니다.','Research prototype · Outcomes are scenario-based estimates from explicit assumptions and rules, not real survival probabilities or forecasts.')});
-const main=el('main',{class:'main'},el('div',{class:'title-row'},el('div',{},el('div',{class:'eyebrow',text:'COMMIT → DECIDE → CALIBRATE'}),title,source),monthBadge),worldShell,metrics,roomDetail,disclaimer,tabBar,panel);
+const main=el('main',{class:'main'},el('div',{class:'title-row'},el('div',{},el('div',{class:'eyebrow',text:'COMMIT → DECIDE → CALIBRATE'}),title,source),monthBadge),worldShell,interaction,metrics,roomDetail,disclaimer,tabBar,panel);
 const form=el('form',{class:'decision-form',id:'decision-form',onsubmit:advance});
 for(const [category,options] of Object.entries(decisions)) {
   const select=el('select',{id:'decision-'+category,name:category,onchange:()=>{selections[category]=select.value;if(activeTab==='agents')renderPanel();}});
@@ -45,7 +48,72 @@ const advanceButton=el('button',{class:'primary',id:'advance-month',type:'submit
 form.append(el('label',{class:'reason-label'},t('이번 결정의 이유 / 검증할 가정','Your reason / assumption to test'),reason),advanceButton);
 const offer=el('div',{id:'offer'}),endMessage=el('p',{id:'end-message',class:'end-message'});
 const decisionSide=el('aside',{class:'decision-sidebar'},el('div',{class:'eyebrow',text:'FOUNDER CONTROL'}),el('h2',{text:t('이번 달의 결정','This month’s decisions')}),el('p',{text:t('여섯 분야에서 하나씩 선택하세요. 확정하면 시장 이벤트와 한 달의 운영 결과가 반영됩니다.','Choose one action per category. Committing applies decisions, a market event and one month of operations.')}),offer,form,endMessage,el('p',{text:t('AI 자문은 참고 정보입니다. 최종 결정은 창업자가 내립니다. 모든 계산은 공개된 코드 규칙을 따릅니다.','Advisors provide perspectives. You make the decisions. All calculations follow published code rules.')}));
-app.append(header,status,el('div',{class:'workspace'},sidebar,main,decisionSide),el('footer',{class:'footer'},'ASNM · VENTURE DIGITAL TWIN · RESEARCH PROTOTYPE 1.0', ' · ',el('a',{href:'./README.md',text:t('모델 규칙 · 실행 안내','Model rules & documentation')})));
+app.append(header,status,el('div',{class:'workspace'},sidebar,main,decisionSide),el('footer',{class:'footer'},'ASNM · VENTURE DIGITAL TWIN · RESEARCH PROTOTYPE 2.0', ' · ',el('a',{href:'./README.md',text:t('모델 규칙 · 실행 안내','Model rules & documentation')})));
+
+const workspace=document.querySelector('.workspace');
+const entryHost=el('section',{id:'entry-screen',class:'entry-screen',hidden:true});
+workspace.before(entryHost);
+const entry=createEntry({host:entryHost,lang,
+  hasSession:()=>started,readSource:()=>incomingSource||store?.readSource(),
+  onStandalone:()=>requestNew(()=>{hideWorld();entry.wizard();}),
+  onModule3:loadModule3,onEnter:(state,commit)=>commit?startState(state):showWelcome(state),
+  onReview:openSetup,onResume:()=>{clearEntryURL();showWorld();}});
+let incomingSource=null;
+function hideWorld(){workspace.hidden=true;world?.pause();}
+function clearEntryURL(){history.replaceState(null,'',location.pathname+`?lang=${lang}`);}
+function showHub(){hideWorld();entry.hub();}
+function showWelcome(state){pendingState=validateState(state);hideWorld();entry.welcome(pendingState);}
+function resetControls(){
+  selections=defaultDecisions();for(const [key,value] of Object.entries(selections))form.elements[key].value=value;
+  reason.value='';activeTab='calibration';activeRoom='ceo';arrivedRoom='ceo';walking=false;
+}
+function showWorld(){
+  entry.hide();workspace.hidden=false;render();
+  if(!world && !worldShell.querySelector('.fallback')){
+    try{world=createWorld(canvas,selectRoom,id=>{arrivedRoom=id;activeRoom=id;walking=false;renderRoom();renderPersona();});world.update(session.state);}
+    catch{worldShell.append(el('div',{class:'fallback',text:t('이 환경에서는 3D 화면을 열 수 없습니다. 방 메뉴와 대시보드로 모든 시뮬레이션을 사용할 수 있습니다.','3D is unavailable. All simulation features remain accessible through the room menu and dashboard.')}));}
+  }
+  world?.resume();world?.update(session.state);renderPersona();render();
+}
+function startState(state){
+  if(conflict){notify(t('다른 탭에서 세션이 바뀌었습니다. 새로고침 후 다시 시작하세요.','Another tab changed the session. Refresh before starting.'));return;}
+  session=createSession(validateState(state));started=true;pendingState=null;resetControls();
+  world?.dispose();world=null;worldShell.querySelector('.fallback')?.remove();
+  notify('');save();clearEntryURL();showWorld();
+}
+const sessionGuard=el('dialog',{id:'session-guard','aria-labelledby':'guard-heading'});document.body.append(sessionGuard);
+function requestNew(next){
+  if(conflict){notify(t('다른 탭에서 세션이 바뀌었습니다. 새로고침하거나 현재 기록을 내보내세요.','Another tab changed the session. Refresh or export this tab’s data.'));return;}
+  if(!started){next();return;}
+  sessionGuard.replaceChildren(el('h2',{id:'guard-heading',text:t('기존 Venture World가 있습니다.','An existing Venture World is available.')}),
+    el('p',{text:`${session.state.venture.ventureName} · Month ${session.state.simulation.currentMonth}`}),
+    el('p',{text:t('새 시나리오 입장 시 기존 세션이 교체됩니다. 보관하려면 먼저 내보내세요.','Entering a new scenario replaces this session. Export it first if you want to keep it.')}),
+    el('div',{class:'entry-actions'},el('button',{id:'guard-continue',text:t('이어가기','Continue'),onclick:()=>{sessionGuard.close();clearEntryURL();showWorld();}}),
+      el('button',{id:'guard-export',text:t('내보내기','Export'),onclick:()=>download(JSON.stringify(session,null,2),'ASNM-venture-session.json')}),
+      el('button',{id:'guard-new',class:'primary',text:t('새로 시작','Start New'),onclick:()=>{sessionGuard.close();next();}})));
+  if(!sessionGuard.open)sessionGuard.showModal();
+}
+function renderPersona(){
+  if(walking){interaction.replaceChildren(el('p',{text:t('창업자가 이동하고 있습니다…','Your founder is walking…')}));return;}
+  const s=session.state,v=s.venture;
+  const runway=v.runway===null?t('현재 순소진 없음','No current net burn'):`${fmt(v.runway)} ${t('개월','months')}`;
+  const text={
+    ceo:t('이번 달에는 어떤 가정을 검증할까요? 여섯 분야의 결정을 함께 검토해보세요.','Which assumption will you test this month? Review your six decisions together.'),
+    finance:t(`현금 ${money(v.cash,s.currency,lang)}, 순소진 ${money(v.monthlyBurn-v.mrr,s.currency,lang)}. Runway: ${runway}.`,`Cash ${money(v.cash,s.currency,lang)}, net burn ${money(v.monthlyBurn-v.mrr,s.currency,lang)}. Runway: ${runway}.`),
+    market:t(`시장수요 ${s.market.demand}/100, 불확실성 ${s.market.uncertainty}/100입니다. 어떤 고객군을 먼저 인터뷰할까요?`,`Demand is ${s.market.demand}/100 and uncertainty ${s.market.uncertainty}/100. Which segment should we interview first?`),
+    product:t(`제품 완성도 ${v.productProgress}/100, 기술부채 ${s.operations.technicalDebt}/100입니다. 기능과 안정성 중 무엇을 우선할까요?`,`Product progress is ${v.productProgress}/100; technical debt is ${s.operations.technicalDebt}/100. Features or reliability first?`),
+    customer:t(`월 고객유지율 ${v.retention}%, CAC ${money(v.cac,s.currency,lang)}입니다. 가격을 바꾸기 전에 사용 경험을 검토할까요?`,`Monthly retention is ${v.retention}%; CAC is ${money(v.cac,s.currency,lang)}. Shall we review the customer experience before changing price?`),
+    team:t(`팀 ${v.teamSize}명, 실행역량 ${v.teamCapacity}/100입니다. 이번 달에 필요한 역할은 무엇인가요?`,`Our team has ${v.teamSize} people and capacity ${v.teamCapacity}/100. Which role would help this month?`),
+    investor:t(`현재 Runway: ${runway}. 창업자 지분 ${s.operations.founderEquity}%. 투자유치 결정을 검토하시겠습니까?`,`Current runway: ${runway}. Founder ownership: ${s.operations.founderEquity}%. Would you like to review funding?`)
+  };
+  const category=rooms.find(r=>r.id===arrivedRoom)?.category;
+  interaction.replaceChildren(el('div',{class:'eyebrow',text:t('시나리오 페르소나 · 규칙 기반','SCENARIO PERSONA · RULE-BASED')}),
+    el('h3',{text:personas[arrivedRoom].map(p=>p[lang==='ko'?1:0]).join(' · ')}),el('p',{text:text[arrivedRoom]}),
+    el('button',{id:'persona-action',text:category?t('관련 결정 검토','Review decision'):t('자문 관점 보기','Review advisor perspectives'),onclick:()=>{
+      if(category){const field=form.elements[category];field.focus();field.scrollIntoView({block:'center',behavior:'smooth'});}
+      else{activeTab='agents';renderPanel();panel.scrollIntoView({block:'start',behavior:'smooth'});}
+    }}));
+}
 
 function save() {
   try {if(!store) throw new Error('Storage unavailable');store.save(session);return true;}
@@ -53,13 +121,14 @@ function save() {
 }
 function render() {
   const s=session.state,v=s.venture;
+  document.getElementById('export-json').disabled=!started;
   title.textContent=v.ventureName;
   monthBadge.textContent=`MONTH ${String(s.simulation.currentMonth).padStart(2,'0')} / 60`;
   source.textContent=`${s.provenance?.source==='module3'?t('Module 3에서 이어짐','Connected from Module 3'):t('시나리오 상태','Scenario state')} · ${s.currency} · ${v.industry||'Venture'} · ${t('모델','Model')} ${s.modelVersion}`;
   document.getElementById('seed-label').textContent=`SEED ${s.simulation.seed}`;
   dashboard(metrics,s,session.history.at(-1)?.stateBefore,lang);
   world?.update(s);
-  renderRoom();renderPanel();
+  renderRoom();renderPersona();renderPanel();
   const pending=s.operations.offer;
   offer.className=pending?'offer':'';
   offer.textContent=pending ? t(`투자 제안: ${money(pending.amount,s.currency,lang)} / 지분 ${pending.equity}%. ${pending.expiresMonth}개월차 말 만료.`, `Offer: ${money(pending.amount,s.currency,lang)} for ${pending.equity}% equity. Expires at end of month ${pending.expiresMonth}.`) : '';
@@ -70,9 +139,10 @@ function render() {
   endMessage.textContent=v.cash<=0?t('현금이 소진되어 시나리오가 종료되었습니다. 기록을 내보내고 새 가정을 검토하세요.','Scenario ended: cash depleted. Export the log and review new assumptions.'):s.simulation.currentMonth>=60?t('60개월 시나리오를 완료했습니다. 리포트에서 결과를 확인하세요.','60-month scenario complete. Review your report.'):'';
 }
 function selectRoom(id) {
-  activeRoom=id;world?.focus(id);renderRoom();
+  activeRoom=id;walking=!!world;renderRoom();renderPersona();
+  if(world)world.goToRoom(id);else{arrivedRoom=id;walking=false;renderPersona();}
   const category=rooms.find(r=>r.id===id)?.category;
-  if(category) {const select=document.getElementById('decision-'+category);select.focus({preventScroll:true});if(innerWidth<921)select.scrollIntoView({block:'center',behavior:'instant'});}
+  if(category) {const select=document.getElementById('decision-'+category);select.focus({preventScroll:true});}
 }
 function renderRoom() {
   const r=rooms.find(r=>r.id===activeRoom),s=session.state,v=s.venture;
@@ -134,6 +204,11 @@ function renderPanel() {
     for(const [id,text] of Object.entries(session.reflections))panel.append(el('details',{class:'timeline-item'},el('summary',{text:t('저장된 회고 · ','Saved reflection · ')+id}),el('p',{text})));
   }
   if(activeTab==='report') {
+    const raw=session.initialState.provenance?.module3;
+    if(raw)panel.append(el('button',{id:'module3-report',text:t('Module 3 전체 리포트 보기','View Module 3 Full Report'),onclick:()=>{
+      const url=new URL(lang==='en'?'../en/':'../',location.href);url.searchParams.set('view','module3-report');
+      url.hash='report='+encodeURIComponent(JSON.stringify(raw));location.assign(url.href);
+    }}));
     panel.append(el('h3',{text:t('실험 리포트와 재현 데이터','Research report & reproducible data')}),el('p',{class:'muted small',text:t('JSON에는 초기 가정, seed, 매월 결정 전후 상태, 이벤트, 이유, 회고가 포함됩니다. 가져오면 동일 모델로 기록을 재실행하여 검증합니다.','JSON includes initial assumptions, seed, decision states, events, reasons and reflections. Imports replay the history with the same model to verify consistency.')}),el('div',{class:'report-actions'},el('button',{class:'primary',text:t('리포트 내려받기 (.md)','Download report (.md)'),onclick:()=>download(reportMarkdown(session),'ASNM-venture-report.md','text/markdown')}),el('button',{text:t('실험 데이터 (.json)','Experiment data (.json)'),onclick:()=>download(JSON.stringify(session,null,2),'ASNM-venture-session.json')})),el('details',{class:'source-notes'},el('summary',{text:t('데이터 출처와 초기 가정','Data provenance & initial assumptions')}),el('ul',{},...(s.provenance?.notes||[]).map(n=>el('li',{text:n})))));
   }
 }
@@ -145,7 +220,7 @@ const fieldSpecs=[
 function openSetup(input) {
   const draft=clone(input),isM3=draft.provenance?.source==='module3';
   const setupForm=el('form',{id:'setup-form'}),grid=el('div',{class:'setup-grid'}),error=el('p',{id:'setup-error',class:'error',role:'alert'});
-  setup.replaceChildren(el('div',{class:'eyebrow',text:isM3?'MODULE 03 → MODULE 04':'NEW SCENARIO'}),el('h2',{id:'setup-heading',text:t('초기 상태를 검토하고 시작하세요','Review your initial state')}),el('p',{text:t(`금액 단위: ${draft.currency}. 실제 입력과 연구용 가정을 구분하여 검토하세요. 시작하면 이 브라우저의 기존 Module 4 세션을 대체합니다. 필요한 기록은 먼저 내보내세요.`,`Currency: ${draft.currency}. Review source inputs and scenario assumptions. Starting replaces this browser’s Module 4 session; export any history you wish to keep first.`)}));
+  setup.replaceChildren(el('div',{class:'eyebrow',text:isM3?'MODULE 03 → MODULE 04':'NEW SCENARIO'}),el('h2',{id:'setup-heading',text:t('초기 상태를 검토하고 시작하세요','Review your initial state')}),el('p',{text:t(`금액 단위: ${draft.currency}. 실제 입력과 연구용 가정을 구분하여 검토하세요. 수정 후 환영 화면에서 확인하고 입장할 때 초기 상태를 확정합니다.`,`Currency: ${draft.currency}. Review source inputs and scenario assumptions. Changes are reviewed on the welcome screen before the new scenario is committed.`)}));
   if(isM3)setup.append(el('p',{class:'notice',text:t('회사명·자본금·업종·BARL 예상은 Module 3에서 전달됩니다. 팀은 채용 계획을 초기 인원으로 가정합니다. 나머지 운영·시장 값은 검증되지 않은 기본값입니다. 예상 시장성장률을 실제 시장성장률로 사용하지 않습니다.','Company, capital, industry and BARL predictions come from Module 3. Planned hiring is treated as initial staffing. Other operating/market values are unvalidated defaults. Expected market growth is not treated as observed growth.')}));
   const name=el('input',{name:'ventureName',required:true,maxlength:'120',value:draft.venture.ventureName});
   grid.append(el('label',{class:'wide'},t('벤처 이름','Venture name'),name));
@@ -167,15 +242,13 @@ function openSetup(input) {
       if(next.provenance?.source==='module3')next.provenance.reviewed=true;
       next.provenance??={source:'import',notes:[]};
       next.provenance.reviewChanges=fieldSpecs.filter(([p])=>{const[a,b]=p.split('.');return next[a][b]!==draft[a][b];}).map(([p])=>{const[a,b]=p.split('.');return {field:p,source:draft[a][b]??null,reviewed:next[a][b]??null};});
-      session=createSession(validateState(next));started=true;conflict=false;selections=defaultDecisions();
-      for(const [k,v] of Object.entries(selections))form.elements[k].value=v;
-      reason.value='';notify('');save();setup.close();activeTab='calibration';render();
+      setup.close();showWelcome(validateState(next));
     }catch(err){error.textContent=err.message;}
   });
   if(!setup.open)setup.showModal();
 }
 function loadModule3() {
-  try {const initial=store?.readSource();if(!initial)throw new Error(t('저장된 Module 3 결과가 없습니다. 기존 앱에서 완료하거나 보고서 JSON을 가져오세요.','No saved Module 3 result. Complete the original app or import its report JSON.'));openSetup(initial);}
+  try {const initial=incomingSource||store?.readSource();if(!initial)throw new Error(t('저장된 Module 3 결과가 없습니다. 기존 앱에서 완료하거나 보고서 JSON을 가져오세요.','No saved Module 3 result. Complete the original app or import its report JSON.'));requestNew(()=>showWelcome(initial));}
   catch(error){notify(error.message);}
 }
 importInput.addEventListener('change',async()=>{
@@ -185,31 +258,35 @@ importInput.addEventListener('change',async()=>{
     const result=decodeImport(await file.text());
     if(result.session) {
       if(started && !confirm(t('현재 세션을 가져온 세션으로 바꾸시겠습니까? 필요한 기록은 먼저 내보내세요.','Replace this session with the imported one? Export existing history first.')))return;
-      session=result.session;started=true;conflict=false;notify(t('동일 모델로 기록을 재실행하여 복구했습니다.','Replayed and restored the session with the same model.'));save();setup.close();render();
-    }else openSetup(result.state);
+      session=result.session;started=true;conflict=false;notify(t('동일 모델로 기록을 재실행하여 복구했습니다.','Replayed and restored the session with the same model.'));save();setup.close();clearEntryURL();resetControls();world?.dispose();world=null;showWorld();
+    }else requestNew(()=>showWelcome(result.state));
   }catch(error){notify(t('가져오기 실패: ','Import failed: ')+error.message);}finally{importInput.value='';}
 });
 window.addEventListener('storage',event=>{
-  if(event.key===SESSION_KEY){conflict=true;render();notify(t('다른 탭에서 세션이 변경되었습니다. 현재 탭 기록을 JSON으로 내보내거나 새로고침하여 이어가세요.','Another tab changed this session. Export this tab’s data or refresh to continue.'));}
+  if(event.key===SESSION_KEY || event.key===null){conflict=true;render();notify(t('다른 탭에서 세션이 변경되었습니다. 현재 탭 기록을 JSON으로 내보내거나 새로고침하여 이어가세요.','Another tab changed this session. Export this tab’s data or refresh to continue.'));}
 });
 
 async function boot() {
+  hideWorld();
   let stored=null,initial=null;
-  try {store=new StateStore(localStorage);stored=store.load();}catch(error){notify(t('저장된 상태를 읽을 수 없습니다: ','Cannot load stored state: ')+error.message);}
-  const hash=location.hash;
-  if(hash.startsWith('#state=')) {
+  try{store=new StateStore(localStorage);stored=store.load();}catch(error){notify(t('저장된 상태를 읽을 수 없습니다: ','Cannot load stored state: ')+error.message);}
+  const query=new URLSearchParams(location.search),hash=location.hash;
+  if(hash.startsWith('#state=')){
     history.replaceState(null,'',location.pathname+location.search);
-    try {initial=decodeImport(decodeURIComponent(hash.slice(7))).state;}catch(error){notify(t('직접 전달 실패: ','Direct transfer failed: ')+error.message);}
+    try{initial=decodeImport(decodeURIComponent(hash.slice(7))).state;}catch(error){notify(t('직접 전달 실패: ','Direct transfer failed: ')+error.message);}
   }
-  if(!initial && new URLSearchParams(location.search).get('source')==='module3') {
-    try {initial=store?.readSource();}catch(error){notify(error.message);}
+  if(!initial && query.get('source')==='module3'){
+    try{initial=store?.readSource();}catch(error){notify(error.message);}
   }
+  incomingSource=initial;
   if(stored){session=stored;started=true;}
   render();
-  // The locally vendored Babylon UMD script is deferred; wait for document load.
   if(document.readyState!=='complete')await new Promise(resolve=>window.addEventListener('load',resolve,{once:true}));
-  try{world=createWorld(canvas,selectRoom);world.update(session.state);}catch(error){worldShell.append(el('div',{class:'fallback',text:t('이 환경에서는 3D 화면을 열 수 없습니다. 왼쪽 연구실 메뉴와 의사결정 대시보드로 모든 시뮬레이션을 계속할 수 있습니다.','3D is unavailable in this environment. All decisions and simulation features remain accessible through the room menu and dashboard.')}));}
-  if(initial)openSetup(initial);else if(!stored)openSetup(sampleState());
+  entry.hub();
+  if(initial)requestNew(()=>showWelcome(initial));
+  else if(query.get('entry')==='standalone')requestNew(()=>entry.wizard());
+  else if(query.get('entry')==='hub')entry.hub();
+  else if(stored)showWorld();
 }
 boot().catch(error=>notify(error.message));
 window.addEventListener('pagehide',event=>{if(!event.persisted)world?.dispose();});

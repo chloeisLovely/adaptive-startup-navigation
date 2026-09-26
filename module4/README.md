@@ -1,4 +1,4 @@
-# ASNM Module 4 — Venture Digital Twin World
+# ASNM Module 4 V2 — Dual Entry & Living Venture World
 
 Working Babylon.js research prototype extending the existing Korean and English ASNM web app.
 
@@ -14,7 +14,7 @@ python3 -m http.server 4173
 
 Open:
 
-- `http://localhost:4173/` — original Korean Modules 1–3; finish Module 3, then click **Venture World에서 이어서 결정하기**.
+- `http://localhost:4173/` — original Korean Modules 1–3; finish Module 3, then click **Venture Digital Twin 체험하기**.
 - `http://localhost:4173/en/` — original English app with the same bridge.
 - `http://localhost:4173/module4/` — standalone Korean Module 4.
 - `http://localhost:4173/module4/?lang=en` — English Module 4.
@@ -23,13 +23,14 @@ No install, build, API key, CDN, or server-side application is needed for Module
 
 ## User flow
 
-1. Complete Module 3 or load the NovaAI sample / import an existing Module 3 report JSON.
-2. Review currency, editable operational assumptions, founder expectations and seed. Commit the initial state. Starting a new scenario replaces the browser's previous Module 4 session; export first to retain it.
-3. Explore the seven research rooms. Drag to orbit, scroll/pinch to zoom, right-drag to pan, or focus the canvas and use WASD. Click room geometry or use keyboard-accessible room buttons.
-4. Choose one option in each of six decision categories. Add the reason or assumption you intend to test. Commit the month.
-5. Read dashboard changes and the per-stage / per-decision trace. Check calibration and CFO/CMO/CTO/Customer/Investor perspectives.
-6. After 3 and 6 months, revisit the earlier decision and record a revised assumption. The first month-1 decision review appears in month 4.
-7. Refresh to restore the session. Export the complete JSON for deterministic replay, or download a Markdown report.
+1. **Entry A:** finish Module 3, then choose the existing full report or **Enter Venture Digital Twin**. The completion event carries a snapshot of the actual `simData`, BARL expectations, founder profile, trends, score, factors and risks. The existing JSON export stays unchanged.
+2. **Entry B:** open the main site's Digital Twin tab. Continue from a completed Module 3 result, or create a new world independently. The standalone wizard has four steps: venture → team/product → market → optional expectations/seed.
+3. Both paths show a welcome screen before the campus. Missing source fields say “Not provided.” Survival is labeled a founder expectation, never an observed probability. Review/edit operating assumptions if needed, then enter to commit the new session.
+4. If a live session exists, choose **Continue / Export / Start New** before preparing a replacement. A wizard draft or welcome screen does not overwrite it. Ordinary refresh restores the committed session.
+5. Founder starts in CEO Office. Select a room using the menu or its 3D geometry. The camera focuses smoothly; the founder walks around room footprints, arrives, and a state-aware persona card appears. Mouse orbit, zoom, pan and canvas WASD remain available.
+6. Commit the six monthly decisions, then inspect calibration, the event/decision timeline, five advisory perspectives and 3/6-month reflections. Financial model 1.0.0, seeded behavior and the 60-month limit are unchanged.
+7. Export/import reproducible session JSON or download a Markdown report. A Module 3 scenario also offers **View Module 3 Full Report**; its original completed data is restored through the original report path.
+8. **New sample** retains the illustrative NovaAI review flow. It is separate from standalone user input and is never silently committed.
 
 If WebGL is unavailable, all simulation controls remain available through room buttons and dashboard panels. Blocked/full browser storage produces a visible warning; JSON export remains available. Another tab changing the session pauses decisions in the current tab to avoid silent overwrites.
 
@@ -54,13 +55,15 @@ If WebGL is unavailable, all simulation controls remain available through room b
 | `vendor/babylon.js`, `vendor/BABYLON-LICENSE.md` | Pinned Babylon.js 8.26.0 runtime and Apache-2.0 license. |
 | `tests/engine.test.js`, `tests/browser.cjs` | Meaningful deterministic, boundary, persistence and browser workflow tests. |
 | `ASSUMPTIONS.md`, `REPOSITORY_ANALYSIS.md`, `VALIDATION.md` | Explicit modeling assumptions, repository analysis, executed checks and limitations. |
-| Root `package.json`, `package-lock.json` | Optional development/test dependencies and reproducible versions. |
+| `state/StandaloneAdapter.js` | Standalone inputs → validated shared ASNMState; source `standalone`. |
+| `ui/entry.js` | Bilingual entry hub, four-step wizard and welcome screen. |
+| `world/avatars.js` | Primitive humanoids, doorway/exterior routing, idle/walk tick and cleanup. |
 
 Business logic has no DOM, Babylon, network or storage imports. A future Unity or other UI can reuse the engine contract.
 
 ## Module 3 → Module 4 mapping
 
-`runSimulation()` finishes the existing rubric → dispatches `asnm:module3-complete` → `fromModule3()` → ASNMState → StateStore/source key → startup assumption review → monthly simulation session.
+`runSimulation()` finishes the existing rubric → dispatches `asnm:module3-complete` → `fromModule3()` → ASNMState → StateStore/source key → welcome / optional assumption review → committed session → unchanged monthly engine → living campus.
 
 | Legacy field | Destination / rule |
 |---|---|
@@ -76,7 +79,7 @@ Business logic has no DOM, Babylon, network or storage imports. A future Unity o
 | `factors`, `risks`, `trends`, `vision`, `region`, failure reasons, biases | Retained in provenance; no fabricated numeric measurement |
 | Not collected: MRR, burn, CAC, retention, demand, etc. | Explicit editable defaults; see ASSUMPTIONS.md |
 
-The direct handoff fragment is removed before rendering. An ordinary visit to Module 4 restores the last session. A fresh Module 3 handoff opens assumption review without replacing the last session until the user commits. The original Module 3 JSON export format remains compatible and unchanged.
+The direct handoff fragment is removed before rendering. An ordinary visit to Module 4 restores the last session. A fresh Module 3 handoff offers the existing-session choices first, then welcome; entering commits the replacement. The original Module 3 JSON export format remains compatible and unchanged.
 
 ## Variables and calculation rules (model 1.0.0)
 
@@ -135,19 +138,20 @@ MRR/financial amounts round to two decimals; indices are bounded. Nonpositive ne
 ## Tests
 
 ```sh
-npm ci
-npm test
+node --test module4/tests/engine.test.js
+# Optional browser-test tooling only (no application build step):
+npm install --no-save --package-lock=false playwright@1.62.0
 npx playwright install chromium
 python3 -m http.server 4173
 # in a second terminal
-npm run test:browser
+node module4/tests/browser.cjs
 ```
 
 Browser tests use `ASNM_TEST_URL` (default `http://127.0.0.1:4173`) and optional `ASNM_BROWSER_PATH` for an installed Chromium executable. `ASNM_SCREENSHOT_DIR` optionally stores review screenshots outside the repo. See VALIDATION.md for the actual checks executed in the implementation environment.
 
 ## GitHub Pages deployment
 
-The repository retains its root `.nojekyll` and static structure. Review and merge the feature branch/PR into the branch currently used by Pages (normally `main`, folder `/ (root)`). No bundler, build output or Pages workflow replacement is needed. In repository Settings → Pages, retain the existing configured source.
+The repository retains its static structure. Review and merge the feature branch/PR into the branch currently used by Pages (normally `main`, folder `/ (root)`). No bundler, build output or Pages workflow replacement is needed. In repository Settings → Pages, retain the existing configured source.
 
 After that branch is deployed, the route is:
 
@@ -167,6 +171,18 @@ All Module 4 asset/import paths are relative and support the GitHub project subp
 3. Add authenticated backend, consented research data capture, cross-device sessions and model migrations.
 4. Add optional LLM providers with bounded context, validated outputs and role-specific evidence.
 5. Refine industry-specific economics and timing, liquidity/receivables, cash-flow accounting and portfolio/team roles.
-6. Expand spatial interaction and navigation only after the decision engine and longitudinal data are validated.
+6. Extend the primitive personas and room activities without treating them as autonomous financial agents.
 
 No multiplayer, real startup synchronization, live data feeds or causal attribution is claimed. The English UI is localized; imported Korean source text is preserved verbatim for provenance.
+
+## V2 movement and lifecycle
+
+`selectRoom(id)` → `world.goToRoom(id)` → camera interpolation + avatar route → arrival callback → persona card. `focus(id)` remains a camera-only API. `avatars.js` owns founder/NPC meshes and a single render observer. A bounded walkable grid avoids room footprints; each room uses its open south side. Repeated clicks re-route from the current position. This is a small campus route planner, not a physics/navmesh engine.
+
+Seven NPCs occupy Finance (CFO), Market (customer persona), Product (CTO), Customer (customer), Team (developer and marketer), Investor (investor). The founder and NPCs are visual scenario roles, not evidence of actual staffing. Persona text reads current state only; interaction buttons focus existing decision/advisory controls and never auto-commit a turn.
+
+The hidden entry screen pauses rendering. Disposal removes render observers, avatar nodes/materials, canvas handlers, ResizeObserver, scene and engine. Reduced-motion preferences suppress limb/idle oscillation; founder position still moves continuously. Babylon remains the existing locally vendored version, with no new CDN or runtime dependency.
+
+## V2 replacement package
+
+Apply the ZIP contents to the repository root while retaining its paths. It includes **only modified/new complete files**, so it requires the existing `main` baseline (`db9487588800d37ecbf3d04e01057a79eb4c0db1`) and its vendored Babylon runtime. Do not replace the entire repository with this patch package. No merge or live deployment is automatic.
