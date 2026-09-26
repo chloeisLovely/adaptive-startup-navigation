@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "currency": "USD",
+  "founder": {
+    "riskTolerance": 55,
+    "marketConfidence": 70,
+    "executionReadiness": 60,
+    "decisionOrientation": "Sample",
+    "calibrationGap": 15
+  },
+  "venture": {
+    "ventureName": "NovaAI",
+    "industry": "AI SaaS",
+    "stage": "MVP",
+    "cash": 200000,
+    "monthlyBurn": 18000,
+    "runway": 20,
+    "mrr": 8000,
+    "cac": 140,
+    "retention": 73,
+    "teamSize": 3,
+    "teamCapacity": 55,
+    "productProgress": 50
+  },
+  "market": {
+    "demand": 65,
+    "marketGrowth": 12,
+    "competition": 70,
+    "uncertainty": 45
+  },
+  "assumptions": {
+    "expectedSurvival": 80,
+    "expectedGrowth": 18,
+    "expectedDemand": 85
+  },
+  "simulation": {
+    "currentMonth": 0,
+    "seed": 20260925
+  },
+  "provenance": {
+    "source": "sample",
+    "notes": [
+      "All sample values are illustrative scenario assumptions."
+    ]
+  },
+  "costUnit": 1,
+  "operations": {
+    "marketingBudget": 2700,
+    "technicalDebt": 30,
+    "priceMultiplier": 1,
+    "founderEquity": 100,
+    "offer": null
+  },
+  "modelVersion": "1.0.0"
+}
