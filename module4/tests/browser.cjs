@@ -6,6 +6,19 @@ const base=(process.env.ASNM_TEST_URL||'http://127.0.0.1:4173').replace(/\/$/,''
 const out=process.env.ASNM_SCREENSHOT_DIR;
 const wait=page=>page.waitForFunction(()=>document.querySelector('#world-canvas')?.dataset.ready==='true');
 const data=page=>page.evaluate(()=>{const key=Object.keys(localStorage).find(k=>k.endsWith(':module4:v1'));return JSON.parse(localStorage.getItem(key));});
+const enter=async(p,role='ceo')=>{await p.locator('#player-role').selectOption(role);await p.locator('#confirm-role').click();await p.locator('#tutorial-next').click();await p.locator('#tutorial-back').click();await p.locator('#tutorial-skip').click();};
+const visit=async(p,room)=>{await p.locator(`[data-room="${room}"]`).click();await p.waitForFunction(()=>!document.querySelector('#persona-card').textContent.match(/Walking to|걸어가고/));};
+const choose=async(p,c,a)=>{await p.locator(`#choose-${c}-${a}`).click();await p.locator('#confirm-decision').click();};
+async function completeMonth(p){
+ await p.locator('#start-month').click();
+ const todo=await p.locator('[data-mission]').evaluateAll(nodes=>nodes.map(n=>n.dataset.mission));
+ const rooms={hiring:'team',product:'product',marketing:'finance',pricing:'customer',fundraising:'finance',market:'market'};
+ const actions={hiring:'hold',product:'improve',marketing:'maintain',pricing:'hold',fundraising:'bootstrap',market:'focus'};
+ for(const c of todo){await visit(p,rooms[c]);await choose(p,c,actions[c]);}
+ await visit(p,'ceo');assert.equal(await p.locator('.review-grid>div').count(),6);await p.locator('#commit-month').click();
+ assert.ok(await p.locator('#outcome-next').isVisible());for(let i=0;i<4;i++)await p.locator('#outcome-next').click();
+ await p.locator('#start-month').waitFor();
+}
 let browser;
 (async()=>{
   browser=await chromium.launch({headless:true,executablePath:process.env.ASNM_BROWSER_PATH||undefined,args:['--no-sandbox','--disable-dev-shm-usage','--use-gl=angle','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
@@ -16,66 +29,31 @@ let browser;
     await context.route('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js',route=>route.fulfill({path:process.env.ASNM_CHART_JS_PATH,contentType:'application/javascript'}));
     await context.route('https://fonts.googleapis.com/**',route=>route.fulfill({body:'',contentType:'text/css'}));
   }
-  const page=await context.newPage();const errors=[];const resources=[];
-  page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.message);});
-  page.on('response',r=>{if(r.url().startsWith(base) && r.status()>=400)resources.push(`${r.status()} ${r.url()}`);});
-  await page.goto(base+'/module4/');
-  await page.locator('#entry-screen').waitFor({state:'visible'});
-  assert.equal(await page.locator('#entry-screen').isVisible(),true);
-  assert.equal(await page.locator('#entry-module3').isDisabled(),true);
-  await page.locator('#new-sample').click();
-  await page.locator('#start-simulation').click();
-  await page.locator('#enter-world').click();await wait(page);
-  assert.equal((await data(page)).state.venture.ventureName,'NovaAI');
-  assert.equal(await page.locator('.metric').count(),12);
-  assert.equal(await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.meshes.length>100),true);
-  const targetBefore=await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.activeCamera.target.z);
-  await page.locator('#world-canvas').focus();await page.keyboard.press('w');
-  assert.notEqual(await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.activeCamera.target.z),targetBefore);
-  await page.locator('[data-room="finance"]').click();
-  await page.waitForFunction(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').metadata.state==='walking');
-  const moving=await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').position.asArray());
-  assert.notDeepEqual(moving,[-11,.15,-10.1]);
-  await page.waitForFunction(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').metadata.roomId==='finance');
-  assert.match(await page.locator('#persona-card').innerText(),/재무/);
-  assert.equal(await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.transformNodes.filter(n=>n.name.startsWith('npc-')).length),7);
-  assert.match(await page.locator('#room-detail').innerText(),/FINANCE ROOM/);
-  for(const room of ['ceo','finance','market','product','customer','team','investor']){
-    await page.locator(`[data-room="${room}"]`).click();
-    assert.equal(await page.locator(`[data-room="${room}"]`).getAttribute('aria-pressed'),'true');
+  const page=await context.newPage(),errors=[],resources=[];
+  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.url().startsWith(base)&&r.status()>=400)resources.push(r.url());});
+  await page.goto(base+'/module4/?lang=en');await page.locator('#new-sample').click();await page.locator('#start-simulation').click();await page.locator('#enter-world').click();await enter(page);await wait(page);
+  const positionBefore=await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').position.z);await page.locator('#world-canvas').focus();await page.keyboard.press('w');assert.notEqual(await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').position.z),positionBefore);
+  assert.equal(await page.locator('#decision-form').isVisible(),false);assert.equal(await page.locator('#metrics').isVisible(),false);
+  await page.locator('#start-month').click();
+  const mapping={team:['hiring','developer'],product:['product','feature'],finance:['marketing','reduce'],customer:['pricing','hold'],investor:['fundraising','attempt'],market:['market','test']};
+  for(const [room,[category,action]] of Object.entries(mapping)){
+    await visit(page,room);await choose(page,category,action);console.log('Dialogue confirmed:',category,action);
   }
-  await page.locator('#overview').click();
-  await page.waitForTimeout(1500);
-  const screen=await page.evaluate(()=>{const B=BABYLON,s=B.EngineStore.LastCreatedScene,e=s.getEngine(),c=document.querySelector('#world-canvas'),r=c.getBoundingClientRect(),mesh=s.getMeshByName('ceo-label');const p=B.Vector3.Project(mesh.getAbsolutePosition(),B.Matrix.Identity(),s.getTransformMatrix(),s.activeCamera.viewport.toGlobal(e.getRenderWidth(),e.getRenderHeight()));return{x:r.x+p.x*r.width/e.getRenderWidth(),y:r.y+p.y*r.height/e.getRenderHeight()};});
-  await page.mouse.click(screen.x,screen.y);
-  assert.match(await page.locator('#room-detail').innerText(),/CEO OFFICE/);
-  await page.locator('#decision-hiring').selectOption('developer');
-  await page.locator('#decision-product').selectOption('feature');
-  await page.locator('#decision-marketing').selectOption('increase');
-  await page.locator('#decision-pricing').selectOption('raise');
-  await page.locator('#decision-fundraising').selectOption('attempt');
-  await page.locator('#decision-market').selectOption('test');
-  await page.locator('#founder-reason').fill('Test product delivery before scaling.');
-  await page.locator('#advance-month').click();
-  const first=await data(page);assert.equal(first.state.simulation.currentMonth,1);assert.equal(first.history[0].decisions.length,6);assert.notEqual(first.state.venture.cash,200000);assert.equal(first.history[0].founderReason,'Test product delivery before scaling.');
-  await page.locator('#tab-agents').click();await page.waitForSelector('.agent-card');assert.equal(await page.locator('.agent-card').count(),5);
-  await page.reload();await wait(page);assert.deepEqual(await data(page),first);assert.equal(await page.locator('#setup-dialog').isVisible(),false);
-  for(let i=0;i<3;i++)await page.locator('#advance-month').click();
-  await page.locator('#tab-reflection').click();
-  await page.locator('.reflection-card textarea').fill('Revise the assumption: prioritize customer retention.');
-  await page.locator('.reflection-card button').click();
-  assert.equal(Object.keys((await data(page)).reflections).length,1);
-  await page.locator('#tab-calibration').click();assert.equal(await page.locator('.cal-gap').count(),3);
-  const downloadPromise=page.waitForEvent('download');await page.locator('#export-json').click();const exported=await downloadPromise;const exportPath=await exported.path();const json=await fs.readFile(exportPath,'utf8');assert.equal(JSON.parse(json).history.length,4);
-  page.once('dialog',d=>d.accept());await page.locator('#import-file').setInputFiles({name:'session.json',mimeType:'application/json',buffer:Buffer.from(json)});await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('복구'));assert.equal((await data(page)).history.length,4);
-  await page.locator('#import-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{bad')});await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('실패'));assert.equal((await data(page)).history.length,4);
-  if(out){await fs.mkdir(out,{recursive:true});await page.screenshot({path:path.join(out,'module4-desktop.png'),fullPage:true});}
-  const mobile=await context.newPage({viewport:{width:390,height:844}});await mobile.setViewportSize({width:390,height:844});await mobile.goto(base+'/module4/?lang=en');await wait(mobile);
-  assert.equal(await mobile.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-  assert.equal(await mobile.locator('.metric').count(),12);
-  if(out)await mobile.screenshot({path:path.join(out,'module4-mobile.png'),fullPage:true});
-  await mobile.close();
-
+  let draft=await data(page);assert.equal(draft.experience.confirmed.length,6);assert.equal(draft.history.length,0);
+  await page.reload();await wait(page);assert.equal(await page.locator('#tutorial-dialog').count(),0);assert.deepEqual((await data(page)).experience.choices,draft.experience.choices);
+  await visit(page,'ceo');await page.locator('#dialogue-assumption').fill('Test delivery before scaling.');assert.equal(await page.locator('.review-grid>div').count(),6);
+  const teamBefore=(await data(page)).state.venture.teamSize;await page.locator('#commit-month').click();
+  let first=await data(page);assert.equal(first.history.length,1);assert.equal(first.history[0].founderReason,'Test delivery before scaling.');assert.equal(first.history[0].decisions.find(d=>d.category==='hiring').action,'developer');
+  assert.match(await page.locator('#persona-card').innerText(),/30 days/);await page.locator('#outcome-next').click();assert.match(await page.locator('#persona-card').innerText(),new RegExp(first.history[0].event.en.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));await page.locator('#outcome-next').click();assert.equal(await page.locator('.outcome-grid article').count(),6);await page.locator('#outcome-next').click();
+  assert.equal(await page.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.transformNodes.filter(n=>n.name.startsWith('team-member-')&&n.metadata?.actor&&n.isEnabled()).length),Math.min(6,first.state.venture.teamSize-1));
+  if(out){await fs.mkdir(out,{recursive:true});await page.screenshot({path:path.join(out,'v3-outcome.png'),fullPage:true});}
+  await page.reload();await wait(page);assert.match(await page.locator('#persona-card').innerText(),/30 days/);for(let i=0;i<4;i++)await page.locator('#outcome-next').click();await page.locator('#start-month').waitFor();
+  await page.locator('#open-dashboard').click();await page.locator('#tab-agents').click();await page.locator('.agent-card').first().waitFor();assert.equal(await page.locator('.agent-card').count(),5);await page.locator('#tab-report').click();await page.locator('#dashboard-drawer button').first().click();
+  const download=page.waitForEvent('download');await page.locator('#export-json').click();const file=await download;const exported=await fs.readFile(await file.path(),'utf8');assert.equal(JSON.parse(exported).history.length,1);
+  await page.locator('#overview').click();await page.waitForTimeout(1400);
+  const pos=await page.evaluate(()=>{const B=BABYLON,s=B.EngineStore.LastCreatedScene,c=document.querySelector('#world-canvas'),r=c.getBoundingClientRect(),e=s.getEngine(),m=s.getMeshByName('product-label'),v=B.Vector3.Project(m.getAbsolutePosition(),B.Matrix.Identity(),s.getTransformMatrix(),s.activeCamera.viewport.toGlobal(e.getRenderWidth(),e.getRenderHeight()));return {x:r.x+v.x*r.width/e.getRenderWidth(),y:r.y+v.y*r.height/e.getRenderHeight()};});
+  await page.mouse.click(pos.x,pos.y);await page.waitForFunction(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').metadata.roomId==='product');
+  await page.setViewportSize({width:390,height:844});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);if(out)await page.screenshot({path:path.join(out,'v3-mobile.png'),fullPage:true});await page.close();
   // Real legacy form journey in both languages, with Module 2 and 1 state present.
   for(const prefix of ['', '/en']) {
     const legacy=await context.newPage();const legacyErrors=[];legacy.on('pageerror',e=>legacyErrors.push(e.message));
@@ -119,19 +97,18 @@ let browser;
     assert.equal(await legacy.locator('[name="market.marketGrowth"]').inputValue(),'12');
     assert.equal(await legacy.locator('[name="assumptions.expectedDemand"]').inputValue(),'');
     assert.equal(await legacy.evaluate(()=>location.hash),'');
-    await legacy.locator('#start-simulation').click();await legacy.locator('#enter-world').click();await wait(legacy);const transferred=await data(legacy);
+    await legacy.locator('#start-simulation').click();await legacy.locator('#enter-world').click();await enter(legacy);await wait(legacy);const transferred=await data(legacy);
     assert.equal(transferred.state.provenance.module3.survival_score,score);
     assert.equal(transferred.state.founder.decisionOrientation,'T');
     assert.equal(transferred.state.provenance.module3.trends.length,1);
-    await legacy.locator('#advance-month').click();assert.equal((await data(legacy)).history.length,1);
+    assert.match(await legacy.locator('#persona-card').innerText(),/Module 3/);await legacy.locator('#open-dashboard').click();
     await legacy.locator('#tab-report').click();await legacy.locator('#module3-report').click();
     await legacy.waitForSelector('#page-result.active');
     assert.match(await legacy.locator('#report-company-title').innerText(),prefix?/Bridge English/:/연결 검증/);
     assert.equal(Number(await legacy.locator('#survival-pct').innerText()),score);
     assert.deepEqual(legacyErrors,[]);await legacy.close();
   }
-  assert.deepEqual(errors,[]);assert.deepEqual(resources,[]);
-  await context.close();
+  assert.deepEqual(errors,[]);assert.deepEqual(resources,[]);await context.close();
   for(const prefix of ['', '/en']){
     const fresh=await browser.newContext({viewport:{width:1280,height:1000}});
     if(process.env.ASNM_CHART_JS_PATH){
@@ -153,12 +130,12 @@ let browser;
     assert.match(await p.locator('#entry-screen').innerText(),/Independent <AI>/);
     assert.equal(await p.locator('.workspace').isVisible(),false);
     assert.equal(await data(p),null);
-    await p.locator('#enter-world').click();await wait(p);
+    await p.locator('#enter-world').click();await enter(p,'growth');await wait(p);
     const initial=await data(p);assert.equal(initial.state.provenance.source,'standalone');
     assert.equal(initial.state.venture.cash,350000);assert.equal(initial.state.venture.teamSize,4);
     assert.equal(initial.state.assumptions.expectedSurvival,0);assert.equal(initial.state.assumptions.expectedGrowth,undefined);
     assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
-    await p.locator('#advance-month').click();const saved=await data(p);
+    await completeMonth(p);const saved=await data(p);
     await p.locator('#entry-hub-button').click();await p.locator('#entry-standalone').click();
     assert.equal(await p.locator('#session-guard').isVisible(),true);
     const exportEvent=p.waitForEvent('download');await p.locator('#guard-export').click();assert.ok(await exportEvent);
@@ -168,13 +145,12 @@ let browser;
     if(out)await p.screenshot({path:path.join(out,`standalone-${prefix?'en':'ko'}.png`),fullPage:true});
     assert.deepEqual(issues,[]);await fresh.close();
   }
-  // Storage failure and unavailable WebGL remain explicit, usable fallback states.
   const fallbackContext=await browser.newContext();await fallbackContext.addInitScript(()=>{
-    Object.defineProperty(window,'localStorage',{get(){throw new Error('blocked storage');}});
-    const original=HTMLCanvasElement.prototype.getContext;
-    HTMLCanvasElement.prototype.getContext=function(type,...args){return String(type).includes('webgl')?null:original.call(this,type,...args);};
+    Object.defineProperty(window,'localStorage',{get(){throw new Error('blocked storage');}});const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return String(type).includes('webgl')?null:original.call(this,type,...args);};
   });
-  const fallback=await fallbackContext.newPage();await fallback.goto(base+'/module4/?lang=en');await fallback.locator('#new-sample').click();await fallback.locator('#start-simulation').click();await fallback.locator('#enter-world').click();await fallback.locator('#advance-month').click();assert.match(await fallback.locator('#month-label').innerText(),/01/);assert.match(await fallback.locator('#status').innerText(),/storage failed/);assert.equal(await fallback.locator('.fallback').count(),1);
-  await fallbackContext.close();
-  console.log('PASS: Babylon scene, keyboard movement, geometry picking, 7-room navigation, 6-category turn, HUD, event log, advisors, reflection, refresh, JSON export/import, mobile, KO/EN Module 3 handoff, zero page errors, storage/WebGL fallback.');
+  const fallback=await fallbackContext.newPage();await fallback.goto(base+'/module4/?lang=en');await fallback.locator('#new-sample').click();await fallback.locator('#start-simulation').click();await fallback.locator('#enter-world').click();await enter(fallback);await completeMonth(fallback);assert.match(await fallback.locator('#month-label').innerText(),/01/);assert.match(await fallback.locator('#status').innerText(),/storage failed/);assert.equal(await fallback.locator('.fallback').count(),1);await fallbackContext.close();
+  // Imported risk fixture exercises proactive notifications and actual visual flags.
+  const risk=await browser.newContext();await risk.addInitScript(()=>{const s={schemaVersion:1,modelVersion:'1.0.0',currency:'USD',costUnit:1,founder:{riskTolerance:50,marketConfidence:50,executionReadiness:50,decisionOrientation:'Test'},venture:{ventureName:'Risk fixture',industry:'Test',stage:'MVP',cash:40000,monthlyBurn:10000,mrr:0,cac:100,retention:45,teamSize:2,teamCapacity:40,productProgress:30},market:{demand:50,marketGrowth:12,competition:80,uncertainty:50},assumptions:{},simulation:{currentMonth:0,seed:4},operations:{marketingBudget:1500,technicalDebt:30,priceMultiplier:1,founderEquity:55,offer:{amount:150000,equity:15,expiresMonth:2}},provenance:{source:'sample'}};localStorage.setItem('asnm:'+location.pathname.split('module4/')[0]+':module4:v1',JSON.stringify({schemaVersion:1,modelVersion:'1.0.0',initialState:s,state:s,history:[],reflections:{},experience:{month:0,phase:'briefing',tutorialSeen:true}}));});
+  const r=await risk.newPage();await r.goto(base+'/module4/?lang=en');await wait(r);assert.equal(await r.locator('[data-notification]').count(),3);assert.equal(await r.evaluate(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('investor-root').metadata.alert),true);await r.locator('#notice-finance').click();await r.waitForFunction(()=>BABYLON.EngineStore.LastCreatedScene.getTransformNodeByName('founder').metadata.roomId==='finance');assert.match(await r.locator('#persona-card').innerText(),/Cash runway is low/);await risk.close();
+  console.log('PASS V3: all six dialogue actions, walking/picking, role/tutorial, mission/review/commit, staged real outcomes, hire visuals, draft/outcome refresh, dashboard/export, real KO/EN M1–3 handoff & standalone, mobile, risk prompts/offer glow, storage/WebGL fallback.');
 })().catch(error=>{console.error(error);process.exitCode=1;}).finally(async()=>{await browser?.close();});
