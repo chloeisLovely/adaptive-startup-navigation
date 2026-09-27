@@ -1,3 +1,4 @@
+import {createImmersive,selectRole} from './ui/immersive.js';
 import {createEntry} from './ui/entry.js';
 import {personas} from './world/avatars.js';
 import {sampleState,clone,validateState,round} from './state/ASNMState.js';
@@ -17,6 +18,7 @@ document.documentElement.lang=lang;
 const t=(ko,en)=>lang==='ko'?ko:en;
 const app=document.getElementById('app');
 let store,session=createSession(sampleState()),world=null,activeRoom='ceo',activeTab='calibration',started=false,conflict=false,advisorRequest=0;
+let immersive;
 let selections=defaultDecisions(),arrivedRoom='ceo',walking=false,pendingState=null;
 const provider=new RuleBasedProvider();
 const notify=message=>{document.getElementById('status').textContent=message;};
@@ -28,8 +30,8 @@ const importInput=el('input',{type:'file',accept:'.json,application/json',id:'im
 const header=el('header',{class:'header'},el('div',{class:'brand'},el('a',{href:lang==='en'?'../en/':'../',title:'ASNM Home'},'ASN',el('span',{text:'M'})),el('div',{class:'brand-title'},el('div',{class:'eyebrow',text:'MODULE 04'}),el('div',{text:'VENTURE DIGITAL TWIN'}))),el('div',{class:'tools'},el('button',{id:'entry-hub-button',text:t('새 Venture / 진입 화면','New venture / Entry'),onclick:showHub}),el('button',{id:'new-sample',text:t('새 샘플','New sample'),onclick:()=>requestNew(()=>openSetup(sampleState()))}),el('button',{id:'load-module3',text:t('Module 3 불러오기','Load Module 3'),onclick:loadModule3}),el('label',{class:'button',for:'import-file',text:t('JSON 가져오기','Import JSON'),tabindex:'0',onkeydown:e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();importInput.click();}}}),importInput,el('button',{id:'export-json',text:t('JSON 내보내기','Export JSON'),onclick:()=>download(JSON.stringify(session,null,2),'ASNM-venture-session.json')}),el('button',{text:lang==='ko'?'EN':'한국어',onclick:()=>{const url=new URL(location);url.searchParams.set('lang',lang==='ko'?'en':'ko');location.assign(url.href);},'aria-label':'Change language'})));
 const sidebar=el('nav',{class:'sidebar','aria-label':t('연구실 이동','Navigate rooms')},el('p',{class:'side-label',text:'CAMPUS DIRECTORY'}),...rooms.map((r,i)=>el('button',{class:'room-link','data-room':r.id,'aria-pressed':i===0,onclick:()=>selectRoom(r.id)},el('span',{class:'dot',style:`background:${r.color}`}),el('span',{},el('strong',{text:r.name}),el('small',{text:r[lang]})))),el('div',{class:'side-footer'},el('div',{class:'eyebrow',text:'DECISION LAB'}),t('예측을 확정하고, 결정하고, 결과를 관찰하세요.','Commit predictions. Decide. Observe the outcome.'),el('br'),el('span',{class:'mono',id:'seed-label'})));
 const title=el('h1',{id:'venture-title'}),monthBadge=el('div',{class:'month mono',id:'month-label'}),source=el('p',{class:'source',id:'source-label'});
-const canvas=el('canvas',{id:'world-canvas',tabindex:'0','aria-label':t('3D 스타트업 캠퍼스. 마우스로 회전, 휠 확대, WASD 이동. 왼쪽 버튼으로도 방을 선택할 수 있습니다.','3D startup campus. Drag to orbit, wheel to zoom, WASD to pan. Room navigation is also available through buttons.')});
-const worldShell=el('section',{class:'world-shell'},el('div',{class:'world-top'},el('strong',{text:'VENTURE CAMPUS'}),el('span',{text:'LIVE SCENARIO ENVIRONMENT'})),canvas,el('div',{class:'world-controls'},el('button',{id:'overview',text:t('전체 보기','Overview'),onclick:()=>world?.overview()})),el('div',{class:'world-bottom'},el('span',{},el('i',{class:'live-dot'}),t('방을 클릭해 의사결정 패널 열기','Click a room to explore decisions')),el('span',{text:t('드래그 회전 · 휠 확대 · WASD 이동','DRAG orbit · SCROLL zoom · WASD pan')})));
+const canvas=el('canvas',{id:'world-canvas',tabindex:'0','aria-label':t('3D 스타트업 캠퍼스. 마우스로 회전, 휠 확대, WASD 이동. 왼쪽 버튼으로도 방을 선택할 수 있습니다.','3D startup campus. Drag to orbit, wheel to zoom, WASD to move. Room navigation is also available through buttons.')});
+const worldShell=el('section',{class:'world-shell'},el('div',{class:'world-top'},el('strong',{text:'VENTURE CAMPUS'}),el('span',{text:'LIVE SCENARIO ENVIRONMENT'})),canvas,el('div',{class:'world-controls'},el('button',{id:'overview',text:t('전체 보기','Overview'),onclick:()=>world?.overview()})),el('div',{class:'world-bottom'},el('span',{},el('i',{class:'live-dot'}),t('방을 클릭해 의사결정 패널 열기','Click a room to explore decisions')),el('span',{text:t('드래그 회전 · 휠 확대 · WASD 이동','DRAG orbit · SCROLL zoom · WASD walk')})));
 const interaction=el('section',{id:'persona-card',class:'persona-card','aria-live':'polite'});
 const metrics=el('section',{class:'metrics',id:'metrics','aria-label':t('월별 지표','Monthly metrics')});
 const roomDetail=el('section',{id:'room-detail','aria-live':'polite'});
@@ -39,7 +41,7 @@ const disclaimer=el('p',{class:'notice',text:t('연구 프로토타입 · 모든
 const main=el('main',{class:'main'},el('div',{class:'title-row'},el('div',{},el('div',{class:'eyebrow',text:'COMMIT → DECIDE → CALIBRATE'}),title,source),monthBadge),worldShell,interaction,metrics,roomDetail,disclaimer,tabBar,panel);
 const form=el('form',{class:'decision-form',id:'decision-form',onsubmit:advance});
 for(const [category,options] of Object.entries(decisions)) {
-  const select=el('select',{id:'decision-'+category,name:category,onchange:()=>{selections[category]=select.value;if(activeTab==='agents')renderPanel();}});
+  const select=el('select',{id:'decision-'+category,name:category,onchange:()=>{selections[category]=select.value;immersive?.advancedChange(category,select.value);if(activeTab==='agents')renderPanel();}});
   select.append(...options.map(([value,ko,en])=>el('option',{value,text:lang==='ko'?ko:en})));
   select.value=selections[category];form.append(el('label',{},categoryName[category],select));
 }
@@ -47,16 +49,24 @@ const reason=el('textarea',{id:'founder-reason',maxlength:'2000',placeholder:t('
 const advanceButton=el('button',{class:'primary',id:'advance-month',type:'submit',text:t('결정 확정 · 1개월 진행 →','Commit decisions · Advance month →')});
 form.append(el('label',{class:'reason-label'},t('이번 결정의 이유 / 검증할 가정','Your reason / assumption to test'),reason),advanceButton);
 const offer=el('div',{id:'offer'}),endMessage=el('p',{id:'end-message',class:'end-message'});
-const decisionSide=el('aside',{class:'decision-sidebar'},el('div',{class:'eyebrow',text:'FOUNDER CONTROL'}),el('h2',{text:t('이번 달의 결정','This month’s decisions')}),el('p',{text:t('여섯 분야에서 하나씩 선택하세요. 확정하면 시장 이벤트와 한 달의 운영 결과가 반영됩니다.','Choose one action per category. Committing applies decisions, a market event and one month of operations.')}),offer,form,endMessage,el('p',{text:t('AI 자문은 참고 정보입니다. 최종 결정은 창업자가 내립니다. 모든 계산은 공개된 코드 규칙을 따릅니다.','Advisors provide perspectives. You make the decisions. All calculations follow published code rules.')}));
-app.append(header,status,el('div',{class:'workspace'},sidebar,main,decisionSide),el('footer',{class:'footer'},'ASNM · VENTURE DIGITAL TWIN · RESEARCH PROTOTYPE 2.0', ' · ',el('a',{href:'./README.md',text:t('모델 규칙 · 실행 안내','Model rules & documentation')})));
+const decisionSide=el('aside',{class:'decision-sidebar',id:'mission-panel'});
+const advancedDialog=el('dialog',{id:'advanced-dialog','aria-labelledby':'advanced-title'},el('h2',{id:'advanced-title',text:t('고급 결정 시트','Advanced Decision Sheet')}),el('p',{text:t('미션을 시작한 뒤 선택할 수 있습니다. 마지막 실행은 CEO실에서 전체 결정을 검토한 뒤 진행하세요.','Make choices after starting the month. Return to the CEO office to review all decisions and commit.')}),offer,form,endMessage,el('button',{text:t('닫기','Close'),onclick:()=>{advancedDialog.close();immersive.render();}}));
+advanceButton.hidden=true;reason.parentElement.hidden=true;
+const dashboardDrawer=el('dialog',{id:'dashboard-drawer','aria-labelledby':'dashboard-title'},el('h2',{id:'dashboard-title',text:t('벤처 대시보드','Venture dashboard')}),el('button',{text:t('닫기','Close'),onclick:()=>dashboardDrawer.close()}),metrics,roomDetail,tabBar,panel);
+document.body.append(advancedDialog,dashboardDrawer);
+worldShell.append(interaction);
+app.append(header,status,el('div',{class:'workspace'},sidebar,main,decisionSide),el('footer',{class:'footer'},'ASNM · VENTURE DIGITAL TWIN · RESEARCH PROTOTYPE 3.0', ' · ',el('a',{href:'./README.md',text:t('모델 규칙 · 실행 안내','Model rules & documentation')})));
 
+immersive=createImmersive({host:interaction,missionHost:decisionSide,lang,getSession:()=>session,save,getWorld:()=>world,go:selectRoom,commit:()=>advance({preventDefault(){}}),canCommit:()=>started&&!conflict&&session.state.venture.cash>0&&session.state.simulation.currentMonth<60,
+  advanced:()=>{for(const field of form.querySelectorAll('select'))field.disabled=session.experience?.phase!=='active'||conflict;advancedDialog.showModal();},dashboard:()=>dashboardDrawer.showModal(),
+  sync:x=>{selections={...x.choices};reason.value=x.reason;for(const [k,v] of Object.entries(selections))form.elements[k].value=v;}});
 const workspace=document.querySelector('.workspace');
 const entryHost=el('section',{id:'entry-screen',class:'entry-screen',hidden:true});
 workspace.before(entryHost);
 const entry=createEntry({host:entryHost,lang,
   hasSession:()=>started,readSource:()=>incomingSource||store?.readSource(),
   onStandalone:()=>requestNew(()=>{hideWorld();entry.wizard();}),
-  onModule3:loadModule3,onEnter:(state,commit)=>commit?startState(state):showWelcome(state),
+  onModule3:loadModule3,onEnter:(state,commit)=>commit?selectRole(lang,role=>startState(state,role)):showWelcome(state),
   onReview:openSetup,onResume:()=>{clearEntryURL();showWorld();}});
 let incomingSource=null;
 function hideWorld(){workspace.hidden=true;world?.pause();}
@@ -70,14 +80,14 @@ function resetControls(){
 function showWorld(){
   entry.hide();workspace.hidden=false;render();
   if(!world && !worldShell.querySelector('.fallback')){
-    try{world=createWorld(canvas,selectRoom,id=>{arrivedRoom=id;activeRoom=id;walking=false;renderRoom();renderPersona();});world.update(session.state);}
+    try{world=createWorld(canvas,selectRoom,id=>{arrivedRoom=id;activeRoom=id;walking=false;renderRoom();immersive.arrive(id);});world.update(session.state);}
     catch{worldShell.append(el('div',{class:'fallback',text:t('이 환경에서는 3D 화면을 열 수 없습니다. 방 메뉴와 대시보드로 모든 시뮬레이션을 사용할 수 있습니다.','3D is unavailable. All simulation features remain accessible through the room menu and dashboard.')}));}
   }
-  world?.resume();world?.update(session.state);renderPersona();render();
+  world?.resume();world?.update(session.state,session.history.at(-1));render();immersive.start();
 }
-function startState(state){
+function startState(state,role='ceo'){
   if(conflict){notify(t('다른 탭에서 세션이 바뀌었습니다. 새로고침 후 다시 시작하세요.','Another tab changed the session. Refresh before starting.'));return;}
-  session=createSession(validateState(state));started=true;pendingState=null;resetControls();
+  session=createSession(validateState(state));session.experience={role};started=true;pendingState=null;resetControls();
   world?.dispose();world=null;worldShell.querySelector('.fallback')?.remove();
   notify('');save();clearEntryURL();showWorld();
 }
@@ -93,29 +103,10 @@ function requestNew(next){
       el('button',{id:'guard-new',class:'primary',text:t('새로 시작','Start New'),onclick:()=>{sessionGuard.close();next();}})));
   if(!sessionGuard.open)sessionGuard.showModal();
 }
-function renderPersona(){
-  if(walking){interaction.replaceChildren(el('p',{text:t('창업자가 이동하고 있습니다…','Your founder is walking…')}));return;}
-  const s=session.state,v=s.venture;
-  const runway=v.runway===null?t('현재 순소진 없음','No current net burn'):`${fmt(v.runway)} ${t('개월','months')}`;
-  const text={
-    ceo:t('이번 달에는 어떤 가정을 검증할까요? 여섯 분야의 결정을 함께 검토해보세요.','Which assumption will you test this month? Review your six decisions together.'),
-    finance:t(`현금 ${money(v.cash,s.currency,lang)}, 순소진 ${money(v.monthlyBurn-v.mrr,s.currency,lang)}. Runway: ${runway}.`,`Cash ${money(v.cash,s.currency,lang)}, net burn ${money(v.monthlyBurn-v.mrr,s.currency,lang)}. Runway: ${runway}.`),
-    market:t(`시장수요 ${s.market.demand}/100, 불확실성 ${s.market.uncertainty}/100입니다. 어떤 고객군을 먼저 인터뷰할까요?`,`Demand is ${s.market.demand}/100 and uncertainty ${s.market.uncertainty}/100. Which segment should we interview first?`),
-    product:t(`제품 완성도 ${v.productProgress}/100, 기술부채 ${s.operations.technicalDebt}/100입니다. 기능과 안정성 중 무엇을 우선할까요?`,`Product progress is ${v.productProgress}/100; technical debt is ${s.operations.technicalDebt}/100. Features or reliability first?`),
-    customer:t(`월 고객유지율 ${v.retention}%, CAC ${money(v.cac,s.currency,lang)}입니다. 가격을 바꾸기 전에 사용 경험을 검토할까요?`,`Monthly retention is ${v.retention}%; CAC is ${money(v.cac,s.currency,lang)}. Shall we review the customer experience before changing price?`),
-    team:t(`팀 ${v.teamSize}명, 실행역량 ${v.teamCapacity}/100입니다. 이번 달에 필요한 역할은 무엇인가요?`,`Our team has ${v.teamSize} people and capacity ${v.teamCapacity}/100. Which role would help this month?`),
-    investor:t(`현재 Runway: ${runway}. 창업자 지분 ${s.operations.founderEquity}%. 투자유치 결정을 검토하시겠습니까?`,`Current runway: ${runway}. Founder ownership: ${s.operations.founderEquity}%. Would you like to review funding?`)
-  };
-  const category=rooms.find(r=>r.id===arrivedRoom)?.category;
-  interaction.replaceChildren(el('div',{class:'eyebrow',text:t('시나리오 페르소나 · 규칙 기반','SCENARIO PERSONA · RULE-BASED')}),
-    el('h3',{text:personas[arrivedRoom].map(p=>p[lang==='ko'?1:0]).join(' · ')}),el('p',{text:text[arrivedRoom]}),
-    el('button',{id:'persona-action',text:category?t('관련 결정 검토','Review decision'):t('자문 관점 보기','Review advisor perspectives'),onclick:()=>{
-      if(category){const field=form.elements[category];field.focus();field.scrollIntoView({block:'center',behavior:'smooth'});}
-      else{activeTab='agents';renderPanel();panel.scrollIntoView({block:'start',behavior:'smooth'});}
-    }}));
-}
+function renderPersona(){immersive?.render();}
 
 function save() {
+  if(conflict){notify(t('다른 탭에서 세션이 변경되었습니다. 저장을 멈췄습니다. 내보내거나 새로고침하세요.','Another tab changed this session. Saving is paused. Export or refresh.'));return false;}
   try {if(!store) throw new Error('Storage unavailable');store.save(session);return true;}
   catch {notify(t('브라우저 저장에 실패했습니다. 새로고침 전에 JSON을 내보내세요. 현재 화면에서는 계속 실행할 수 있습니다.','Browser storage failed. Export JSON before refreshing; this session can still run in memory.'));return false;}
 }
@@ -127,7 +118,7 @@ function render() {
   source.textContent=`${s.provenance?.source==='module3'?t('Module 3에서 이어짐','Connected from Module 3'):t('시나리오 상태','Scenario state')} · ${s.currency} · ${v.industry||'Venture'} · ${t('모델','Model')} ${s.modelVersion}`;
   document.getElementById('seed-label').textContent=`SEED ${s.simulation.seed}`;
   dashboard(metrics,s,session.history.at(-1)?.stateBefore,lang);
-  world?.update(s);
+  world?.update(s,session.history.at(-1));
   renderRoom();renderPersona();renderPanel();
   const pending=s.operations.offer;
   offer.className=pending?'offer':'';
@@ -139,10 +130,8 @@ function render() {
   endMessage.textContent=v.cash<=0?t('현금이 소진되어 시나리오가 종료되었습니다. 기록을 내보내고 새 가정을 검토하세요.','Scenario ended: cash depleted. Export the log and review new assumptions.'):s.simulation.currentMonth>=60?t('60개월 시나리오를 완료했습니다. 리포트에서 결과를 확인하세요.','60-month scenario complete. Review your report.'):'';
 }
 function selectRoom(id) {
-  activeRoom=id;walking=!!world;renderRoom();renderPersona();
-  if(world)world.goToRoom(id);else{arrivedRoom=id;walking=false;renderPersona();}
-  const category=rooms.find(r=>r.id===id)?.category;
-  if(category) {const select=document.getElementById('decision-'+category);select.focus({preventScroll:true});}
+  activeRoom=id;walking=!!world;renderRoom();immersive.walking();
+  if(world)world.goToRoom(id);else{arrivedRoom=id;walking=false;immersive.arrive(id);}
 }
 function renderRoom() {
   const r=rooms.find(r=>r.id===activeRoom),s=session.state,v=s.venture;
@@ -151,13 +140,13 @@ function renderRoom() {
   roomDetail.replaceChildren(el('h3',{text:r.name}),el('div',{text:texts[activeRoom]}));
 }
 async function advance(event) {
-  event.preventDefault();if(advanceButton.disabled)return;
+  event.preventDefault();if(advanceButton.disabled||!immersive.canAdvance())return;
   try {
     advanceButton.disabled=true;
     const result=simulateMonth(session.state,selections,reason.value,new Date().toISOString());
     session={...session,state:result.state,history:[...session.history,result.log]};
     notify(t(`Month ${result.log.month} 완료 · ${result.log.event.ko} · 아래 결정 기록에서 변화 원인을 확인하세요.`,`Month ${result.log.month} complete · ${result.log.event.en} · Inspect the decision log for explanations.`));
-    save();reason.value='';activeTab='timeline';render();
+    immersive.outcome();save();reason.value='';activeTab='timeline';render();
   } catch(error) {notify(error.message);render();}
 }
 function renderPanel() {

@@ -1,3 +1,4 @@
+import {experienceState} from '../experience/MissionDirector.js';
 import {clone,validateState,MODEL_VERSION} from './ASNMState.js';
 import {fromModule3} from './Module3Adapter.js';
 import {simulateMonth} from '../simulation/SimulationEngine.js';
@@ -23,6 +24,7 @@ export function validateSession(data) {
     if(!/^[0-9]+-[0-9]+-review-[0-9]+$/.test(id) || typeof value!=='string' || value.length>2000) throw new Error('Invalid reflection');
     session.reflections[id]=value;
   }
+  if(data.experience)session.experience=experienceState(data.experience,session.state);
   return session;
 }
 export function decodeImport(text) {
