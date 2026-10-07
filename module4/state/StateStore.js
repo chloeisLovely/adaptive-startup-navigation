@@ -24,6 +24,17 @@ export function validateSession(data) {
     if(!/^[0-9]+-[0-9]+-review-[0-9]+$/.test(id) || typeof value!=='string' || value.length>2000) throw new Error('Invalid reflection');
     session.reflections[id]=value;
   }
+  if(data.productRole!==undefined){if(!['CEO','CTO','CFO','Growth','Product'].includes(data.productRole))throw new Error('Invalid player role');session.productRole=data.productRole;}
+  if(data.decisionJournal!==undefined){
+    if(!Array.isArray(data.decisionJournal)||data.decisionJournal.length>session.history.length)throw new Error('Invalid decision journal');
+    const seen=new Set();
+    session.decisionJournal=data.decisionJournal.map(row=>{
+      const log=session.history.find(l=>l.id===row.logId);
+      if(!log||seen.has(row.logId)||typeof row.option!=='string'||row.option.length>200||typeof row.reason!=='string'||row.reason.length>2000||!(row.expectedGrowth===null||(Number.isFinite(row.expectedGrowth)&&row.expectedGrowth>=-100&&row.expectedGrowth<=1000)))throw new Error('Invalid decision journal row');
+      seen.add(row.logId);const before=log.stateBefore.venture.mrr,after=log.stateAfter.venture.mrr;
+      return {logId:log.id,option:row.option,reason:row.reason,expectedGrowth:row.expectedGrowth,modeledGrowth:before>0?(after/before-1)*100:null};
+    });
+  }
   if(data.experience)session.experience=experienceState(data.experience,session.state);
   return session;
 }

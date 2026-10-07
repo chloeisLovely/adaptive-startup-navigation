@@ -1,6 +1,6 @@
 # ASNM — Adaptive Startup Navigation Model
 
-**Test your assumptions before you spend money on them.**
+**Test your startup decisions before you spend real money.**
 
 A decision-support prototype for first-time founders. ASNM asks a founder to
 commit their own predictions in writing, then shows how far those predictions sit
@@ -12,9 +12,18 @@ the output that matters.
 
 ---
 
+## v4 product experience
+
+The redesigned entry offers a full founder journey, question-first routes and an input-free AI education demo. Decision World connects one decision to a six-role team discussion, a reproducible monthly simulation, same-seed comparisons, a decision journal and a practical action plan. The original scoring and simulation engines are retained.
+
+- [Implementation, files and user flows](product/RELEASE.md)
+- [Executed validation and deployment limits](product/VALIDATION.md)
+- [Try the demo](https://chloeislovely.github.io/adaptive-startup-navigation/module4/?mode=demo) after this PR is merged to main
+- Classic V3 remains at `module4/immersive.html`.
+
 ## Status
 
-This is a **research prototype**, not a product. Stating the boundary plainly:
+The v4 experience is a **decision-support product pilot**, with explicit research and model limitations:
 
 | Holds up | Doesn't yet |
 |---|---|
