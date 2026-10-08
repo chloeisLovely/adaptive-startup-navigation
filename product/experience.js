@@ -11,13 +11,27 @@ export function demoState(){
 export function suggestState({idea,stage='idea',team='solo',funds='6-12',cash,mrr,burn,demand,retention}){
  const s=demoState();s.venture.ventureName=String(idea).trim().slice(0,120);s.venture.stage=stage;s.venture.teamSize={solo:1,small:3,large:5}[team]||1;
  s.venture.productProgress={idea:10,interview:20,mvp:46,customer:65,revenue:75,growth:85}[stage]??10;
- s.venture.mrr=['revenue','growth'].includes(stage)?3200000:0;s.venture.monthlyBurn=s.venture.teamSize*2000000+1000000;
- s.venture.cash=({'none':.5,'0-3':2,'3-6':4.5,'6-12':9,'12+':15}[funds]??9)*(s.venture.monthlyBurn-s.venture.mrr);
+ s.venture.monthlyBurn=s.venture.teamSize*2000000+1000000;
+ s.venture.mrr=['revenue','growth'].includes(stage)?Math.min(3200000,s.venture.monthlyBurn*.4):0;
  s.operations.marketingBudget=s.venture.monthlyBurn*.15;s.market.demand=['customer','revenue','growth'].includes(stage)?50:25;
  for(const [key,value] of Object.entries({cash,mrr,monthlyBurn:burn,retention}))if(value!==undefined&&value!=='')s.venture[key]=Number(value);
+ if(cash===undefined||cash===''){
+  const netBurn=s.venture.monthlyBurn-s.venture.mrr;
+  s.venture.cash=({'none':.5,'0-3':2,'3-6':4.5,'6-12':9,'12+':15}[funds]??9)*(netBurn>0?netBurn:s.venture.monthlyBurn);
+ }
  if(demand!==undefined&&demand!=='')s.market.demand=Number(demand);
  s.operations.marketingBudget=Math.min(s.operations.marketingBudget,s.venture.monthlyBurn);
  s.provenance={source:'standalone',description:String(idea).slice(0,2000),notes:['Starting values suggested by explicit stage/team/runway presets; not extracted facts or live market evidence. Review and edit before starting.']};s.assumptions={};return validateState(s);
+}
+/** State-triggered brief: read-only, explicit model inputs, never calls an LLM. */
+export function morningBrief(session,lang='ko'){
+ const s=session.state,v=s.venture,t=(ko,en)=>tr(lang,ko,en),low=v.runway!==null&&v.runway<6,event=session.history.at(-1)?.event;
+ const turns=[{role:'CFO',replyTo:'Founder',text:v.runway===null?t('현재 입력에서는 순현금소진이 없습니다. 비용이나 매출이 달라질 때 다시 확인하세요.','The current inputs show no net cash burn. Recheck when costs or revenue change.'):t(`현재 Runway는 ${v.runway}개월입니다. ${low?'새 고정비를 늘리기 전에 현금 지출을 확인하세요.':'이번 지출을 정당화할 학습 목표를 정하세요.'}`,`Current modeled runway is ${v.runway} months. ${low?'Check cash spending before adding fixed costs.':'Set a learning milestone that justifies spending.'}`)},
+ {role:'Growth',replyTo:'CFO',text:t(`CFO의 현금 점검과 함께 수요 가정 ${s.market.demand}/100의 근거를 확인하고 싶습니다. 비용을 줄이면 고객 유입도 줄 수 있습니다.`,`Alongside CFO’s cash check, I would verify demand ${s.market.demand}/100. Cutting spend can also reduce acquisition.`)},
+ {role:v.retention<60?'Customer':'CTO',replyTo:'Growth',text:v.retention<60?t(`유지율 가정이 ${v.retention}%입니다. Growth의 유입 확대 전에 고객이 떠나는 이유를 확인해주세요.`,`Retention is modeled at ${v.retention}%. Before Growth expands acquisition, check why customers leave.`):t(`Growth의 증거 점검에 동의합니다. 제품 완성도 ${v.productProgress}/100에서 개발 속도와 고객 학습의 순서를 함께 정합시다.`,`I agree with Growth’s evidence check. At product readiness ${v.productProgress}/100, balance delivery with customer learning.`)}];
+ if(s.operations.offer)turns.push({role:'Investor',replyTo:'CFO',text:t(`투자 제안이 있습니다. ${s.operations.offer.equity}% 지분 희석과 확보할 시간을 비교하고 Founder가 결정하세요.`,`An offer is open. Compare ${s.operations.offer.equity}% dilution with the time it buys; the Founder decides.`)});
+ if(event&&event.id!=='quiet')turns.push({role:'Product',replyTo:'Growth',text:t(`이번 달 모델 이벤트: ${event.ko}. 이 변화가 기존 가정을 바꾸는지 점검하세요.`,`This month’s modeled event: ${event.en}. Check whether it changes your existing assumptions.`)});
+ return turns;
 }
 const option=(id,ko,en,changes,whyKo,whyEn)=>({id,ko,en,changes,whyKo,whyEn});
 export function decisionMoment(s,problem='priority'){

@@ -9,17 +9,17 @@ The public entry surface now explains a concrete task: **test a startup decision
 ### User flows
 
 1. **Full journey:** Home → Market discovery → Founder reflection → Venture assumptions → original score/report or Decision World → one decision → six-role team discussion → commit one modeled month → outcomes → ten-section action plan. The visible journey navigation allows a user to continue or revisit a step. Module 3 handoff preserves original answers, trends and score provenance.
-2. **Question first:** Market/customer questions open market discovery; founder questions open the existing quiz; pricing/funding/expansion/priority questions open a four-field starting-state form and the matching decision moment. Numeric inputs are optional advanced settings; suggested inputs are reviewed explicitly.
+2. **Question first:** Market/customer questions open market discovery; founder questions open the existing quiz; pricing/funding/expansion/priority questions open a four-field starting-state form and the matching decision moment. Numeric inputs are optional advanced settings; suggested inputs are reviewed explicitly. All 90 stage/team/funding presets are checked for valid cash/runway. Solo revenue presets stay below suggested expenses; advanced revenue/cost overrides recalculate the reserve, with no-net-burn scenarios labeled accordingly. Editing retains the player role and applies changed stage/team/funding choices.
 3. **Demo:** Home → LearnLoop AI sample → choose developer/marketer/customer discovery → hear the team → confirm → see actual engine deltas, the seeded event and three practical next actions. No signup or numerical input.
 
 ### Living team and AI
 
 - Six advisor viewpoints: CTO, CFO, Growth, Product, Customer and Investor, plus the Founder/player.
 - Rule-based dialogue explicitly replies to other roles, cites the current/projected model state and ends with agreement, disagreement, trade-off and a founder question.
-- Advisor mode is labeled. Optional AI advice requires an explicit in-product toggle explaining transmission of venture context. No browser API key. The existing proxy is used; both frontend and updated Worker validate bounded six-role structured responses and strip extra properties.
+- Advisor mode is labeled. Optional AI advice requires an explicit in-product toggle explaining transmission of venture context. No browser API key. The existing proxy is used; both frontend and updated Worker validate bounded six-role structured responses and strip extra properties. Duplicate speeches, self-replies and responses without agent-to-agent interaction are rejected.
 - Optional LLM dialogue currently uses one structured request with six defined roles, rather than six independent persistent agent workers. The world is a local single-player simulation.
 - AI never has a state-write capability. Only the original `simulateMonth()` commits outcomes.
-- Characters move to a meeting, react to state, show projected speech bubbles, and support room movement plus overview/first/third person views. They are procedural stylized avatars, not photorealistic humans. Advisor characters are separate from modeled staff.
+- State-triggered CFO/Growth/CTO or Customer briefings start automatically, with additional offer/event context and a persistent briefing log. Characters move to a meeting, react to state, show projected speech bubbles, and support room movement plus overview/first/third person views. They are procedural stylized avatars, not photorealistic humans. Advisor characters are separate from modeled staff.
 - A state-aware Copilot uses current records, published rules and evidence-based repetition counts. It is explicitly labeled rule-based. The optional LLM team receives condensed recent decision context, not raw Module 3 provenance.
 - Short text strategies are mapped to a bounded subset of existing engine choices, displayed for review, and never automatically committed. Unsupported interpretations require choosing a card. Browser speech recognition has text fallback.
 
@@ -27,6 +27,7 @@ The public entry surface now explains a concrete task: **test a startup decision
 
 - Counterfactual lab copies the state **before the latest committed month**, including cash, operations, outstanding offer, market, month and seed. Both policies use identical random draws. Conditional event effects can differ because their state/choices differ. Comparing never writes the session.
 - Comparison includes runway, MRR, retention, product readiness, demand, uncertainty, ownership and modeled customer acquisition. The current engine has no cumulative customer count.
+- Uncommitted choices, reasons and optional expectations survive refresh and tool navigation. They are optional session metadata; restoring a draft uses rule-based advice without transmitting it or advancing time. Old V3 sessions remain accepted, and older-month drafts are discarded after a V3 advance.
 - Journal stores decision label, founder reason, optional expected MRR growth, reproducibly derived modeled growth, and editable reflections. Three comparable expectations enable a gap reflection. This is not calibration against observed performance or a psychological diagnosis.
 - Action plan includes state, assumptions, risks, decisions tested, changes, patterns, three actions for seven days, a 30-day experiment, measures and a revisit trigger. Markdown download, print/PDF and original Module 3 report are available.
 
@@ -37,12 +38,12 @@ The public entry surface now explains a concrete task: **test a startup decision
 | Entry/navigation | `index.html`, `en/index.html`, `product/landing.js`, `product/product.css` |
 | Decision experience | `module4/index.html`, `module4/immersive.html`, `product/world-app.js`, `product/experience.js`, `product/copilot.js` |
 | Advisor gateway | `product/agents.js`, `worker.js` |
-| Persistence | `module4/state/StateStore.js` — additive optional `productRole` and `decisionJournal`; old sessions remain accepted, derived growth is recalculated on replay |
+| Persistence | `module4/state/StateStore.js` — additive optional `productRole`, `productDraft` and `decisionJournal`; old sessions remain accepted, derived growth is recalculated on replay |
 | World presentation | `module4/world/createWorld.js`, `module4/world/avatars.js` — product-specific palette/roster enabled only through options; V3 default rendering retained |
 | Trust | `privacy.html`, `product/about.html`, `product/terms.html` |
 | Measurement | `product/telemetry.js` — aggregate counts in memory, no external collector or venture content |
 | Tests | `product/tests/product.test.js`, `product/tests/browser.cjs`, `product/tests/server.cjs`, `product/tests/legacy.cjs`; original tests unchanged |
-| Docs | `README.md`, `module4/README.md`, this file, `product/VALIDATION.md` |
+| Docs | `README.md`, `module4/README.md`, this file, `product/VALIDATION.md`, `product/RECOVERY.md` |
 
 The financial transitions in `SimulationEngine`, `DecisionEngine`, `EventEngine` and `CalibrationEngine` remain unchanged. Original Module 3 arithmetic/weights/export keys also remain unchanged. Two Korean output sentences were revised to remove an inaccurate “actual result” comparison; their calculations were preserved. Market AI prompts now request research hypotheses rather than unsupported numerical market charts, and explicitly disclose the absence of live web search. Founder results add Strength/Watch-outs/Under-pressure reflection questions without changing questionnaire answers or type calculations. Research pages/content were retained.
 

@@ -25,6 +25,12 @@ export function validateSession(data) {
     session.reflections[id]=value;
   }
   if(data.productRole!==undefined){if(!['CEO','CTO','CFO','Growth','Product'].includes(data.productRole))throw new Error('Invalid player role');session.productRole=data.productRole;}
+  if(data.productDraft!==undefined){
+    const d=data.productDraft;
+    if(!d||!Number.isInteger(d.month)||d.month<0||d.month>session.state.simulation.currentMonth||typeof d.reason!=='string'||d.reason.length>800||typeof d.expectation!=='string'||d.expectation.length>30||typeof d.optionId!=='string'||!/^([a-z-]{1,40})?$/.test(d.optionId))throw new Error('Invalid product decision draft');
+    // V3 can advance the same session without knowing this optional metadata.
+    if(d.month===session.state.simulation.currentMonth)session.productDraft={month:d.month,reason:d.reason,expectation:d.expectation,optionId:d.optionId};
+  }
   if(data.decisionJournal!==undefined){
     if(!Array.isArray(data.decisionJournal)||data.decisionJournal.length>session.history.length)throw new Error('Invalid decision journal');
     const seen=new Set();

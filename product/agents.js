@@ -4,6 +4,7 @@ export function validateDiscussion(data){
  const expected=roles.filter(r=>r!=='CEO');
  const bounded=v=>typeof v==='string'&&v.trim().length>0&&v.length<=600;
  if(new Set(data.turns.map(r=>r.role)).size!==6||data.turns.some(r=>!expected.includes(r.role)||!bounded(r.text)||!['Founder',...expected].includes(r.replyTo)))throw new Error('Invalid agent turn');
+ if(data.turns.some(r=>r.replyTo===r.role)||!data.turns.some(r=>r.replyTo!=='Founder')||new Set(data.turns.map(r=>r.text.trim())).size!==6)throw new Error('Agent perspectives must be distinct and respond to each other');
  if(!data.summary||['agreement','disagreement','tradeoff','question'].some(k=>!bounded(data.summary[k])))throw new Error('Invalid decision summary');
  return {source:'llm',turns:data.turns.map(({role,replyTo,text})=>({role,replyTo,text})),summary:Object.fromEntries(['agreement','disagreement','tradeoff','question'].map(k=>[k,data.summary[k]]))};
 }

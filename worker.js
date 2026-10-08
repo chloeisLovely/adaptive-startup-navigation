@@ -173,6 +173,7 @@ function checkTeam(data){
   const roles=['CTO','CFO','Growth','Product','Customer','Investor'];
   const text=v=>typeof v==='string'&&v.trim().length>0&&v.length<=600;
   if(!data||!Array.isArray(data.turns)||data.turns.length!==6||new Set(data.turns.map(r=>r.role)).size!==6||data.turns.some(r=>!roles.includes(r.role)||!['Founder',...roles].includes(r.replyTo)||!text(r.text)))throw new Error('Invalid turns');
+  if(data.turns.some(r=>r.replyTo===r.role)||!data.turns.some(r=>r.replyTo!=='Founder')||new Set(data.turns.map(r=>r.text.trim())).size!==6)throw new Error('Invalid team interaction');
   if(!data.summary||['agreement','disagreement','tradeoff','question'].some(k=>!text(data.summary[k])))throw new Error('Invalid summary');
   return {turns:data.turns.map(({role,replyTo,text})=>({role,replyTo,text})),summary:Object.fromEntries(['agreement','disagreement','tradeoff','question'].map(k=>[k,data.summary[k]]))};
 }

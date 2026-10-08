@@ -4,13 +4,21 @@ Date: 2026-10-08 (Asia/Seoul). Baseline main: `afabd5263f35292052d9e136c551ec1b3
 
 ## Executed checks
 
-- **29 Node tests passed:** original engine/experience tests plus product preset validation, same-state counterfactual reproducibility, legal decision moments, six-role fallback/structured output, journal replay, natural-language mapping, evidence thresholds and Worker compatibility/CORS/schema behavior.
-- **12 product browser acceptance groups passed:** desktop 1440×1000 and mobile 390×844, Korean and English routes, full journey, new Module 3 handoff and original report restore, demo loop, role selection/movement/cameras, refresh/JSON import/export, comparison without mutation, journal/reflection/action-plan export, AI error/malformed output fallback, read-only structured AI response, keyboard/text-speech fallback, multi-tab conflict, WebGL-unavailable, forced context-loss and storage-blocked completion.
+- **32 Node tests passed:** original engine/experience tests plus product preset validation, same-state counterfactual reproducibility, legal decision moments, six-role fallback/structured output, journal replay, natural-language mapping, evidence thresholds and Worker compatibility/CORS/schema behavior, all 90 stage/team/funding presets, interruption-safe drafts and proactive state-triggered briefing.
+- **15 product browser acceptance groups passed:** desktop 1440×1000 and mobile 390×844, Korean and English routes, full journey, new Module 3 handoff and original report restore, demo loop, role selection/movement/cameras, refresh/JSON import/export, comparison without mutation, journal/reflection/action-plan export, AI error/malformed output fallback, read-only structured AI response, keyboard/text-speech fallback, multi-tab conflict, WebGL-unavailable, forced context-loss and storage-blocked completion, solo revenue setup/editing, automatic briefing, draft restoration and one runtime evaluation during delayed-download navigation.
 - **Original V3 browser suite passed** using the preserved immersive-page fixture: all six dialogue categories, room walking and picking, role/tutorial/mission/review/commit, staged engine outcomes, staff visuals, draft/outcome restoration, real Korean/English M1–3 handoff and report, standalone setup, mobile, proactive risk prompts, offer indicator and storage/WebGL fallback. Original test file unchanged.
 - `git diff --check` passed. All four simulation engine files, Module3Adapter, the original bridge and research page have no diff from baseline.
 - Live Korean/English/module4 static pages returned HTTP 200. The latest existing Pages build for baseline main completed successfully. **The tested v4 branch is not deployed to the public Pages URL.**
 
 QA used Playwright 1.62.1 and Chromium 138 with SwiftShader software WebGL. Font rendering used a local Noto Sans CJK font. Legacy chart tests used the original Chart.js 4.4.0 code as a network-restricted CDN mirror, not a chart stub. Tests served the repository under an `/adaptive-startup-navigation/` path to exercise GitHub Pages relative paths.
+
+## Recovery verification on 2026-10-08
+
+The original workspace was accessible. Its complete working tree matched remote feature commit `3bb9a8140d98c8309d423c6d4daf181faddf0e11`. PR #4 was already open and unmerged. Recovery retained that branch and PR.
+
+The first recovery browser runs exposed duplicate Babylon evaluation during fast navigation before the runtime download completed. The shared loader fix passed a deliberately delayed-download test and the complete Korean/English journey. Earlier failed runs were not counted as passes. Decision drafts now survive refresh and navigation without advancing engine state; the V3 session reader safely discards drafts from earlier modeled months.
+
+The public Korean, English and Module 4 pages were checked again and returned HTTP 200 with the V3 entry code. An OPTIONS request to the deployed AI endpoint returned HTTP 403 from this execution environment. That is not evidence of successful live LLM service or proof of a production outage; the production gateway remains unverified.
 
 ## Screenshots
 
