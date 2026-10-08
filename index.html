@@ -1775,6 +1775,7 @@ input[type=range]::-webkit-slider-thumb{
   }
 }
 </style>
+<link rel="stylesheet" href="product/product.css">
 </head>
 <body>
 
@@ -3164,32 +3165,22 @@ async function aiTrendSearch(){
   btn.disabled = true;
   btn.innerHTML = '<div class="loading-spinner"></div> 분석 중...';
   resultBox.classList.add('show');
-  textEl.innerHTML = '<div class="ai-loading"><div class="loading-spinner"></div>AI가 시장 데이터를 분석하고 있습니다...</div>';
+  textEl.innerHTML = '<div class="ai-loading"><div class="loading-spinner"></div>고객 수요 가정과 조사 질문을 정리하고 있습니다...</div>';
   chartsEl.style.display = 'none';
   
   try {
-    const prompt = `다음 주제에 대해 한국 시장 관점에서 분석해주세요: "${query}"
-
-다음 형식으로 응답해주세요:
-
-📊 시장 개요 (2-3문장)
-- 현재 시장 규모와 성장세
-
-🎯 핵심 기회 요인 (3가지)
-- 각 요인 1-2문장으로 설명
-
-⚠️ 진입 장벽 및 리스크 (2-3가지)
-- 주요 위험 요소
-
-💡 한국 스타트업 진입 전략 (2-3가지 구체적 제안)
-
-📈 마지막에 아래 JSON 데이터를 반드시 포함하세요(차트용):
-\`\`\`json
-{"market_size":[연도별 5개 숫자, 단위: 10억 USD],"growth_rate":[연도별 5개 CAGR %],"years":["2022","2023","2024","2025","2026"]}
-\`\`\``;
+    const prompt = `사업 아이디어: "${query}".
+웹 검색 도구가 연결되지 않은 상황입니다. 실시간 검색을 했다고 표현하지 말고, 확인하지 않은 시장 규모·성장률·투자·경쟁사 수치를 만들지 마세요.
+다음 형식으로 한국어 조사 계획을 작성하세요:
+1. 고객 문제에 대한 검증할 가정 3개
+2. 수요 신호를 확인할 조사 질문 3개
+3. 경쟁사·대체 해결책을 찾을 검색어
+4. 목표 고객 5명에게 물을 질문
+5. 일주일 안에 실행할 작은 유료 실험
+모든 내용을 가설·조사 제안으로 표시하고 수치 차트용 JSON은 생성하지 마세요.`;
     
     const response = await callOpenAI([
-      {role: 'system', content: '당신은 한국 스타트업 시장 분석 전문가입니다. 정확한 데이터와 실용적인 전략을 제공합니다.'},
+      {role: 'system', content: '당신은 창업자의 고객 수요 가정을 점검합니다. 관측한 사실과 조사 가설을 구분하고, 검색하지 않은 자료를 출처나 확정 수치로 제시하지 마세요.'},
       {role: 'user', content: prompt}
     ], {max_tokens: 1500});
     
@@ -3205,7 +3196,7 @@ async function aiTrendSearch(){
       } catch(e){ console.warn('JSON parse failed'); }
     }
     
-    textEl.textContent = displayText;
+    textEl.textContent = 'AI 설명 · 실시간 웹 검색 미연결 · 아래 내용은 검증할 가설과 조사 제안입니다.\n\n' + displayText;
     
     if(chartData && chartData.market_size){
       chartsEl.style.display = 'grid';
@@ -3937,7 +3928,7 @@ function completeBarl(){
   updateSidebarContext();
   
   // AI 메시지: BARL 완료
-  addChatMsg('ai', `편향 자각 단계 완료! 잘하셨어요 🎉<br><br>본인이 예상한 생존율 ${q1}%, 시장 성장률 ${q2}%/년이네요. 이 가정들을 시뮬레이션 후 실제 결과와 비교해보면 본인의 의사결정 패턴이 보일 거예요.`);
+  addChatMsg('ai', `편향 자각 단계 완료! 잘하셨어요 🎉<br><br>본인이 예상한 생존율 ${q1}%, 시장 성장률 ${q2}%/년이네요. 이 가정은 시뮬레이션의 규칙 기반 지표와 비교합니다. 척도가 달라 실제 생존확률의 오차나 의사결정 능력을 의미하지는 않습니다.`);
   
   forceScrollToTop();
 }
@@ -4331,7 +4322,7 @@ function runSimulation(){
   if(simData.capital < 15) recs.push({icon: '💰', type: 'warn', text: '초기 자본이 부족합니다. Pre-Seed 단계 액셀러레이터(TIPS, K-Startup) 참여를 권장합니다.'});
   if(simData.talent.length < 3) recs.push({icon: '👥', type: 'warn', text: '핵심 인재 영입이 시급합니다. 특히 CTO와 CMO 영입을 우선해보세요.'});
   if(simData.tech.length >= 3) recs.push({icon: '🔬', type: 'info', text: `${simData.tech.length}개의 기술 스택은 차별화 가능성이 높지만, MVP에서는 핵심 1-2개에 집중하세요.`});
-  if(simData.barl && simData.barl.survival > 75) recs.push({icon: '🛡️', type: 'warn', text: `BARL 분석: 본인이 예상한 생존율(${simData.barl.survival}%)이 실제 결과(${base}%)보다 ${simData.barl.survival - base}%p 높습니다. 과신 편향 점검이 필요합니다.`});
+  if(simData.barl && simData.barl.survival > 75) recs.push({icon: '🛡️', type: 'warn', text: `BARL 분석: 본인이 예상한 생존율(${simData.barl.survival}%)이 규칙 기반 지표(${base}/100)보다 ${simData.barl.survival - base}%p 높습니다. 서로 다른 척도의 비교이며 과신의 확정적 증거는 아닙니다. 어떤 가정이 차이를 만드는지 점검하세요.`});
   recs.push({icon: '🎯', type: '', text: `'${simData.item}' 분야는 정부 R&D 과제·부처 지원사업의 매칭 가능성이 높은 영역입니다. 실제 성장률은 Module 1의 시장 데이터로 별도 확인하세요.`});
   recs.push({icon: '📈', type: '', text: '초기 6개월 PMF(Product-Market Fit) 검증에 집중하고, 18개월 내 Series A 준비를 시작하세요.'});
   
@@ -4771,5 +4762,6 @@ window.addEventListener('asnm:restore-report', event => {
 });
 </script>
 <script type="module" src="module4/bridge.js"></script>
+<script type="module" src="product/landing.js"></script>
 </body>
 </html>

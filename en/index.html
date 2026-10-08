@@ -1775,6 +1775,7 @@ input[type=range]::-webkit-slider-thumb{
   }
 }
 </style>
+<link rel="stylesheet" href="../product/product.css">
 </head>
 <body>
 
@@ -3197,27 +3198,15 @@ async function aiTrendSearch(){
   chartsEl.style.display = 'none';
   
   try {
-    const prompt = `Analyze this topic for an early-stage founder: "${query}"
-
-Use this structure:
-
-📊 Market overview (2-3 sentences)
-- Current size and direction of travel
-
-🎯 Three opportunity factors
-- One or two sentences each
-
-⚠️ Entry barriers and risks (2-3)
-- The ones that actually kill companies, not generic caution
-
-💡 Entry strategy for a small team (2-3 concrete moves)
-
-Be specific about what is uncertain. If you do not know a figure, say so rather than estimating.
-
-📈 End your response with this JSON block for charting:
-\`\`\`json
-{"market_size":[5 numbers, USD billions],"growth_rate":[5 CAGR percentages],"years":["2022","2023","2024","2025","2026"]}
-\`\`\``;
+    const prompt = `Venture idea: "${query}".
+There is no web-search tool connected. Do not claim live search, invent market size, growth, funding, or competitor numbers.
+Write a research plan in English:
+1. Three customer-problem assumptions to validate
+2. Three research questions for demand signals
+3. Search terms for competitors and alternative solutions
+4. Questions for five target customers
+5. One small paid experiment for the next week
+Label all statements as hypotheses or research suggestions. Do not produce numeric chart JSON.`;
     
     const response = await callOpenAI([
       {role: 'system', content: 'You are a market analyst advising early-stage founders. Be concrete and specific. Distinguish clearly between what is established and what is your estimate. Never invent precise figures — if you are unsure, say so.'},
@@ -3236,7 +3225,7 @@ Be specific about what is uncertain. If you do not know a figure, say so rather 
       } catch(e){ console.warn('JSON parse failed'); }
     }
     
-    textEl.textContent = displayText;
+    textEl.textContent = 'AI explanation · live web search is not connected · hypotheses and research suggestions only.\n\n' + displayText;
     
     if(chartData && chartData.market_size){
       chartsEl.style.display = 'grid';
@@ -4808,5 +4797,6 @@ window.addEventListener('asnm:restore-report', event => {
 });
 </script>
 <script type="module" src="../module4/bridge.js"></script>
+<script type="module" src="../product/landing.js"></script>
 </body>
 </html>

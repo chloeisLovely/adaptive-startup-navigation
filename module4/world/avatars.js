@@ -6,8 +6,8 @@ export const personas={
   team:[['Developer','개발자'],['Marketer','마케터']],investor:[['Investor','투자자']]
 };
 /** Procedural jointed characters. No downloaded meshes or runtime asset dependencies. */
-export function createAvatars(B,scene,onArrival) {
-  const actors=[];let elapsed=0,route=[],destination='ceo',moving=false,manualUntil=0;
+export function createAvatars(B,scene,onArrival,options={}) {
+  const actors=[];let inMeeting=false;let elapsed=0,route=[],destination='ceo',moving=false,manualUntil=0;
   const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   function humanoid(name,color,x,z,roomId,style=0) {
     const root=new B.TransformNode(name,scene);root.position.set(x,.15,z);root.metadata={state:'idle',roomId,actor:true};
@@ -49,6 +49,12 @@ export function createAvatars(B,scene,onArrival) {
   }
   const founder=humanoid('founder','#d6ae76',0,-2.1,'ceo',0);founder.root.metadata.role='founder';
   for(const [i,room] of rooms.entries())personas[room.id].forEach(([name],j)=>humanoid(`npc-${room.id}-${j}-${name}`,room.color,room.x+(j?1.3:-1.3),room.z-1,room.id,i+j+1));
+  if(options.productExperience){
+    const mapping={ceo:'CEO',finance:'CFO',market:'Growth',product:'CTO',customer:'Customer',investor:'Investor'};
+    for(const a of actors)a.role=a===founder?'Founder':mapping[a.roomId]||'Team';
+    const p=rooms.find(r=>r.id==='product');const lead=humanoid('npc-product-lead','#d7b788',p.x+1.5,p.z-1,'product',5);lead.role='Product';
+  }
+  for(const a of actors)a.home=a.root.position.clone();
   const staff=[];const team=rooms.find(r=>r.id==='team');
   for(let i=0;i<6;i++){const a=humanoid('team-member-'+i,['#819ca7','#b79583','#97ad91'][i%3],team.x-2.5+i%3*2,team.z+1.4+Math.floor(i/3)*.8,'team',4+i);a.root.scaling.setAll(.86);a.root.setEnabled(false);staff.push(a);}
   // A small walkable grid routes around room footprints. Interior movement uses the south doorway.
@@ -92,7 +98,8 @@ export function createAvatars(B,scene,onArrival) {
     }
     for(const actor of actors) {
       if(!actor.root.isEnabled())continue;
-      const walk=actor===founder&&(moving||elapsed<manualUntil),state=walk?'walk':actor.root.metadata.state;
+      if(actor.meetingTarget){const delta=actor.meetingTarget.subtract(actor.root.position);if(delta.length()>.05){actor.root.position.addInPlace(delta.scale(Math.min(1,dt*3)));actor.root.rotation.y=Math.atan2(-actor.root.position.x,-actor.root.position.z);}else actor.meetingTarget=null;}
+      const walk=(actor===founder&&(moving||elapsed<manualUntil))||!!actor.meetingTarget,state=walk?'walk':actor.root.metadata.state;
       const wave=Math.sin(elapsed*(walk?11:2)+actor.phase),motion=reduced?0:1;
       actor.body.position.y=motion*(walk?Math.abs(wave)*.045:wave*.014);
       actor.body.rotation.z=motion*(state==='concerned'?.045:wave*.012);
@@ -102,10 +109,11 @@ export function createAvatars(B,scene,onArrival) {
       actor.elbows.forEach((joint,i)=>joint.rotation.x=motion*(state==='think'&&i===1?-1.3:state==='talk'?-.45:walk?-.18:0));
       actor.legs.forEach((joint,i)=>joint.rotation.x=motion*(walk?wave*.5*(i?-1:1):0));
       actor.knees.forEach((joint,i)=>joint.rotation.x=motion*(walk?Math.max(0,wave*(i?-1:1))*.55:0));
-      if(actor.roomId==='investor'&&actor!==founder){const target=actor.baseZ-(actor.offer?.75:0);actor.root.position.z+=(target-actor.root.position.z)*Math.min(1,dt*3);}
+      if(!inMeeting&&actor.roomId==='investor'&&actor!==founder){const target=actor.baseZ-(actor.offer?.75:0);actor.root.position.z+=(target-actor.root.position.z)*Math.min(1,dt*3);}
     }
   });
   return {founder:founder.root,actors,moveToRoom,
+    meeting(active){inMeeting=active;const advisors=actors.filter(a=>a!==founder&&!staff.includes(a));advisors.forEach((a,i)=>{a.meetingTarget=active?new B.Vector3(Math.cos(i/advisors.length*Math.PI*2)*2.8,.15,Math.sin(i/advisors.length*Math.PI*2)*2.8):a.home.clone();if(reduced){a.root.position.copyFrom(a.meetingTarget);a.meetingTarget=null;}});},
     converse(id,mood='talk'){for(const a of actors)if(a!==founder){a.root.metadata.state=a.roomId===id?mood:(a.mood||'idle');if(a.roomId===id)a.root.rotation.y=Math.atan2(founder.root.position.x-a.root.position.x,founder.root.position.z-a.root.position.z);}if(!moving){founder.root.metadata.state=mood==='think'?'think':'idle';const r=rooms.find(r=>r.id===id);founder.root.rotation.y=Math.atan2(-1.3,1.1);}},
     update(s,log){staff.forEach((a,i)=>a.root.setEnabled(i<Math.min(6,Math.max(0,s.venture.teamSize-1))));for(const a of actors){const risk=(a.roomId==='finance'&&s.venture.runway!==null&&s.venture.runway<6)||(a.roomId==='customer'&&s.venture.retention<60);const before=log?.stateBefore.venture;const down=before&&(a.roomId==='customer'?s.venture.retention<before.retention:a.roomId==='finance'?s.venture.runway!==null&&(before.runway===null||s.venture.runway<before.runway):a.roomId==='team'?s.venture.teamSize<before.teamSize:false);const up=before&&(a.roomId==='product'?s.venture.productProgress>before.productProgress:a.roomId==='team'?s.venture.teamSize>before.teamSize:s.venture.mrr>before.mrr);a.mood=risk||down?'concerned':up?'celebrate':'idle';if(a!==founder||!moving)a.root.metadata.state=a.mood;a.offer=!!s.operations.offer;}},
     nudge(dx,dz){if(moving)return;const p=founder.root.position,q=p.add(new B.Vector3(dx,0,dz));if(Math.abs(q.x)>19||Math.abs(q.z)>19)return;for(const r of rooms){const crosses=(Math.abs(q.x-r.x)<3.9&&Math.abs(q.z-r.z)<3.5);if(crosses&&(q.z>r.z+2.9||q.x>r.x+3.3))return;}p.copyFrom(q);founder.root.rotation.y=Math.atan2(dx,dz);manualUntil=elapsed+.25;const inside=rooms.find(r=>Math.abs(q.x-r.x)<3&&Math.abs(q.z-r.z)<2.8);if(inside&&destination!==inside.id){destination=inside.id;founder.root.metadata.roomId=inside.id;onArrival(inside.id);}},

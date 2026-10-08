@@ -1,3 +1,9 @@
+# ASNM Module 4 v4 — Decision World
+
+The default entry now opens the simplified decision experience. See [v4 implementation and user flows](../product/RELEASE.md) and [validation](../product/VALIDATION.md). The complete V3 experience below remains available at `immersive.html`, using the same personal state store and unchanged financial engines.
+
+---
+
 # ASNM Module 4 V3 — Immersive Venture Digital Twin
 
 Interactive Babylon.js venture simulation built on V2. See [V3 changes and experience rules](V3_CHANGES.md) for the complete flow and file list.

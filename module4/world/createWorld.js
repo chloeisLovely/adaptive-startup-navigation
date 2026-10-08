@@ -3,26 +3,26 @@ import {rooms} from './rooms.js';
 import {createAvatars} from './avatars.js';
 
 /** Rendering receives state; it never calculates business outcomes. */
-export function createWorld(canvas,onRoom,onArrival=()=>{}) {
+export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
   const B=globalThis.BABYLON;
   if(!B || !B.Engine.isSupported()) throw new Error('WebGL unavailable');
-  const engine=new B.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true});
+  const engine=new B.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true,doNotHandleContextLost:!!options.productExperience});
   engine.setHardwareScalingLevel(Math.max(1,globalThis.devicePixelRatio/1.5));
-  const scene=new B.Scene(engine); scene.clearColor=new B.Color4(.075,.095,.12,1);
-  scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.008;scene.fogColor=new B.Color3(.075,.095,.12);
+  const scene=new B.Scene(engine); scene.clearColor=options.productExperience?new B.Color4(.80,.87,.83,1):new B.Color4(.075,.095,.12,1);
+  scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.008;scene.fogColor=options.productExperience?new B.Color3(.80,.87,.83):new B.Color3(.075,.095,.12);
   const camera=new B.ArcRotateCamera('campus-camera',-Math.PI/2.7,Math.PI/3.2,47,new B.Vector3(0,0,0),scene);
   camera.lowerRadiusLimit=5;camera.upperRadiusLimit=65;camera.upperBetaLimit=Math.PI/2.12;camera.lowerBetaLimit=.15;
   camera.wheelDeltaPercentage=.015;camera.panningSensibility=90;camera.attachControl(canvas,true);
-  new B.HemisphericLight('sky',new B.Vector3(0,1,0),scene).intensity=.9;
+  new B.HemisphericLight('sky',new B.Vector3(0,1,0),scene).intensity=options.productExperience?.65:.9;
   camera.inputs.removeByType('ArcRotateCameraKeyboardMoveInput');
-  const sun=new B.DirectionalLight('key',new B.Vector3(-.4,-1,.5),scene);sun.intensity=1.1;sun.diffuse=new B.Color3(1,.85,.69);sun.position.set(10,30,-20);
+  const sun=new B.DirectionalLight('key',new B.Vector3(-.4,-1,.5),scene);sun.intensity=options.productExperience?.75:1.1;sun.diffuse=new B.Color3(1,.85,.69);sun.position.set(10,30,-20);
   const shadows=new B.ShadowGenerator(1024,sun);shadows.useBlurExponentialShadowMap=true;shadows.blurKernel=16;
   const mat=(name,hex,emission=0,alpha=1)=>{const m=new B.StandardMaterial(name,scene);m.diffuseColor=B.Color3.FromHexString(hex);m.emissiveColor=m.diffuseColor.scale(emission);m.specularColor=new B.Color3(.2,.3,.4);m.alpha=alpha;return m;};
-  const floorMat=mat('floor','#26364b'),edgeMat=mat('path','#456873',.25),deskMat=mat('desks','#8b7561');
+  const floorMat=mat('floor',options.productExperience?'#d9e4d9':'#26364b'),edgeMat=mat('path','#456873',.25),deskMat=mat('desks','#8b7561');
   const leafMat=mat('leaves','#568d70'),potMat=mat('pots','#c2a187'),seatMat=mat('lounge','#b09584');
   const box=(name,w,h,d,x,y,z,material)=>{const mesh=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);mesh.position.set(x,y,z);mesh.material=material;return mesh;};
-  box('foundation',40,.6,40,0,-.6,0,mat('foundation','#0a1425'));
-  const ground=B.MeshBuilder.CreateGround('ground',{width:110,height:110},scene);ground.position.y=-1;ground.material=mat('ground','#091324');
+  box('foundation',40,.6,40,0,-.6,0,mat('foundation',options.productExperience?'#a0b7aa':'#0a1425'));
+  const ground=B.MeshBuilder.CreateGround('ground',{width:110,height:110},scene);ground.position.y=-1;ground.material=mat('ground',options.productExperience?'#c4d4c9':'#091324');
   for(let i=-17;i<=17;i+=2) {
     const lines=B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(-17,-.28,i),new B.Vector3(17,-.28,i)]},scene);lines.color=new B.Color3(.09,.16,.23);
     const vertical=B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(i,-.28,-17),new B.Vector3(i,-.28,17)]},scene);vertical.color=lines.color;
@@ -86,13 +86,18 @@ export function createWorld(canvas,onRoom,onArrival=()=>{}) {
       const id=info.pickInfo.pickedMesh?.metadata?.roomId;if(id) onRoom(id);
     }
   });
-  let cameraMove=null;
-  const avatars=createAvatars(B,scene,onArrival);
+  let cameraMove=null,viewMode="overview",meetingActive=false;
+  const avatars=createAvatars(B,scene,onArrival,options);
   for(const a of avatars.actors)for(const mesh of a.root.getChildMeshes())shadows.addShadowCaster(mesh);
   const playerRing=B.MeshBuilder.CreateTorus('player-highlight',{diameter:1.25,thickness:.045,tessellation:40},scene);playerRing.parent=avatars.founder;playerRing.position.y=.02;playerRing.material=mat('player-ring','#f4d0a1',.8);playerRing.isPickable=false;
-  const smooth=(target,radius,alpha=camera.alpha,beta=camera.beta)=>{cameraMove={target,radius,alpha,beta};};
+  const smooth=(target,radius,alpha=camera.alpha,beta=camera.beta)=>{if(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){camera.setTarget(target);camera.radius=radius;camera.alpha=alpha;camera.beta=beta;return;}cameraMove={target,radius,alpha,beta};};
   const cameraTick=scene.onBeforeRenderObservable.add(()=>{
     visualTime+=engine.getDeltaTime()/1000;markers.forEach((m,i)=>{const active=missionRooms.includes(rooms[i].id);m.scaling.x=m.scaling.z=active?1.2+Math.sin(visualTime*2)*.08:1;});
+    if(viewMode==='first'){
+      const f=avatars.founder,p=f.position.add(new B.Vector3(0,1.75,0));
+      camera.setTarget(p);camera.alpha=-f.rotation.y-Math.PI/2;camera.beta=Math.PI/2.1;camera.radius=.8;return;
+    }
+    if(viewMode==='third'&&!cameraMove)camera.setTarget(avatars.founder.position.add(new B.Vector3(0,1,0)));
     if(!cameraMove)return;
     const amount=1-Math.exp(-7*Math.min(.05,engine.getDeltaTime()/1000));
     camera.setTarget(B.Vector3.Lerp(camera.target,cameraMove.target,amount));
@@ -114,11 +119,14 @@ export function createWorld(canvas,onRoom,onArrival=()=>{}) {
   canvas.dataset.ready='true';
   return {
     scene,camera,avatars,
+    setRole(role){avatars.founder.metadata.playerRole=role;const id={CEO:'ceo',CFO:'finance',CTO:'product',Growth:'market',Product:'product'}[role]||'ceo';avatars.moveToRoom(id);},
+    setView(mode){viewMode=mode;cameraMove=null;camera.lowerRadiusLimit=mode==='first'?.5:5;camera.inertialRadiusOffset=0;camera.inertialAlphaOffset=0;camera.inertialBetaOffset=0;if(mode==='first'){camera.radius=.8;camera.beta=Math.PI/2.1;camera.setTarget(avatars.founder.position.add(new B.Vector3(0,1.75,0)));}avatars.founder.getChildMeshes().forEach(m=>m.visibility=mode==='first'?0:1);if(mode==='overview')this.overview();else if(mode==='third')smooth(avatars.founder.position.add(new B.Vector3(0,1,0)),8,-Math.PI/2.7,Math.PI/3);},
+    meeting(active){if(viewMode==='first')this.setView('third');meetingActive=active;avatars.meeting(active);if(active){viewMode='overview';smooth(new B.Vector3(0,1,0),13,-Math.PI/2.7,Math.PI/3);}},
     focus(id) {avatars.converse('', 'idle');const r=rooms.find(r=>r.id===id);if(r){smooth(new B.Vector3(r.x,1,r.z),16);}},
-    conversation(id,mood){avatars.converse(id,mood);const r=rooms.find(r=>r.id===id);if(r){smooth(new B.Vector3(r.x-.5,1.1,r.z-1.4),7.5,-Math.PI/2.4,Math.PI/2.7);}},
+    conversation(id,mood){avatars.converse(id,mood);if(meetingActive){smooth(new B.Vector3(0,1,0),13,-Math.PI/2.7,Math.PI/3);return;}const r=rooms.find(r=>r.id===id);if(r){smooth(new B.Vector3(r.x-.5,1.1,r.z-1.4),7.5,-Math.PI/2.4,Math.PI/2.7);}},
     missions(ids){missionRooms=ids;},
     goToRoom(id){this.focus(id);avatars.moveToRoom(id);},
-    overview(){smooth(B.Vector3.Zero(),47);},
+    overview(){viewMode="overview";avatars.founder.getChildMeshes().forEach(m=>m.visibility=1);smooth(B.Vector3.Zero(),47);},
     pause(){engine.stopRenderLoop(renderFrame);},
     resume(){engine.resize();engine.runRenderLoop(renderFrame);},
     update(s,log){
@@ -132,6 +140,6 @@ export function createWorld(canvas,onRoom,onArrival=()=>{}) {
       if(visual.event)draw('market',['MARKET EVENT',visual.event.en.slice(0,30),'MONTH '+s.simulation.currentMonth]);
       draw('team',['TEAM '+visual.teamActual,'1 player + '+visual.teamShown+' visible staff','Visual cap: 6 staff · advisors separate']);
     },
-    dispose(){resize.disconnect();cameraMove=null;scene.onBeforeRenderObservable.remove(cameraTick);avatars.dispose();canvas.removeEventListener('keydown',keyHandler);canvas.removeEventListener('pointerdown',cancelCamera);canvas.removeEventListener('wheel',cancelCamera);engine.stopRenderLoop(renderFrame);scene.dispose();engine.dispose();delete canvas.dataset.ready;}
+    dispose(){resize.disconnect();cameraMove=null;scene.onBeforeRenderObservable.remove(cameraTick);avatars.dispose();canvas.removeEventListener('keydown',keyHandler);canvas.removeEventListener('pointerdown',cancelCamera);canvas.removeEventListener('wheel',cancelCamera);engine.stopRenderLoop(renderFrame);const gl=canvas.getContext('webgl2')||canvas.getContext('webgl');scene.dispose();engine.dispose();gl?.getExtension('WEBGL_lose_context')?.loseContext();delete canvas.dataset.ready;}
   };
 }
