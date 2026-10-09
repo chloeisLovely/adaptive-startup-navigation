@@ -1,3 +1,4 @@
+import {renderGuidedDemo} from './guided-demo.js';
 import {el,money,fmt,download} from '../module4/ui/dom.js';
 import {clone,validateState} from '../module4/state/ASNMState.js';
 import {StateStore,SESSION_KEY,createSession,decodeImport} from '../module4/state/StateStore.js';
@@ -13,6 +14,30 @@ document.documentElement.lang=lang;document.title=t('스타트업 결정 실험 
 const sessionKey=SESSION_KEY+(isDemo?':demo':''),root=new URL('../',import.meta.url),home=new URL(lang==='en'?'en/':'',root).href;
 const app=document.getElementById('app');let session=null,source=null,world=null,worldLoading=false,selected=null,team=null,token=0,worldToken=0,busy=false,conflict=false,lastSaved=null,storageOK=true,currentView='decision',speaking=null,dialogueTimer=null,activeRole='CEO',useAI=false;
 let babylonLoading=null;
+let guidedDemo=isDemo&&params.get('view')!=='workspace',demoStage='intro',demoTurn=0;
+const demoScreenKey='asnm:guided-demo:v1';
+function rememberDemo(){try{sessionStorage.setItem(demoScreenKey,JSON.stringify({stage:demoStage,turn:demoTurn,month:session.state.simulation.currentMonth}));}catch{}}
+function demoMove(stage){demoStage=stage;rememberDemo();render();window.scrollTo(0,0);}
+function leaveDemo(view){guidedDemo=false;document.body.classList.remove('p-guided-demo');const u=new URL(location);u.searchParams.set('view','workspace');history.replaceState(null,'',u);currentView=view;if(view==='compare')track('compare_scenario');render();}
+async function chooseDemo(option){
+ if(busy||conflict)return;selected=option;team=null;busy=true;
+ session.productDraft={month:session.state.simulation.currentMonth,reason:'',expectation:'',optionId:option.id};if(!save()){busy=false;return;}
+ render();const ticket=++token;
+ const response=await adviseTeam(clone(session.state),option,lang,'','');
+ if(ticket!==token||conflict){busy=false;return;}team=response;busy=false;demoTurn=0;demoMove('discussion');
+}
+function showGuidedDemo(){
+ document.body.classList.add('p-guided-demo');
+ const draft=session.productDraft;
+ if(!selected&&draft?.optionId){selected=decisionMoment(session.state).options.find(o=>o.id===draft.optionId)||null;if(selected)team=discussion(session.state,selected,lang,draft.reason);}
+ if(['discussion','summary'].includes(demoStage)&&(!selected||!team))demoStage='choice';
+ if(['result','action'].includes(demoStage)&&!session.history.length)demoStage='intro';
+ renderGuidedDemo({host:content,session,lang,stage:demoStage,turnIndex:demoTurn,selected,team,busy,conflict,home,startOwn:new URL('module4/?lang='+lang+'&mode=quick',root).href,
+ onStage:demoMove,onTurn:(index,turn)=>{demoTurn=index;rememberDemo();showBubble(turn.role,turn.text);},onChoose:chooseDemo,onCommit:commit,onWorkspace:leaveDemo,
+ onRestart:()=>replaceGuard(()=>{session=createSession(demoState());activeRole='CEO';selected=null;team=null;save();demoTurn=0;demoMove('intro');}),
+ mountWorld:(canvas,shell,bubble)=>loadWorld(canvas,shell,bubble)});
+}
+
 function ensureBabylon(){
  if(globalThis.BABYLON)return Promise.resolve();
  // Navigation may cancel a world while its runtime is still loading. Share that
@@ -67,10 +92,13 @@ function metrics(state){const v=state.venture;return el('section',{class:'p-metr
 function preview(state,role){
  content.replaceChildren(el('div',{class:'p-kicker',text:'REVIEW YOUR ASSUMPTIONS'}),el('h1',{class:'p-app-title',text:state.venture.ventureName}),metrics(state),el('section',{class:'p-card p-stack',style:'margin-top:24px'},el('h2',{text:t('이 시작 가정으로 실험할까요?','Use these starting assumptions?')}),el('p',{text:t('수치와 효과는 가정이며 실제 사업 실적이 아닙니다. 초기 수요·유지율·CAC에는 예시값이 사용되므로 고객 증거로 교체하세요.','Values and effects are assumptions, not actual business results. Initial demand, retention and CAC can include example values; replace them with customer evidence.')}),el('p',{text:`${t('팀','Team')}: ${state.venture.teamSize} · ${t('제품','Product')}: ${state.venture.productProgress}/100 · CAC: ${money(state.venture.cac,state.currency,lang)} · ${t('유지율','Retention')}: ${state.venture.retention}% · ${t('역할','Role')}: ${role}`}),el('details',{},el('summary',{text:t('데이터 출처·나머지 가정','Provenance & remaining assumptions')}),el('pre',{style:'white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px',text:JSON.stringify({market:state.market,operations:state.operations,founder:state.founder,provenance:state.provenance},null,2)})),el('div',{class:'p-row'},btn(t('수정하기','Edit assumptions'),()=>setup(state,role)),btn(t('결정 실험 시작 →','Enter Decision World →'),()=>{session=createSession(state);activeRole=role;session.productRole=role;session.experience={role:role==='CFO'?'finance':role==='CTO'?'product':role.toLowerCase()};lastSaved=storageOK?localStorage.getItem(sessionKey):null;save();enter();},{class:'p-primary',id:'enter-decision-world'}))));
 }
-function enter(){disposeWorld();currentView='decision';selected=null;team=null;busy=false;track('digital_twin_enter');render();}
+function enter(){disposeWorld();currentView='decision';selected=null;team=null;busy=false;
+ if(guidedDemo){demoStage=session.history.length?'result':'intro';try{const saved=JSON.parse(sessionStorage.getItem(demoScreenKey));if(saved?.month===session.state.simulation.currentMonth&&['intro','choice','discussion','summary','result','action'].includes(saved.stage)){demoStage=saved.stage;demoTurn=Number.isInteger(saved.turn)?saved.turn:0;}}catch{}}
+ track('digital_twin_enter');render();}
 function render(){
  if(!session)return;
  disposeWorld();content.replaceChildren();
+ if(guidedDemo){showGuidedDemo();return;}
  const s=session.state;
  const roleSelect=el('select',{id:'player-role','aria-label':t('사용자 역할','Player role'),onchange:()=>{activeRole=roleSelect.value;document.querySelector('#product-content h1').textContent=`${t('좋은 아침입니다,','Good morning,')} ${activeRole}.`;session.productRole=activeRole;session.experience={...session.experience,role:activeRole==='CFO'?'finance':activeRole==='CTO'?'product':activeRole.toLowerCase()};save();world?.setRole(activeRole);}},...roles.slice(0,5).map(r=>el('option',{value:r,text:r})));roleSelect.value=activeRole;
  const tabs=el('nav',{class:'p-tabbar',role:'tablist','aria-label':t('결정 도구','Decision tools')},...[[t('결정 실험','Decision'),'decision'],[t('다른 선택이라면?','What if?'),'compare'],[t('결정 기록','Journal'),'journal'],[t('실행 계획','Action plan'),'report']].map(([label,id])=>btn(label,()=>{persistDraft();currentView=id;if(id==='compare')track('compare_scenario');if(id==='report')track('report_view');render();},{role:'tab','aria-selected':currentView===id,id:'view-'+id})));
@@ -103,7 +131,7 @@ async function loadWorld(canvas,shell,bubble){
   if(ticket!==worldToken)return;
   const {createWorld}=await import('../module4/world/createWorld.js');if(ticket!==worldToken)return;
   world=createWorld(canvas,room=>world?.goToRoom(room),()=>{},{productExperience:true});world.update(session.state,session.history.at(-1));world.setRole(activeRole);if(team)world.meeting(true);canvas.dataset.ready='true';
-  world.scene.onAfterRenderObservable.add(()=>{if(!speaking)return;const actor=world?.avatars.actors.find(a=>(a.role===speaking)||(a.role===undefined&&a.roomId===({CTO:'product',Product:'product',CFO:'finance',Growth:'market',Customer:'customer',Investor:'investor',CEO:'ceo'}[speaking])));if(!actor)return;const B=globalThis.BABYLON,pos=actor.root.position.add(new B.Vector3(0,3.4,0)),engine=world.scene.getEngine(),p=B.Vector3.Project(pos,B.Matrix.Identity(),world.scene.getTransformMatrix(),world.camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight()));bubble.style.left=Math.max(8,Math.min(canvas.clientWidth-bubble.offsetWidth-8,p.x*canvas.clientWidth/engine.getRenderWidth()-bubble.offsetWidth/2))+'px';bubble.style.top=Math.max(52,Math.min(canvas.clientHeight-70,p.y*canvas.clientHeight/engine.getRenderHeight()+48))+'px';});
+  world.scene.onAfterRenderObservable.add(()=>{if(!speaking)return;const actor=world?.avatars.actors.find(a=>(a.role===speaking)||(a.role===undefined&&a.roomId===({CTO:'product',Product:'product',CFO:'finance',Growth:'market',Customer:'customer',Investor:'investor',CEO:'ceo'}[speaking])));if(!actor)return;const B=globalThis.BABYLON,pos=actor.root.position.add(new B.Vector3(0,3.4,0)),engine=world.scene.getEngine(),p=B.Vector3.Project(pos,B.Matrix.Identity(),world.scene.getTransformMatrix(),world.camera.viewport.toGlobal(engine.getRenderWidth(),engine.getRenderHeight()));bubble.style.left=Math.max(8,Math.min(canvas.clientWidth-bubble.offsetWidth-8,p.x*canvas.clientWidth/engine.getRenderWidth()-bubble.offsetWidth/2))+'px';bubble.style.top=Math.max(canvas.offsetTop+8,Math.min(canvas.offsetTop+canvas.clientHeight-bubble.offsetHeight-12,p.y*canvas.clientHeight/engine.getRenderHeight()+canvas.offsetTop))+'px';});
  }catch{if(ticket!==worldToken)return;canvas.hidden=true;bubble.hidden=true;shell.append(el('div',{class:'p-world-fallback',id:'webgl-fallback'},el('h3',{text:t('팀과 함께 결정하는 2D 모드','Your decision team in 2D')}),el('p',{style:'color:#dbeadd',text:t('3D를 사용할 수 없는 환경입니다. 아래 팀 토론·선택·비교·실행 계획을 모두 사용할 수 있습니다.','3D is unavailable here. Team discussion, decisions, comparison and action plans remain available.')}),el('div',{class:'p-row'},...roles.map(r=>el('span',{class:'p-chip',text:r})))));
  }finally{if(ticket===worldToken)worldLoading=false;}
 }
@@ -141,9 +169,9 @@ function renderTeam(host){
 }
 function commit(){
  if(busy||conflict||!team||!selected)return;
- const raw=document.getElementById('expected-growth')?.value,expected=raw===''?null:Number(raw);if(expected!==null&&(!Number.isFinite(expected)||expected<-100||expected>1000)){notify(t('예상 성장률은 -100~1000 사이로 입력하세요.','Enter expected growth between -100 and 1000.'));return;}
- const reason=document.getElementById('founder-context')?.value||'';
- try{const before=session.state,result=simulateMonth(before,choicesFor(before,selected),reason,new Date().toISOString());const next=clone(session);delete next.productDraft;next.state=result.state;next.history.push(result.log);next.decisionJournal??=[];next.decisionJournal.push({logId:result.log.id,option:t(selected.ko,selected.en),reason,expectedGrowth:expected,modeledGrowth:before.venture.mrr>0?(result.state.venture.mrr/before.venture.mrr-1)*100:null});const old=session;session=next;if(!save()){session=old;return;}if(session.history.length===1)track('first_decision');track('simulation_complete');selected=null;team=null;render();notify(t('모델 결과와 다음 행동이 준비되었습니다. 아래에서 변화와 실행 계획을 확인하세요.','Modeled outcomes and next actions are ready. Review the changes and action plan below.'));document.getElementById('decision-outcome')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}catch(e){notify(e.message);}
+ const raw=document.getElementById('expected-growth')?.value??session.productDraft?.expectation??'',expected=raw===''?null:Number(raw);if(expected!==null&&(!Number.isFinite(expected)||expected<-100||expected>1000)){notify(t('예상 성장률은 -100~1000 사이로 입력하세요.','Enter expected growth between -100 and 1000.'));return;}
+ const reason=document.getElementById('founder-context')?.value||session.productDraft?.reason||'';
+ try{const before=session.state,result=simulateMonth(before,choicesFor(before,selected),reason,new Date().toISOString());const next=clone(session);delete next.productDraft;next.state=result.state;next.history.push(result.log);next.decisionJournal??=[];next.decisionJournal.push({logId:result.log.id,option:t(selected.ko,selected.en),reason,expectedGrowth:expected,modeledGrowth:before.venture.mrr>0?(result.state.venture.mrr/before.venture.mrr-1)*100:null});const old=session;session=next;if(!save()){session=old;return;}if(session.history.length===1)track('first_decision');track('simulation_complete');selected=null;team=null;if(guidedDemo){demoStage='result';rememberDemo();}render();notify(t('모델 결과와 다음 행동이 준비되었습니다. 아래에서 변화와 실행 계획을 확인하세요.','Modeled outcomes and next actions are ready. Review the changes and action plan below.'));document.getElementById('decision-outcome')?.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}catch(e){notify(e.message);}
 }
 function renderOutcome(host,log){
  const s=session.state,plan=actionPlan(session,lang),before=log.stateBefore,after=log.stateAfter;
@@ -187,3 +215,5 @@ if(params.get('source')==='module3'&&source){if(session?.history.length){render(
 else if(session){activeRole=session.productRole||({'ceo':'CEO','finance':'CFO','growth':'Growth','product':'Product'})[session.experience?.role]||'CEO';enter();}
 else if(isDemo){session=createSession(demoState());session.experience={role:'ceo'};save();enter();track('demo_start');}
 else setup(source&&params.get('source')==='module3'?source:null);
+if(!isDemo&&params.get('mode')==='quick'){try{const q=sessionStorage.getItem('asnm:entry-question');if(q){content.prepend(el('p',{class:'p-notice',text:t('나의 질문: ','Your question: ')+q.slice(0,600)}));sessionStorage.removeItem('asnm:entry-question');}}catch{}}
+
