@@ -27,11 +27,17 @@ const goModule=(id,question='')=>{
  if(question){const host=document.getElementById('page-'+id);host.querySelector('.p-entry-question')?.remove();host.prepend(el('p',{class:'p-entry-question',text:t('나의 질문: ','Your question: ')+question}));if(id==='m1')document.getElementById('ai-trend-query').value=question;}
 };
 const back=()=>button(t('← 처음으로','← Back to start'),()=>open('home'),'p-entry-back');
+const entryChoice=(label,index,fn,href='')=>{
+ const node=href?el('a',{class:'p-entry-choice',id:'demo-start',href,onclick:fn}):button('',fn,'p-entry-choice');
+ node.append(el('span',{class:'p-entry-label',text:label}),el('span',{class:'p-entry-art p-entry-art-'+index,'aria-hidden':'true'}));
+ return node;
+};
 home.prepend(el('main',{class:'p-entry-shell p-start'},el('p',{class:'p-kicker',text:'ASNM · STARTUP DECISION SIMULATOR'}),screenTitle(t('당신의 스타트업에서\n지금 무엇이 가장 궁금한가요?','What is your next\nstartup question?')),el('div',{class:'p-entry-choices'},
- button(t('전체 창업여정 선택하기','Explore the full journey'),()=>{track('full_journey_start');open('journey');},'p-entry-choice'),
- button(t('지금 고민부터 시작하기','Start with your question'),()=>open('questions'),'p-entry-choice'),
- el('a',{class:'p-entry-choice',id:'demo-start',href:world('','demo'),text:t('3분 데모','3-minute demo'),onclick:()=>track('demo_start')})
+ entryChoice(t('전체 창업여정 선택하기','Explore the full journey'),0,()=>{track('full_journey_start');open('journey');}),
+ entryChoice(t('지금 고민부터 시작하기','Start with your question'),1,()=>open('questions')),
+ entryChoice(t('3분 데모','3-minute demo'),2,()=>track('demo_start'),world('','demo'))
 )));
+home.append(el('footer',{class:'p-maker-credit'},el('span',{},'Created by ',el('strong',{text:'If Lab'}))));
 journey.append(el('main',{class:'p-entry-shell'},back(),el('p',{class:'p-kicker',text:'YOUR STARTUP JOURNEY'}),screenTitle(t('당신의 창업 여정, 네 번의 발견.','Four steps for your startup journey.')),el('div',{class:'p-module-grid'},...moduleInfo.map(([id,icon,title,,desc],i)=>{const b=button('',()=>goModule(id),'p-module-card');b.dataset.module=id;b.append(el('small',{text:`MODULE 0${i+1}`}),el('span',{class:'p-module-icon','aria-hidden':'true',text:icon}),el('h2',{text:title}),el('p',{text:desc}),el('span',{class:'p-module-arrow','aria-hidden':'true',text:'→'}));return b;})),el('section',{class:'p-journey-prompt'},el('h2',{text:t('모듈 1부터 시작하시겠습니까?','Start with Module 1?')}),button(t('네, 시장 탐색부터 시작할게요 →','Yes, start with market discovery →'),()=>open('m1'),'p-primary'))));
 const questionInput=el('textarea',{id:'entry-question',rows:'2',maxlength:'600',required:true,placeholder:t('예: 개발자를 채용하면 자금이 얼마나 버틸까요?','Example: How would hiring affect my runway?')});
 const routeStatus=el('p',{id:'question-route-status',role:'status','aria-live':'polite'});
@@ -52,7 +58,7 @@ const labels=[t('홈','Home'),t('시장 발견','Discover'),t('창업자 이해'
 document.querySelectorAll('.nav-btn').forEach((b,i)=>{if(labels[i])b.textContent=labels[i];});
 const nav=el('div',{class:'p-journey-nav','aria-label':t('창업 여정','Founder journey')},...[[t('시장 →','Market →'),'m1'],[t('창업자 →','Founder →'),'m2'],[t('사업 가정 →','Venture assumptions →'),'m3a'],[t('디지털 트윈 ↗','Digital twin ↗'),'m4']].map(([label,id])=>button(label,()=>window.showPage(id))));
 document.querySelector('nav')?.after(nav);
-const update=()=>{const active=document.querySelector('.page.active'),entry=[home,journey,questions].includes(active);document.body.classList.toggle('asnm-home-active',entry);nav.hidden=entry;document.body.classList.toggle('asnm-journey-active',!entry);nav.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('current',active?.id===['page-m1','page-m2','page-m3a','page-m4'][i]));};
+const update=()=>{const active=document.querySelector('.page.active'),entry=[home,journey,questions].includes(active);document.body.classList.toggle('asnm-home-active',entry);document.body.classList.toggle('asnm-space-active',active===home);nav.hidden=entry;document.body.classList.toggle('asnm-journey-active',!entry);nav.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('current',active?.id===['page-m1','page-m2','page-m3a','page-m4'][i]));};
 const entryObserver=new MutationObserver(update);document.querySelectorAll('.page').forEach(p=>entryObserver.observe(p,{attributes:true,attributeFilter:['class']}));update();
 window.addEventListener('asnm:module3-complete',()=>track('module_complete'));
 // Keep original Founder DNA answers/rubric, explain the scope without diagnostic claims.

@@ -1,5 +1,16 @@
 # Focused landing and guided demo — 2026-10-09
 
+## Approved space-art follow-up
+
+After visual approval, the landing now uses a restrained space background and three matching illustrations **below** the entry labels: a journey rocket, a decision compass and a demo guide robot. The HTML footer reads **Created by If Lab**. Illustrations share their button's click/keyboard destination; none of the actual labels or controls are baked into an image. The main hero remains one question and three choices.
+
+The two generated, WebP-encoded assets total 503,630 bytes. Their source prompts and dimensions are documented in [assets/README.md](assets/README.md). Both language routes share these assets. The light theme and reduced-motion behavior are retained; failed artwork requests do not block navigation.
+
+Executed after this follow-up: **33 unit/integration tests**, **11 entry/demo browser groups**, and **11 new artwork browser groups** all passed. Desktop and mobile screenshots were visually inspected. The earlier 15-group full-workspace regression below was performed before this presentation-only artwork addition; it was not rerun for the image addition.
+
+![Approved space landing implemented in HTML](docs/space-home-desktop.webp)
+![Responsive mobile implementation](docs/space-home-mobile.webp)
+
 This revision follows the founder's request to simplify the first experience. It is based on deployed V4 commit `7cb2af68912489e7840cb728e4229fd153363556`.
 
 ## What changed
