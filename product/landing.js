@@ -3,8 +3,9 @@ import {StateStore} from '../module4/state/StateStore.js';
 import {el} from '../module4/ui/dom.js';
 import {track} from './telemetry.js';
 import {routeQuestion} from './question-router.js';
+import {installTrusted} from './trusted/integrate.js';
 const lang=document.documentElement.lang==='en'?'en':'ko',t=(ko,en)=>lang==='ko'?ko:en;
-const root=new URL('../',import.meta.url),world=(problem='',mode='')=>new URL(`module4/?lang=${lang}${problem?'&problem='+problem:''}${mode?'&mode='+mode:''}`,root).href;
+const root=new URL('../',import.meta.url),world=(problem='',mode='')=>mode==='demo'?new URL(`module4/?lang=${lang}&mode=demo`,root).href:new URL(`product/trusted/index.html?lang=${lang}&mode=world${problem?'&problem='+problem:''}`,root).href;
 const home=document.getElementById('page-home');
 const button=(text,fn,cls='')=>el('button',{type:'button',class:cls,text,onclick:fn});
 // Keep the original research and module markup intact; the entry screens replace only its presentation.
@@ -24,7 +25,7 @@ const goModule=(id,question='')=>{
  track('quick_start');
  if(id==='m4') {if(question)try{sessionStorage.setItem('asnm:entry-question',question);}catch{}location.assign(world('priority','quick'));return;}
  open(id);
- if(question){const host=document.getElementById('page-'+id);host.querySelector('.p-entry-question')?.remove();host.prepend(el('p',{class:'p-entry-question',text:t('나의 질문: ','Your question: ')+question}));if(id==='m1')document.getElementById('ai-trend-query').value=question;}
+ if(question){const host=document.getElementById('page-'+id);host.querySelector('.p-entry-question')?.remove();host.prepend(el('p',{class:'p-entry-question',text:t('나의 질문: ','Your question: ')+question}));if(id==='m1'){document.getElementById('ai-trend-query').value=question;const topic=document.getElementById('tw-topic');if(topic){topic.value=question;topic.dispatchEvent(new Event('input'));}}}
 };
 const back=()=>button(t('← 처음으로','← Back to start'),()=>open('home'),'p-entry-back');
 const entryChoice=(label,index,fn,href='')=>{
@@ -77,3 +78,4 @@ const reflectionHost=document.getElementById('founder-result');
 if(reflectionHost){
  const reflection=el('section',{class:'asnm-product p-card p-stack',style:'text-align:left'},el('h3',{text:t('유형보다, 다음 결정에 사용할 질문','Use the answers to question your next decision')}),el('div',{},el('b',{text:'Strength'}),el('p',{text:t('반복해서 고른 접근을 실제로 잘했던 경험과 연결하세요. 빠른 실행, 분석, 협업 중 무엇이 도움이 되었나요?','Connect recurring choices to an experience where you performed well. Did execution, analysis or collaboration help?')})),el('div',{},el('b',{text:'Watch-outs'}),el('p',{text:t('내 생각을 지지하는 증거만 찾고 있나요? 고객 검증 전에 비용을 크게 늘리려 하나요?','Are you seeking only confirming evidence? Are you scaling spending before validating customers?')})),el('div',{},el('b',{text:'Under pressure'}),el('p',{text:t('시간이나 자금이 부족할 때 기능 개발, 조사, 협상 중 무엇을 먼저 선택할지 점검하세요. 결과는 자기 점검 자료이며 심리 진단이 아닙니다.','When time or cash is scarce, review whether you default to building, researching or negotiating. These questions are self-reflection, not a psychological diagnosis.')})));reflectionHost.append(reflection);
 }
+installTrusted();

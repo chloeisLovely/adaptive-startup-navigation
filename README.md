@@ -12,13 +12,24 @@ the output that matters.
 
 ---
 
+## V5.1 trusted venture workspace
+
+The approved space landing and three-minute demo are preserved. Inside the journey, a shared project now connects unrestricted topic exploration, an original multidimensional founder reflection, five-step venture setup, ten management missions and an integrated decision report. The original detailed tools, scores, research and seeded engines remain available.
+
+- [Implementation, tested routes and remaining limits](product/trusted/RELEASE.md)
+- [Assessment design, sources and rights](product/trusted/RESEARCH.md)
+- [Decision rules, costs, units and provenance](product/trusted/ASSUMPTIONS.md)
+- [Open the workspace](https://chloeislovely.github.io/adaptive-startup-navigation/product/trusted/index.html?mode=builder&lang=en)
+
+Market suggestions are explicitly unverified local hypotheses. Founder reflection is an original exploratory instrument, not a validated psychological diagnosis. AI advice is optional and cannot alter engine calculations.
+
 ## v4 product experience
 
 The redesigned entry offers a full founder journey, question-first routes and an input-free AI education demo. Decision World connects one decision to a six-role team discussion, a reproducible monthly simulation, same-seed comparisons, a decision journal and a practical action plan. The original scoring and simulation engines are retained.
 
 - [Implementation, files and user flows](product/RELEASE.md)
 - [Executed validation and deployment limits](product/VALIDATION.md)
-- [Try the demo](https://chloeislovely.github.io/adaptive-startup-navigation/module4/?mode=demo) after this PR is merged to main
+- [Try the demo](https://chloeislovely.github.io/adaptive-startup-navigation/module4/?mode=demo)
 - Classic V3 remains at `module4/immersive.html`.
 
 ## Status
