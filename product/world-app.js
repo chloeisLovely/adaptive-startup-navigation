@@ -1,3 +1,4 @@
+import {installShell} from './v6/shell.js';
 import {renderGuidedDemo} from './guided-demo.js';
 import {el,money,fmt,download} from '../module4/ui/dom.js';
 import {clone,validateState} from '../module4/state/ASNMState.js';
@@ -5,17 +6,17 @@ import {StateStore,SESSION_KEY,createSession,decodeImport} from '../module4/stat
 import {simulateMonth} from '../module4/simulation/SimulationEngine.js';
 import {decisions} from '../module4/simulation/DecisionEngine.js';
 import {reportMarkdown} from '../module4/ui/report.js';
-import {demoState,suggestState,decisionMoment,choicesFor,compareScenarios,actionPlan,journalInsight,morningBrief,discussion,VERSION,tr,roles} from './experience.js';
+import {demoStateV6 as demoState,demoMomentV6,suggestState,decisionMoment,choicesFor,compareScenarios,actionPlan,journalInsight,morningBrief,discussion,VERSION,tr,roles} from './experience.js';
 import {adviseTeam} from './agents.js';
 import {copilotView,strategyFromText} from './copilot.js';
 import {track} from './telemetry.js';
 const params=new URLSearchParams(location.search),lang=params.get('lang')==='en'?'en':'ko',t=(ko,en)=>tr(lang,ko,en),isDemo=params.get('mode')==='demo';
 document.documentElement.lang=lang;document.title=t('스타트업 결정 실험 · ASNM','Startup Decision World · ASNM');
-const sessionKey=SESSION_KEY+(isDemo?':demo':''),root=new URL('../',import.meta.url),home=new URL(lang==='en'?'en/':'',root).href;
+const sessionKey=SESSION_KEY+(isDemo?':demo:v6':''),root=new URL('../',import.meta.url),home=new URL(lang==='en'?'en/':'',root).href;
 const app=document.getElementById('app');let session=null,source=null,world=null,worldLoading=false,selected=null,team=null,token=0,worldToken=0,busy=false,conflict=false,lastSaved=null,storageOK=true,currentView='decision',speaking=null,dialogueTimer=null,activeRole='CEO',useAI=false;
 let babylonLoading=null;
 let guidedDemo=isDemo&&params.get('view')!=='workspace',demoStage='intro',demoTurn=0;
-const demoScreenKey='asnm:guided-demo:v1';
+const demoScreenKey='asnm:guided-demo:v6';
 function rememberDemo(){try{sessionStorage.setItem(demoScreenKey,JSON.stringify({stage:demoStage,turn:demoTurn,month:session.state.simulation.currentMonth}));}catch{}}
 function demoMove(stage){demoStage=stage;rememberDemo();render();window.scrollTo(0,0);}
 function leaveDemo(view){guidedDemo=false;document.body.classList.remove('p-guided-demo');const u=new URL(location);u.searchParams.set('view','workspace');history.replaceState(null,'',u);currentView=view;if(view==='compare')track('compare_scenario');render();}
@@ -29,10 +30,10 @@ async function chooseDemo(option){
 function showGuidedDemo(){
  document.body.classList.add('p-guided-demo');
  const draft=session.productDraft;
- if(!selected&&draft?.optionId){selected=decisionMoment(session.state).options.find(o=>o.id===draft.optionId)||null;if(selected)team=discussion(session.state,selected,lang,draft.reason);}
+ if(!selected&&draft?.optionId){selected=demoMomentV6(session.state).options.find(o=>o.id===draft.optionId)||null;if(selected)team=discussion(session.state,selected,lang,draft.reason);}
  if(['discussion','summary'].includes(demoStage)&&(!selected||!team))demoStage='choice';
  if(['result','action'].includes(demoStage)&&!session.history.length)demoStage='intro';
- renderGuidedDemo({host:content,session,lang,stage:demoStage,turnIndex:demoTurn,selected,team,busy,conflict,home,startOwn:new URL('module4/?lang='+lang+'&mode=quick',root).href,
+ renderGuidedDemo({host:content,session,lang,stage:demoStage,turnIndex:demoTurn,selected,team,busy,conflict,home,startOwn:new URL('product/trusted/index.html?lang='+lang+'&mode=builder',root).href,onSpeech:(message)=>showBubble('Founder',message),
  onStage:demoMove,onTurn:(index,turn)=>{demoTurn=index;rememberDemo();showBubble(turn.role,turn.text);},onChoose:chooseDemo,onCommit:commit,onWorkspace:leaveDemo,
  onRestart:()=>replaceGuard(()=>{session=createSession(demoState());activeRole='CEO';selected=null;team=null;save();demoTurn=0;demoMove('intro');}),
  mountWorld:(canvas,shell,bubble)=>loadWorld(canvas,shell,bubble)});
@@ -54,6 +55,7 @@ const content=el('main',{class:'p-wrap p-app',id:'product-content'});
 const file=el('input',{type:'file',accept:'.json,application/json','aria-label':t('세션 JSON 가져오기','Import session JSON'),style:'display:none',onchange:async()=>{try{const f=file.files[0];if(!f)return;if(f.size>8*1024*1024)throw new Error(t('8MB 이하 파일을 선택하세요.','Select a file under 8 MB.'));const data=decodeImport(await f.text());replaceGuard(()=>{session=data.session||createSession(data.state);activeRole=session.productRole||'CEO';save();enter();});}catch(e){notify(e.message);}finally{file.value='';}}});
 const header=el('header',{class:'p-header'},el('a',{class:'p-brand',href:home},el('span',{class:'p-brand-mark',text:'A'}),'ASNM',el('span',{class:'p-small',style:'font-weight:400;margin-left:12px',text:'Decision World'})),el('div',{class:'p-row'},btn(t('새 실험','New venture'),()=>replaceGuard(()=>setup())),btn(t('가져오기','Import'),()=>file.click()),btn(t('저장','Export'),()=>exportSession()),link(lang==='ko'?'EN':'한국어',(()=>{const u=new URL(location);u.searchParams.set('lang',lang==='ko'?'en':'ko');return u.href;})())));
 app.append(header,file,el('div',{class:'p-wrap'},status),content,el('footer',{class:'p-footer'},el('span',{text:`ASNM · v${VERSION} · ${t('의사결정 지원 파일럿','Decision-support pilot')}`}),el('div',{class:'p-row'},link(t('모델 가정','Model assumptions'),new URL('module4/ASSUMPTIONS.md',root).href),link(t('기존 몰입형 화면','Classic immersive view'),`./immersive.html?lang=${lang}`),btn(t('피드백','Feedback'),feedback))));
+installShell(lang);
 function notify(message){status.textContent=message;}
 function save(){
  if(conflict)return false;
@@ -71,7 +73,7 @@ function persistDraft(){
  session.productDraft=draft;
  save();
 }
-function disposeWorld(){token++;worldToken++;clearTimeout(dialogueTimer);if(world){world.dispose();world=null;}worldLoading=false;}
+function disposeWorld(){content.querySelectorAll('.v6-advisor').forEach(n=>n.dispose?.());token++;worldToken++;clearTimeout(dialogueTimer);if(world){world.dispose();world=null;}worldLoading=false;}
 function replaceGuard(fn){
  if(!session?.history.length){fn();return;}
  const d=el('dialog',{'aria-label':t('새 실험 시작','Start a new experiment')},el('h2',{text:t('현재 기록을 보관하시겠어요?','Keep your current record?')}),el('p',{text:t('새 실험을 시작하면 이 브라우저의 현재 세션이 바뀝니다. 데모와 내 사업 기록은 따로 보관됩니다.','A new experiment replaces this browser session. Demo and personal venture records are stored separately.')}),el('div',{class:'p-row'},btn(t('JSON 저장','Export JSON'),exportSession),btn(t('새 실험 시작','Start new'),()=>{d.close();d.remove();disposeWorld();fn();}),btn(t('취소','Cancel'),()=>{d.close();d.remove();})));document.body.append(d);d.showModal();

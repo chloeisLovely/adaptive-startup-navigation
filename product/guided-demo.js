@@ -1,9 +1,10 @@
+import {advisorPanel} from './v6/advice.js';
 import {el,money,fmt} from '../module4/ui/dom.js';
-import {decisionMoment,actionPlan,choicesFor} from './experience.js';
+import {demoMomentV6 as decisionMoment,actionPlan,choicesFor} from './experience.js';
 import {decisions} from '../module4/simulation/DecisionEngine.js';
 
 /** A presentation-only walkthrough. The existing engine remains the sole state writer. */
-export function renderGuidedDemo({host,session,lang,stage,turnIndex,selected,team,busy,conflict,onStage,onTurn,onChoose,onCommit,onWorkspace,onRestart,mountWorld,home,startOwn}){
+export function renderGuidedDemo({host,session,lang,stage,turnIndex,selected,team,busy,conflict,onStage,onTurn,onChoose,onCommit,onWorkspace,onRestart,mountWorld,home,startOwn,onSpeech=()=>{}}){
  const t=(ko,en)=>lang==='ko'?ko:en,s=session.state;
  const button=(text,fn,id='',primary=false)=>el('button',{type:'button',text,onclick:fn,id,class:primary?'p-primary':''});
  const stages=['intro','choice','discussion','summary','result','action'];
@@ -14,7 +15,8 @@ export function renderGuidedDemo({host,session,lang,stage,turnIndex,selected,tea
  if(conflict){heading('SESSION CHANGED',t('다른 탭에서 데모가 바뀌었습니다.','The demo changed in another tab.'),t('새로고침하면 저장된 결정부터 이어집니다.','Reload to continue from the saved decision.'));shell.append(button(t('새로고침','Reload'),()=>location.reload()));return;}
  if(stage==='intro'){
   heading('MISSION 01 / CEO',t('오늘부터 당신이 CEO입니다.','You’re the CEO today.'),t('AI 교육 스타트업 LearnLoop AI. 제품을 더 만들까요, 고객부터 만날까요? 다음 한 달의 방향을 정해보세요.','Welcome to LearnLoop AI, an AI education startup. Build more product or meet more customers? Set the direction for one month.'));
-  shell.append(el('div',{class:'p-demo-emblem','aria-hidden':'true',text:'A'}),el('div',{class:'p-demo-stats'},...[[t('남은 자금 기간','Runway'),`${fmt(s.venture.runway)} ${t('개월','months')}`],[t('팀','Team'),`${s.venture.teamSize} ${t('명','people')}`],[t('제품 완성도','Product readiness'),`${fmt(s.venture.productProgress)} / 100`]].map(([label,value])=>el('div',{},el('small',{text:label}),el('b',{text:value})))),button(t('출근하기 →','Enter the office →'),()=>onStage('choice'),'demo-begin',true),el('p',{class:'p-notice',text:t('예시 회사 · 규칙 기반 팀 자문 · 결과는 가정에 따른 시뮬레이션입니다.','Sample venture · rule-based advisors · outcomes are simulations of assumptions.')}));
+  const office=el('section',{class:'p-world p-demo-world'}),canvas=el('canvas',{id:'living-world',tabindex:'0','aria-label':t('CEO의 첫 출근','CEO arrival')}),bubble=el('div',{id:'agent-bubble',class:'p-bubble'});office.append(canvas,bubble);shell.append(office);mountWorld(canvas,office,bubble);
+  shell.append(el('div',{class:'p-demo-stats'},...[[t('보유 현금','Cash'),money(s.venture.cash,s.currency)],[t('월 운영비','Monthly costs'),money(s.venture.monthlyBurn,s.currency)],[t('월 반복매출','MRR'),money(s.venture.mrr,s.currency)],[t('남은 자금 기간','Runway'),`${fmt(s.venture.runway)} ${t('개월','months')}`],[t('팀','Team'),`${s.venture.teamSize} ${t('명','people')}`],[t('제품 완성도','Product readiness'),`${fmt(s.venture.productProgress)} / 100`]].map(([label,value])=>el('div',{},el('small',{text:label}),el('b',{text:value})))),button(t('출근하기 →','Enter the office →'),()=>onStage('choice'),'demo-begin',true),el('p',{class:'p-notice',text:t('예시 회사 · 규칙 기반 팀 자문 · 결과는 가정에 따른 시뮬레이션입니다.','Sample venture · rule-based advisors · outcomes are simulations of assumptions.')}));
  }else if(stage==='choice'){
   heading('YOUR FIRST MOVE',t('다음 한 달, 무엇을 먼저 할까요?','What is your first move?'),t('하나를 고르면 팀이 회의실에 모입니다. 아직 실행되지는 않습니다.','Choose a move to bring the team together. Nothing is committed yet.'));
   const icons={developer:'⌘',marketer:'↗',discover:'◎'};
@@ -26,6 +28,7 @@ export function renderGuidedDemo({host,session,lang,stage,turnIndex,selected,tea
   let index=Math.min(Math.max(turnIndex||0,0),team.turns.length-1);
   const draw=()=>{const turn=team.turns[index];onTurn(index,turn);talk.replaceChildren(el('div',{class:'p-row p-between'},el('b',{text:`${turn.role} → ${turn.replyTo}`}),el('span',{class:'p-small',text:`${index+1} / ${team.turns.length}`})),el('p',{class:'p-turn',text:turn.text}),el('div',{class:'p-demo-controls'},button(index?t('← 이전 의견','← Previous'):t('← 다른 선택','← Change choice'),()=>{if(index){index--;draw();}else onStage('choice');}),button(index<team.turns.length-1?t('다음 팀원의 의견 →','Next viewpoint →'):t('내 결정 정리하기 →','Review my decision →'),()=>{if(index<team.turns.length-1){index++;draw();}else onStage('summary');},'demo-next-turn',true)));};draw();
   shell.append(el('p',{id:'advisor-mode',class:'p-notice',text:t('규칙 기반 팀 자문 · 실제 AI 호출 없이 체험합니다.','Rule-based team advice · no live AI call in this walkthrough.')}));
+  shell.append(advisorPanel({lang,mode:'world',getProject:()=>session,onSpeech}));
  }else if(stage==='summary'){
   heading('FOUNDER DECIDES',t(`「${selected.ko}」, 실행할까요?`,`Commit “${selected.en}”?`),t('팀은 조언합니다. 당신이 결정하면 엔진이 한 달의 변화를 계산합니다.','The team advises. Your decision lets the engine simulate one month.'));
   shell.append(el('div',{class:'p-demo-summary'},...Object.entries(team.summary).map(([key,text])=>el('div',{},el('small',{text:({agreement:t('함께 동의한 점','Agreement'),disagreement:t('갈리는 의견','Disagreement'),tradeoff:t('가장 큰 맞교환','Trade-off'),question:t('스스로에게 물어볼 질문','Your question')})[key]}),el('p',{text})))),el('details',{},el('summary',{text:t('계산에 쓰일 선택과 가정','Choices used by the engine')}),el('ul',{},...Object.entries(choicesFor(s,selected)).map(([category,action])=>el('li',{text:decisions[category].find(d=>d[0]===action)[lang==='ko'?1:2]})))),el('div',{class:'p-demo-controls'},button(t('← 선택 바꾸기','← Change choice'),()=>onStage('choice')),button(t('결정하고 한 달 보내기 →','Commit and advance one month →'),onCommit,'commit-decision',true)));

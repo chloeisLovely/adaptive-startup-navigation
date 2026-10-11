@@ -1866,10 +1866,10 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="glass-card" style="max-width:1000px;margin:2.2rem auto 0;padding:1.5rem 1.7rem;text-align:left;">
       <div style="font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:2px;color:var(--cyan);margin-bottom:0.9rem;">
-        RESEARCH &amp; VALIDATION
+        HISTORICAL RESEARCH CLAIMS · VERIFICATION REQUIRED
       </div>
       <div style="font-size:0.85rem;line-height:1.85;color:var(--text2);">
-        Preliminary evidence supports the proposed <b>adoption pathway</b>, tested with structural
+        <b>V6 audit: underlying data and validation reports were not located in the repository. The following are historical claims pending verification.</b><br>Preliminary evidence supports the proposed <b>adoption pathway</b>, tested with structural
         equation modeling in a Korean sample (n=190).
         Cognitive-bias awareness (CBA) drives perceived usefulness (PU), which drives adoption
         intention (AI) — indirect effect .785, 95% CI [.679, .903]; PU→AI β=.949, p&lt;.001.
@@ -2758,7 +2758,7 @@ input[type=range]::-webkit-slider-thumb{
     </div>
 
     <div class="notify-section">
-      <button class="notify-btn" onclick="notifyMe()">Get notified at launch →</button>
+      <button class="notify-btn" onclick="notifyMe()">Contact & feedback →</button>
     </div>
 
     <div class="roadmap-box">
@@ -2867,54 +2867,7 @@ input[type=range]::-webkit-slider-thumb{
 </div>
 
 <!-- 🌐 M4 알림 신청 모달 -->
-<div class="notify-modal" id="notify-modal">
-  <div class="notify-modal-inner">
-    <button class="notify-modal-close" onclick="closeNotifyModal()" aria-label="Close">✕</button>
-    
-    <div class="notify-modal-title">🚀 Get notified at launch</div>
-    <div class="notify-modal-subtitle">
-      Be the first to hear when the digital twin engine ships.<br>
-      💜 Beta testers get early access.
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-name">Name <span class="req">*</span></label>
-      <input type="text" id="notify-name" placeholder="Jane Doe" maxlength="30">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-email">Email <span class="req">*</span></label>
-      <input type="email" id="notify-email" placeholder="example@email.com" maxlength="100">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-stage">Current stage</label>
-      <select id="notify-stage">
-        <option value="">Prefer not to say</option>
-        <option value="Pre-founding">Pre-founding (still exploring)</option>
-        <option value="Validating">Validating (MVP or market research)</option>
-        <option value="Early operations">Early operations (launched)</option>
-        <option value="Growth">Growth (steady revenue)</option>
-      </select>
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-industry">Sector (optional)</label>
-      <input type="text" id="notify-industry" placeholder="e.g. AI/SaaS, healthcare, edtech..." maxlength="50">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-memo">Anything to add (optional)</label>
-      <textarea id="notify-memo" placeholder="Which part are you most interested in?" maxlength="200"></textarea>
-    </div>
-    
-    <div id="notify-status" class="notify-status"></div>
-    
-    <button id="notify-submit-btn" class="notify-submit-btn" onclick="submitNotify()">
-      🚀 Notify me
-    </button>
-  </div>
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
@@ -3646,6 +3599,7 @@ const founderTypes = {
 };
 
 let quizAnswers = [];
+window.getFounderAnswers=()=>[...quizAnswers];
 let currentQuestion = 0;
 
 function selectOption(btn, type){
@@ -4450,81 +4404,9 @@ function resetSimulator(){
 // ============================================
 // 🌐 M4 알림 신청 (Google Apps Script Webhook)
 // ============================================
-const NOTIFY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec';
-
-function notifyMe(){
-  document.getElementById('notify-modal').classList.add('show');
-  setTimeout(() => document.getElementById('notify-name').focus(), 200);
-}
-
-function closeNotifyModal(){
-  document.getElementById('notify-modal').classList.remove('show');
-  document.getElementById('notify-status').innerHTML = '';
-  document.getElementById('notify-status').className = 'notify-status';
-}
-
-async function submitNotify(){
-  const name = document.getElementById('notify-name').value.trim();
-  const email = document.getElementById('notify-email').value.trim();
-  const stage = document.getElementById('notify-stage').value;
-  const industry = document.getElementById('notify-industry').value.trim();
-  const memo = document.getElementById('notify-memo').value.trim();
-  
-  const status = document.getElementById('notify-status');
-  const btn = document.getElementById('notify-submit-btn');
-  
-  if(!name || !email){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ Name and email are required.';
-    return;
-  }
-  
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ That email address does not look valid.';
-    return;
-  }
-  
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loading-spinner" style="display:inline-block;width:14px;height:14px;"></span> Sending...';
-  status.className = 'notify-status';
-  status.textContent = '';
-  
-  try {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('stage', stage);
-    formData.append('industry', industry);
-    formData.append('memo', memo);
-    formData.append('timestamp', new Date().toISOString());
-    
-    await fetch(NOTIFY_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: formData
-    });
-    
-    status.className = 'notify-status ok';
-    status.innerHTML = '✅ You are on the list. We will email you when it ships.';
-    
-    setTimeout(() => {
-      closeNotifyModal();
-      document.getElementById('notify-name').value = '';
-      document.getElementById('notify-email').value = '';
-      document.getElementById('notify-stage').value = '';
-      document.getElementById('notify-industry').value = '';
-      document.getElementById('notify-memo').value = '';
-    }, 2500);
-    
-  } catch(err){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ Could not send: ' + err.message;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '🚀 Notify me';
-  }
-}
+function notifyMe(){location.assign('../product/v6/feedback.html?lang=en');}
+function closeNotifyModal(){document.getElementById('notify-modal')?.classList.remove('show');}
+function submitNotify(){notifyMe();}
 
 // ============================================
 // 📋 최종 보고서

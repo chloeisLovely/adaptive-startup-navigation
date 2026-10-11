@@ -66,3 +66,8 @@ export function journalInsight(session,lang='ko'){
  const gap=valid.reduce((sum,r)=>sum+r.expectedGrowth-r.modeledGrowth,0)/valid.length;
  return tr(lang,`${valid.length}개 결정에서 예상 MRR 성장률은 모델 결과보다 평균 ${Math.abs(gap).toFixed(1)}%p ${gap>=0?'높았습니다':'낮았습니다'}. 실제 시장 결과나 성격 진단을 의미하지 않습니다.`,`Across ${valid.length} decisions, expected MRR growth averaged ${Math.abs(gap).toFixed(1)} pp ${gap>=0?'above':'below'} modeled growth. This is not actual market performance or a personality diagnosis.`);
 }
+
+
+/** V6 demo starts independently; archived V4 sessions retain their original state. */
+export function demoStateV6(){const s=demoState();Object.assign(s.venture,{cash:30000000,monthlyBurn:3000000,mrr:0,teamSize:1,stage:'mvp'});s.operations.marketingBudget=450000;s.provenance.source='product-demo-v6';return validateState(s);}
+export function demoMomentV6(s){const m=decisionMoment(s);return {...m,options:m.options.map(o=>o.id==='marketer'?{...o,ko:'마케팅 확대',en:'Increase marketing',changes:{marketing:'increase'},whyKo:'채용 없이 고객 유입과 비용의 차이를 살펴봅니다.',whyEn:'Explore acquisition and spending without hiring.'}:o)};}

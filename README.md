@@ -1,3 +1,9 @@
+> **Approved backend deployment completed (2026-10-12):** Supabase schema and feedback function are live, actual receipt/access checks passed, and the operator email is registered. Owner Auth signup/verification and V6 frontend release remain pending. [Current deployment status](backend/asnm/DEPLOYMENT.md). Older blocked-deployment entries below are retained as audit history.
+
+> **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](backend/asnm/SERVICE_RECOVERY.md).
+
+> **V6 review branch — not publicly deployed.** Approved founder characters, cosmic shell, contextual advice, local PDF and anonymous feedback/admin scaffolding are implemented. Live AI replies are verified; production feedback/admin deployment and operator designation remain open. See [release status](product/v6/RELEASE.md), [architecture](product/v6/ARCHITECTURE.md), [validation](product/v6/VALIDATION.md) and [beta guide](product/v6/BETA_GUIDE.md). Main merge and public deployment require final approval.
+
 # ASNM — Adaptive Startup Navigation Model
 
 **Test your startup decisions before you spend real money.**
@@ -38,8 +44,8 @@ The v4 experience is a **decision-support product pilot**, with explicit researc
 
 | Holds up | Doesn't yet |
 |---|---|
-| Adoption pathway validated (n=190, SEM). Indirect effect .785, 95% CI [.679, .903] | No predictive validity for venture survival — the score is a rubric, not a trained model |
-| Usability pilot, 15 participants, SUS 82.2 | Founder typology has no psychometric validation |
+| Historical claim: n=190, SEM; underlying data/report not located in repository (verification required) | No predictive validity for venture survival — the score is a rubric, not a trained model |
+| Historical claim: 15-person pilot, SUS 82.2; report not located (verification required) | Founder typology has no psychometric validation |
 | Full journey runs end to end | Decision-quality improvement untested |
 | Scoring rubric published in-product; deterministic | Single-market sample (Korea); cross-market replication is open |
 
@@ -106,6 +112,8 @@ is the real backstop.
 ---
 
 ## Research
+
+**V6 audit (2026-10-11):** the statements below are retained as historical project claims. Raw data, full thesis and pilot report were not located in this repository. Do not treat the reported statistics as independently verified evidence. See [research audit](product/v6/RESEARCH_AUDIT.md).
 
 Developed as an MSTM thesis at aSSIST. The empirical study tested whether
 cognitive-bias awareness drives perceived usefulness, which in turn drives

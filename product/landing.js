@@ -1,8 +1,10 @@
-import {copilotView} from './copilot.js';
+import {installShell} from './v6/shell.js';
+import {advisorPanel} from './v6/advice.js';
 import {StateStore} from '../module4/state/StateStore.js';
 import {el} from '../module4/ui/dom.js';
 import {track} from './telemetry.js';
 import {routeQuestion} from './question-router.js';
+import {setEntryQuestion,getActiveProject,saveActiveProject} from './trusted/workspace.js';
 import {installTrusted} from './trusted/integrate.js';
 const lang=document.documentElement.lang==='en'?'en':'ko',t=(ko,en)=>lang==='ko'?ko:en;
 const root=new URL('../',import.meta.url),world=(problem='',mode='')=>mode==='demo'?new URL(`module4/?lang=${lang}&mode=demo`,root).href:new URL(`product/trusted/index.html?lang=${lang}&mode=world${problem?'&problem='+problem:''}`,root).href;
@@ -22,8 +24,9 @@ home.after(journey,questions);
 const screenTitle=text=>el('h1',{tabindex:'-1',text});
 const open=id=>window.showPage(id);
 const goModule=(id,question='')=>{
- track('quick_start');
- if(id==='m4') {if(question)try{sessionStorage.setItem('asnm:entry-question',question);}catch{}location.assign(world('priority','quick'));return;}
+ track('quick_start');if(question)try{setEntryQuestion(question);}catch(e){alert(t('질문 저장 실패: ','Question could not be saved: ')+e.message);return;}
+ if(question)try{sessionStorage.setItem('asnm:entry-question',question);}catch{}
+ if(id==='m4') {location.assign(world('priority','quick'));return;}
  open(id);
  if(question){const host=document.getElementById('page-'+id);host.querySelector('.p-entry-question')?.remove();host.prepend(el('p',{class:'p-entry-question',text:t('나의 질문: ','Your question: ')+question}));if(id==='m1'){document.getElementById('ai-trend-query').value=question;const topic=document.getElementById('tw-topic');if(topic){topic.value=question;topic.dispatchEvent(new Event('input'));}}}
 };
@@ -33,7 +36,7 @@ const entryChoice=(label,index,fn,href='')=>{
  node.append(el('span',{class:'p-entry-label',text:label}),el('span',{class:'p-entry-art p-entry-art-'+index,'aria-hidden':'true'}));
  return node;
 };
-home.prepend(el('main',{class:'p-entry-shell p-start'},el('p',{class:'p-kicker',text:'ASNM · STARTUP DECISION SIMULATOR'}),screenTitle(t('당신의 스타트업에서\n지금 무엇이 가장 궁금한가요?','What is your next\nstartup question?')),el('div',{class:'p-entry-choices'},
+home.prepend(el('main',{class:'p-entry-shell p-start'},el('p',{class:'p-kicker',text:'ASNM · STARTUP DECISION SIMULATOR'}),screenTitle(t('당신의 창업 아이디어,\n실제로 시작해도 괜찮을까요?','Your startup idea.\nReady to make it real?')),el('div',{class:'p-entry-choices'},
  entryChoice(t('전체 창업여정 선택하기','Explore the full journey'),0,()=>{track('full_journey_start');open('journey');}),
  entryChoice(t('지금 고민부터 시작하기','Start with your question'),1,()=>open('questions')),
  entryChoice(t('3분 데모','3-minute demo'),2,()=>track('demo_start'),world('','demo'))
@@ -69,8 +72,8 @@ const market=document.querySelector('#page-m1 .page-desc');if(market)market.text
 const founderTitle=document.querySelector('#page-m2 .page-title');if(founderTitle)founderTitle.textContent=t('의사결정 스타일과 주의할 가정','Decision style & assumptions to watch');
 
 const copilotButton=button(t('✧ 결정 도움','✧ Decision help'),()=>{
-  let saved=null;try{saved=new StateStore(localStorage).load();}catch{}
-  const d=el('dialog',{'aria-label':'ASNM Startup Copilot'},copilotView(saved,lang,document.querySelector('.page.active')?.id,window._founderType||''),button(t('닫기','Close'),()=>{d.close();d.remove();}));d.className='asnm-product';document.body.append(d);d.showModal();
+  const panel=advisorPanel({lang,mode:document.querySelector('.page.active')?.id||'home',getProject:getActiveProject,save:saveActiveProject});panel.open=true;
+  const d=el('dialog',{'aria-label':'ASNM Startup Copilot'},panel,button(t('닫기','Close'),()=>d.close()));d.className='asnm-product';d.addEventListener('close',()=>{panel.dispose();d.remove();},{once:true});document.body.append(d);d.showModal();
 });copilotButton.className='p-copilot-launch';document.body.append(copilotButton);
 
 // Add reflection questions alongside the preserved original questionnaire output.
@@ -79,3 +82,11 @@ if(reflectionHost){
  const reflection=el('section',{class:'asnm-product p-card p-stack',style:'text-align:left'},el('h3',{text:t('유형보다, 다음 결정에 사용할 질문','Use the answers to question your next decision')}),el('div',{},el('b',{text:'Strength'}),el('p',{text:t('반복해서 고른 접근을 실제로 잘했던 경험과 연결하세요. 빠른 실행, 분석, 협업 중 무엇이 도움이 되었나요?','Connect recurring choices to an experience where you performed well. Did execution, analysis or collaboration help?')})),el('div',{},el('b',{text:'Watch-outs'}),el('p',{text:t('내 생각을 지지하는 증거만 찾고 있나요? 고객 검증 전에 비용을 크게 늘리려 하나요?','Are you seeking only confirming evidence? Are you scaling spending before validating customers?')})),el('div',{},el('b',{text:'Under pressure'}),el('p',{text:t('시간이나 자금이 부족할 때 기능 개발, 조사, 협상 중 무엇을 먼저 선택할지 점검하세요. 결과는 자기 점검 자료이며 심리 진단이 아닙니다.','When time or cash is scarce, review whether you default to building, researching or negotiating. These questions are self-reflection, not a psychological diagnosis.')})));reflectionHost.append(reflection);
 }
 installTrusted();
+
+installShell(lang);
+home.querySelector('h1').after(el('p',{class:'v6-hero-sub',text:t('돈과 시간을 쓰기 전에, 중요한 가정과 다음 결정을 먼저 실험하세요.','Test your assumptions and next decisions before spending real time and money.')}));
+
+const extraProblems=[['m1','고객은 정말 이 문제를 겪고 있을까요?','Do customers really have this problem?'],['m3a','개발을 외주로 맡겨도 될까요?','Should I outsource development?'],['m4','가격을 올려도 괜찮을까요?','Should I raise prices?'],['m4','지금 투자를 받아야 할까요?','Should I raise funding now?'],['m4','새로운 시장에 진입할까요?','Should I enter a new market?'],['m3a','혼자 시작할까, 팀을 꾸릴까요?','Start solo or build a team?']];
+const questionGrid=questions.querySelector('.p-question-grid');
+for(const [id,k,e] of extraProblems){const q=t(k,e),b=button('',()=>goModule(id,q),'p-question-card');b.dataset.module=id;b.append(el('span',{text:q}),el('small',{text:moduleInfo.find(m=>m[0]===id)[2]+' →'}));questionGrid.append(b);}
+const questionPanel=advisorPanel({lang,getProject:getActiveProject,save:saveActiveProject,onRoute:goModule});questionPanel.open=true;questionPanel.querySelector('textarea').id='entry-question';questions.querySelector('.p-question-form').remove();questions.querySelector('main').append(questionPanel);
