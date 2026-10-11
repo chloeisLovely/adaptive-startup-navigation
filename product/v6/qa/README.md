@@ -1,0 +1,1 @@
+Actual local Chromium/Poppler renders, 2026-10-11. Synthetic venture data only. These are branch QA evidence, not screenshots of a public V6 deployment. Founder mobile is 390 px. PDF financial page is rendered from the directly downloaded Korean PDF. The approved image atlas is separate from these screenshots.

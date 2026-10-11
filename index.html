@@ -1851,7 +1851,7 @@ input[type=range]::-webkit-slider-thumb{
       </div>
       <div class="stat-item">
         <div class="stat-num">n=190</div>
-        <div class="stat-label">채택 경로 근거 확보 (SEM)</div>
+        <div class="stat-label">원문 주장 · 근거 확인 필요 (SEM)</div>
         <div class="stat-source">한국 표본 · 교차시장 검증 진행 예정</div>
       </div>
       <div class="stat-item">
@@ -1863,10 +1863,10 @@ input[type=range]::-webkit-slider-thumb{
 
     <div class="glass-card" style="max-width:1000px;margin:2.2rem auto 0;padding:1.5rem 1.7rem;text-align:left;">
       <div style="font-family:'Orbitron',monospace;font-size:0.72rem;letter-spacing:2px;color:var(--cyan);margin-bottom:0.9rem;">
-        RESEARCH &amp; VALIDATION
+        HISTORICAL RESEARCH CLAIMS · VERIFICATION REQUIRED
       </div>
       <div style="font-size:0.85rem;line-height:1.85;color:var(--text2);">
-        ASNM의 <b>채택 경로</b>는 한국 표본을 대상으로 한 구조방정식모형에서 지지되었습니다 (n=190).
+        <b>V6 감사: 원자료·검증 보고서가 저장소에서 확인되지 않았습니다. 아래 수치는 기존 문서의 주장으로, 근거 확인이 필요합니다.</b><br>ASNM의 <b>채택 경로</b>는 한국 표본을 대상으로 한 구조방정식모형에서 지지되었습니다 (n=190).
         인지편향 자각(CBA)이 지각된 유용성(PU)을 거쳐 채택의도(AI)로 이어지는 매개 경로가 확인되었고
         (간접효과 .785, 95% CI [.679, .903]; PU→AI β=.949, p&lt;.001),
         15명 파일럿에서 시스템 사용성 척도 82.2점을 기록했습니다.<br><br>
@@ -2855,54 +2855,7 @@ input[type=range]::-webkit-slider-thumb{
 </div>
 
 <!-- 🌐 M4 알림 신청 모달 -->
-<div class="notify-modal" id="notify-modal">
-  <div class="notify-modal-inner">
-    <button class="notify-modal-close" onclick="closeNotifyModal()" aria-label="닫기">✕</button>
-    
-    <div class="notify-modal-title">🚀 메타버스 출시 알림 신청</div>
-    <div class="notify-modal-subtitle">
-      Phase 2 메타버스 양식 출시 시 가장 먼저 소식을 보내드릴게요!<br>
-      💜 베타 테스터 우선 초대 + 출시 할인 혜택 제공
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-name">이름 <span class="req">*</span></label>
-      <input type="text" id="notify-name" placeholder="홍길동" maxlength="30">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-email">이메일 <span class="req">*</span></label>
-      <input type="email" id="notify-email" placeholder="example@email.com" maxlength="100">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-stage">현재 창업 단계</label>
-      <select id="notify-stage">
-        <option value="">선택하지 않음</option>
-        <option value="예비창업">예비창업 (아이디어 구상 중)</option>
-        <option value="아이디어 검증">아이디어 검증 (MVP 개발/시장 조사)</option>
-        <option value="초기 운영">초기 운영 (서비스 출시 후)</option>
-        <option value="성장">성장 (안정적 매출 발생)</option>
-      </select>
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-industry">관심 업종 (선택)</label>
-      <input type="text" id="notify-industry" placeholder="예: AI/SaaS, 헬스케어, 에듀테크..." maxlength="50">
-    </div>
-    
-    <div class="notify-field">
-      <label for="notify-memo">남기실 말씀 (선택)</label>
-      <textarea id="notify-memo" placeholder="어떤 기능이 가장 기대되시나요?" maxlength="200"></textarea>
-    </div>
-    
-    <div id="notify-status" class="notify-status"></div>
-    
-    <button id="notify-submit-btn" class="notify-submit-btn" onclick="submitNotify()">
-      🚀 알림 신청하기
-    </button>
-  </div>
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
@@ -3617,6 +3570,7 @@ const founderTypes = {
 };
 
 let quizAnswers = [];
+window.getFounderAnswers=()=>[...quizAnswers];
 let currentQuestion = 0;
 
 function selectOption(btn, type){
@@ -4415,81 +4369,9 @@ function resetSimulator(){
 // ============================================
 // 🌐 M4 알림 신청 (Google Apps Script Webhook)
 // ============================================
-const NOTIFY_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxWzOtFGYmbmsOTW_T5h9q7xLyFgtOrpOKD_2FpLe5RVQNBEmKfcuI60m37Wno5Y7_k4A/exec';
-
-function notifyMe(){
-  document.getElementById('notify-modal').classList.add('show');
-  setTimeout(() => document.getElementById('notify-name').focus(), 200);
-}
-
-function closeNotifyModal(){
-  document.getElementById('notify-modal').classList.remove('show');
-  document.getElementById('notify-status').innerHTML = '';
-  document.getElementById('notify-status').className = 'notify-status';
-}
-
-async function submitNotify(){
-  const name = document.getElementById('notify-name').value.trim();
-  const email = document.getElementById('notify-email').value.trim();
-  const stage = document.getElementById('notify-stage').value;
-  const industry = document.getElementById('notify-industry').value.trim();
-  const memo = document.getElementById('notify-memo').value.trim();
-  
-  const status = document.getElementById('notify-status');
-  const btn = document.getElementById('notify-submit-btn');
-  
-  if(!name || !email){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ 이름과 이메일은 필수입니다.';
-    return;
-  }
-  
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ 올바른 이메일 형식이 아닙니다.';
-    return;
-  }
-  
-  btn.disabled = true;
-  btn.innerHTML = '<span class="loading-spinner" style="display:inline-block;width:14px;height:14px;"></span> 전송 중...';
-  status.className = 'notify-status';
-  status.textContent = '';
-  
-  try {
-    const formData = new FormData();
-    formData.append('name', name);
-    formData.append('email', email);
-    formData.append('stage', stage);
-    formData.append('industry', industry);
-    formData.append('memo', memo);
-    formData.append('timestamp', new Date().toISOString());
-    
-    await fetch(NOTIFY_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      body: formData
-    });
-    
-    status.className = 'notify-status ok';
-    status.innerHTML = '✅ 신청 완료! 출시 시 이메일로 알려드릴게요.';
-    
-    setTimeout(() => {
-      closeNotifyModal();
-      document.getElementById('notify-name').value = '';
-      document.getElementById('notify-email').value = '';
-      document.getElementById('notify-stage').value = '';
-      document.getElementById('notify-industry').value = '';
-      document.getElementById('notify-memo').value = '';
-    }, 2500);
-    
-  } catch(err){
-    status.className = 'notify-status err';
-    status.textContent = '⚠️ 전송 실패: ' + err.message;
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '🚀 알림 신청하기';
-  }
-}
+function notifyMe(){location.assign('product/v6/feedback.html?lang=ko');}
+function closeNotifyModal(){document.getElementById('notify-modal')?.classList.remove('show');}
+function submitNotify(){notifyMe();}
 
 // ============================================
 // 📋 최종 보고서

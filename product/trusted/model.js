@@ -3,13 +3,13 @@ import {simulateMonth,snapshot} from '../../module4/simulation/SimulationEngine.
 import {defaultDecisions} from '../../module4/simulation/DecisionEngine.js';
 import {suggestState} from '../experience.js';
 import {decodeImport} from '../../module4/state/StateStore.js';
-export const VERSION='5.1.0', RULE_VERSION='venture-decisions-1';
+export const VERSION='6.0.0-beta', RULE_VERSION='venture-decisions-1';
 export const text=(lang,ko,en)=>lang==='en'?en:ko;
 export const industries=[['AI·소프트웨어','AI & software'],['IT·클라우드·보안','IT, cloud & security'],['데이터·자동화','Data & automation'],['로봇·첨단제조','Robotics & manufacturing'],['반도체·전자','Semiconductors & electronics'],['교육·에듀테크','Education & edtech'],['의료·디지털 헬스','Healthcare'],['바이오·제약','Biotech & pharma'],['시니어·돌봄','Ageing & care'],['식품·외식·베이커리','Food & bakeries'],['농업·애그테크','Agriculture'],['유통·이커머스','Retail & commerce'],['패션·뷰티','Fashion & beauty'],['관광·여행·숙박','Travel & hospitality'],['콘텐츠·게임','Content & games'],['금융·핀테크','Finance & fintech'],['부동산·프롭테크','Property'],['물류·모빌리티·철도','Logistics, mobility & rail'],['에너지·기후테크','Energy & climate'],['건설·스마트시티','Construction & smart cities'],['공공서비스·GovTech','Public services'],['제조·B2B 산업','Industrial B2B'],['지역 생활서비스','Local services'],['사회적기업','Social ventures'],['반려동물','Pet care'],['스포츠·웰니스','Sports & wellness'],['기타 · 직접 입력','Other · enter anything']];
 const option=(id,ko,en,changes={},extra=null)=>({id,ko,en,changes,extra});
 export const missions=[
  {id:'team',room:'team',ko:'첫 팀 · 인재 영입',en:'Build your team',options:[option('developer','개발자 1명','One developer',{hiring:'developer'}),option('marketer','마케터 1명','One marketer',{hiring:'marketer'}),option('hold','현재 팀 유지','Keep the team')]},
- {id:'technology',room:'product',ko:'기술 도입',en:'Choose technology',options:[option('service','외부 서비스 도입','Adopt external service',{}, {kind:'technology',value:'service',once:1000,monthly:300,progress:2}),option('custom','자체 기술 구축','Build custom technology',{}, {kind:'technology',value:'custom',once:4000,monthly:100,progress:5}),option('hold','현재 기술 유지','Keep technology')]},
+ {id:'technology',room:'product',ko:'기술 도입',en:'Choose technology',options:[option('service','외부 서비스 도입','Adopt external service',{}, {kind:'technology',value:'service',once:1000,monthly:300,progress:2}),option('custom','자체 기술 구축','Build custom technology',{}, {kind:'technology',value:'custom',once:4000,monthly:100,progress:5}),option('outsource','범위를 정한 외주 개발','Scoped outsourcing',{}, {kind:'technology',value:'outsource',once:2500,monthly:400,progress:4}),option('hybrid','내부·외부 혼합 개발','Hybrid development',{}, {kind:'technology',value:'hybrid',once:2000,monthly:250,progress:3}),option('hold','현재 기술 유지','Keep technology')]},
  {id:'product',room:'product',ko:'제품·MVP 전략',en:'Product & MVP',options:[option('feature','핵심 기능 개발','Build core feature',{product:'feature'}),option('improve','기존 경험 개선','Improve experience',{product:'improve'}),option('debt','기술부채 정리','Reduce technical debt',{product:'debt'})]},
  {id:'discovery',room:'customer',ko:'첫 고객 검증',en:'Validate customers',options:[option('test','작은 고객 실험','Test a customer segment',{market:'test'}),option('focus','현재 고객 집중','Focus current customers')]},
  {id:'marketing',room:'market',ko:'고객 확보 예산',en:'Acquisition budget',options:[option('increase','예산 20% 확대','Increase budget 20%',{marketing:'increase'}),option('maintain','예산 유지','Maintain budget'),option('reduce','예산 20% 절감','Reduce budget 20%',{marketing:'reduce'})]},
@@ -65,11 +65,21 @@ function validatePolicies(state){
   if(!rule||policy.monthly!==rule.monthly)throw Error('Policy allowance does not match the versioned rule');
  }
 }
+export function decisionReflection(row,reflection={}){
+ const expected=reflection.expectedGrowth==null||reflection.expectedGrowth===''?null:Number(reflection.expectedGrowth);
+ if(expected!==null&&(!Number.isFinite(expected)||expected< -100||expected>1000))throw Error('Invalid expectation');
+ for(const k of ['learning','nextAssumption'])if(reflection[k]!==undefined&&(typeof reflection[k]!=='string'||reflection[k].length>800))throw Error('Invalid reflection');
+ const before=row.stateBefore.venture.mrr,after=row.stateAfter.venture.mrr;
+ return {expectedGrowth:expected,modeledGrowth:before>0?Math.round((after-before)/before*10000)/100:null,learning:reflection.learning||'',nextAssumption:reflection.nextAssumption||''};
+}
 export function validateProject(data){
  if(!data||data.schema!=='asnm-project'||data.version!==1||typeof data.id!=='string'||!/^[a-zA-Z0-9-]{1,80}$/.test(data.id)||!Number.isInteger(data.revision)||data.revision<0)throw Error('Unsupported project');
  if(JSON.stringify(data).length>8*1024*1024)throw Error('Project exceeds 8 MB');
  const p=clone(data),record=v=>v&&typeof v==='object'&&!Array.isArray(v);
  if(!record(p.company)||!record(p.assessment)||!record(p.assessment.answers)||!record(p.assessment.situations))throw Error('Missing project sections');
+ if(p.founderContext&&(!record(p.founderContext)||Object.values(p.founderContext).some(v=>typeof v!=='string'||v.length>240)))throw Error('Invalid founder context');
+ if(p.adviceHistory&&(!Array.isArray(p.adviceHistory)||p.adviceHistory.length>12||p.adviceHistory.some(v=>!record(v)||typeof v.question!=='string'||v.question.length>600||typeof v.answer!=='string'||v.answer.length>900||!['llm','rules','rules-fallback'].includes(v.source))))throw Error('Invalid advice history');
+ if(p.quickCheck?.answers&&(!Array.isArray(p.quickCheck.answers)||p.quickCheck.answers.length>10||p.quickCheck.answers.some(v=>!['V','A','C','T','I','S'].includes(v))))throw Error('Invalid quick answers');
  if(p.entryQuestion!==undefined&&typeof p.entryQuestion!=='string')throw Error('Invalid question');
  if(p.assessment.step!==undefined&&(!Number.isInteger(p.assessment.step)||p.assessment.step<0||p.assessment.step>18))throw Error('Invalid assessment step');
  if(p.company.step!==undefined&&(!Number.isInteger(p.company.step)||p.company.step<0||p.company.step>4))throw Error('Invalid builder step');
@@ -84,7 +94,7 @@ export function validateProject(data){
  }
  if(!Array.isArray(p.comparisons)||p.comparisons.length>60)throw Error('Invalid comparisons');
  if(p.simulation){const sim=p.simulation;if(!Array.isArray(sim.history)||sim.history.length>60)throw Error('Invalid history');let state=validateState(sim.initialState);validatePolicies(state);const history=[];
-  for(const row of sim.history){const r=simulateDecision(state,row.missionId,row.actionId,row.founderReason,row.timestamp);history.push({...r.log,...(row.role?{role:String(row.role).slice(0,30)}:{}),...(row.meeting?{meeting:clone(row.meeting)}:{})});state=r.state;}
+  for(const row of sim.history){const r=simulateDecision(state,row.missionId,row.actionId,row.founderReason,row.timestamp);history.push({...r.log,...(row.role?{role:String(row.role).slice(0,30)}:{}),...(row.meeting?{meeting:clone(row.meeting)}:{}),...(row.reflection?{reflection:decisionReflection(r.log,row.reflection)}:{})});state=r.state;}
   if(canonical(state)!==canonical(validateState(sim.state)))throw Error('State does not match reproducible history');
   p.simulation={...sim,state,history};
  }
