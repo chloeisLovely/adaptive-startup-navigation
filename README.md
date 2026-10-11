@@ -1,4 +1,6 @@
-> **V6 review branch — not publicly deployed.** Approved founder characters, cosmic shell, contextual advice, local PDF and anonymous feedback/admin scaffolding are implemented. Live AI availability and the authorized backend configuration remain open. See [release status](product/v6/RELEASE.md), [architecture](product/v6/ARCHITECTURE.md), [validation](product/v6/VALIDATION.md) and [beta guide](product/v6/BETA_GUIDE.md). Main merge and public deployment require final approval.
+> **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](backend/asnm/SERVICE_RECOVERY.md).
+
+> **V6 review branch — not publicly deployed.** Approved founder characters, cosmic shell, contextual advice, local PDF and anonymous feedback/admin scaffolding are implemented. Live AI replies are verified; production feedback/admin deployment and operator designation remain open. See [release status](product/v6/RELEASE.md), [architecture](product/v6/ARCHITECTURE.md), [validation](product/v6/VALIDATION.md) and [beta guide](product/v6/BETA_GUIDE.md). Main merge and public deployment require final approval.
 
 # ASNM — Adaptive Startup Navigation Model
 

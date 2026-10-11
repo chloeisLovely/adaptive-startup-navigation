@@ -1,3 +1,5 @@
+> **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](../../backend/asnm/SERVICE_RECOVERY.md).
+
 # V6 architecture
 
 V6 extends the existing static GitHub Pages application. No framework migration, API-key storage, Worker redeployment or core simulation rewrite is included.

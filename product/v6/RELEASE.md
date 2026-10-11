@@ -1,3 +1,5 @@
+> **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](../../backend/asnm/SERVICE_RECOVERY.md).
+
 # ASNM V6 review release
 
 **Implementation and local validation complete for review; V6 is not merged or publicly deployed.** Final merge/deployment approval is required by the V6 master prompt §22. Main remains the prior V5.1 commit `10c7f633ffe9286e46b47c53146f9a5c034b04fa` at the release audit. This work preserves previous assets and local history; it does not claim to recover unsaved work from unavailable earlier environments.
@@ -12,7 +14,7 @@
 | Voice / narration | Implemented with text fallback | Mock browser APIs passed | No | Real mobile microphones and provider behavior unverified |
 | Same-seed alternatives / decision journal | Implemented | No state mutation, selected hybrid comparison, replay and reflection passed | No | Modeled outcomes, not causal real-world forecasts |
 | 13-part report / local PDF | Implemented | KO/EN web, actual data, Unicode PDF and failure fallback passed | No | PDF tables use labeled rows; charts rasterized; PDF/UA not claimed |
-| Existing AI gateway | Reused; schema + consent + fallback | Mock paths passed; live HTTP 403 observed | No new Worker deployment | Resolve gateway access and validate actual provider response |
+| Existing AI gateway | Reused; schema + consent + fallback | Real browser HTTP 200; structured English advice and Korean six-role replies passed | Existing Worker reused | Compatibility fix awaits frontend release; Python-only 403 is not a whole-service outage |
 | Five-field feedback | UI + Edge handler + SQL implemented | UI fixtures, API and SQL passed | No | Config deliberately empty; real save unavailable pending authorized project |
 | Aggregate event counts | Optional abstraction + SQL implemented | Allowlist, atomic counters/quota passed | No | Disabled; not unique visitors or a complete conversion funnel |
 | Private admin dashboard | Auth + server allowlist + reads/CSV implemented | API auth/permissions and disconnected UI passed | No | Live admin login/query/CSV still need deployed backend verification; up to 500 loaded feedback rows |
@@ -20,8 +22,8 @@
 
 ## Required before public V6 operation
 
-1. Resolve the existing Worker HTTP 403 from a supported user browser and validate a real structured response. Local rules remain a supported path; do not advertise working live AI without this check.
-2. Identify the authorized active Supabase project and admin account. The connected project was **INACTIVE**; no restore, paid project creation or remote migration was performed. Deploy [backend](../../backend/asnm/README.md), verify receipt/admin denials and genuine dashboard data. Keep analytics off until policy/configuration are approved.
+1. Completed: real browser AI replies and structured six-role responses verified; compatibility fix is on this review branch. Continue to label unavailable/invalid responses as local fallback.
+2. Identify the authorized active Supabase project and admin account. The existing free project is now **ACTIVE_HEALTHY**; stable schema/function deployment needs explicit approval. Deploy [backend](../../backend/asnm/README.md), verify receipt/admin denials and genuine dashboard data. Keep analytics off until policy/configuration are approved.
 3. Confirm legal operator, private contact and retention/deletion arrangements, including any prior Google Apps Script signup records. Four-footer notices do not constitute a legal compliance certification. The current [PIPC processing-policy guidance](https://pipc.go.kr/np/cop/bbs/selectBoardArticle.do?bbsId=BS217&mCode=G010030020&nttId=12018) was identified for operator review; no claim is made that this implementation has been legally audited.
 4. Review the PR, approve main merge/public deployment, verify Pages then perform the beta tasks in [BETA_GUIDE.md](BETA_GUIDE.md). No launch message has been posted.
 

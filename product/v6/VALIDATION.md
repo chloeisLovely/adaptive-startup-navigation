@@ -1,3 +1,5 @@
+> **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](../../backend/asnm/SERVICE_RECOVERY.md).
+
 # V6 validation — 2026-10-11
 
 All results below are from this branch served locally over HTTP, including repository-subpath routes. No V6 deployment or live-service integration success is implied. Browser automation used headless Chromium with SwiftShader WebGL; this is not a physical iPhone/Android test. External legacy Chart.js 4.4.0 was served unchanged from an exact-version local mirror; Google Fonts CSS was suppressed for network-independent runs.
@@ -15,7 +17,7 @@ All results below are from this branch served locally over HTTP, including repos
 | Original Module 4 browser | Passed all six dialogue decisions, navigation, tutorial/role, commit/outcomes, hire visuals, refresh, export, KO/EN Module 3 handoff, standalone setup and mobile/fallback checks |
 | Database | Local PGlite/PostgreSQL-compatible execution: 8 anon/authenticated table SELECT denials; browser RPC denials; service-only insert/count increment, constraints and atomic quota passed |
 | Speech | Mocked recognition denial, reviewed transcript, no automatic send and opt-in synthesis passed. No real microphone/provider/device test. |
-| AI | Mock valid schema, malformed response, unavailable/503 and no financial mutation passed. Existing live Worker returned HTTP 403 / Cloudflare 1010 from this environment; real LLM output not verified. |
+| AI | Mock valid schema, malformed response, unavailable/503 and no financial mutation passed. Initial Python probe returned HTTP 403 / Cloudflare 1010. Follow-up standard-browser calls returned real schema-valid English advice and Korean six-role output after the messages-contract fix; state stayed unchanged. |
 | Backend | Handler auth/admin allowlist, anonymous/non-admin denials, validation, bounded body, quota and DB failure passed with test doubles; browser simulated receipt/503 passed. **Not deployed to Supabase.** |
 | PDF visual QA | Direct Korean PDF exported, selectable Unicode text extracted, seven pages rendered with Poppler and visually checked; corrected missing-glyph font embedding and cash-chart section placement. Print-PDF is a separate fallback. |
 | Regression review | Core SimulationEngine, DecisionEngine, EventEngine, CalibrationEngine and Module 3 scoring implementation unchanged. Legacy signup removal and UI hooks are isolated from scoring. Old persisted schemas/keys retained. |

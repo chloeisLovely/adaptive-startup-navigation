@@ -1,12 +1,12 @@
 # ASNM anonymous feedback / aggregate backend
 
-**Not deployed.** The connected Supabase project was INACTIVE and ownership/purpose was not confirmed. This PR does not restore it, create a paid project or modify remote tables. Local PostgreSQL-compatible tests exercise schema privileges, RPC authorization, counters and quotas; HTTP tests exercise admin/no-admin/failure paths. Those are not live Supabase integration tests.
+**Edge Function and final schema deployment await approval.** The existing free-plan project `uuyydrrjqeejvahfhdmj` was restored to ACTIVE_HEALTHY on 2026-10-12 (Asia/Seoul). A schema attempt during startup returned success but did not survive restoration; post-restore tables/migrations are empty. Automatic approval review then rejected both the public function deployment and stable schema application under the V6 final-approval gate. No paid project was created. See [recovery evidence and exact approval scope](SERVICE_RECOVERY.md). Local PostgreSQL-compatible tests exercise schema privileges, RPC authorization, counters and quotas; HTTP tests exercise admin/no-admin/failure paths. Those are not live Supabase integration tests.
 
 ## Deployment after operator configuration
 
 1. Select an authorized, active Supabase project. Review `schema.sql` in its SQL Editor or generate a new migration with the Supabase CLI; apply it once. Existing data must be backed up before any separate migration.
 2. Create the Edge Function with `supabase functions new asnm`. Copy `index.ts` and `handler.js` into the generated `supabase/functions/asnm/` directory.
-3. Set `ASNM_ALLOWED_ORIGIN=https://chloeislovely.github.io` in server secrets. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` must be server-only. Never put a service-role key in config.js. The allowed Origin is scheme+host, not the repository subpath.
+3. The function defaults to the existing `https://chloeislovely.github.io` origin; optionally override `ASNM_ALLOWED_ORIGIN` in server settings. `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` must be server-only. Never put a service-role key in config.js. The allowed Origin is scheme+host, not the repository subpath.
 4. Deploy `supabase functions deploy asnm --no-verify-jwt`: anonymous feedback/events are intentionally public. The `admin` action separately calls Auth `/user` with the supplied JWT and checks `asnm_admins`. A public function is **not** a public admin endpoint.
 5. Create the operator account through Supabase Auth (do not enable public account creation for this use case). Insert only its verified Auth UUID into `asnm_admins` from the SQL Editor. User-editable metadata is never used for authorization.
 6. Add the function URL, project URL and publishable/anon API key to public `config.js`. `anonymousAnalytics` remains false until the policy and processing details are approved.
