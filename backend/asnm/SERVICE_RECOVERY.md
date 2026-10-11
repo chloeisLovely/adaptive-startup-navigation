@@ -1,3 +1,5 @@
+> **Approved backend deployment completed (2026-10-12):** Supabase schema and feedback function are live, actual receipt/access checks passed, and the operator email is registered. Owner Auth signup/verification and V6 frontend release remain pending. [Current deployment status](DEPLOYMENT.md). Older blocked-deployment entries below are retained as audit history.
+
 # Live-service recovery — 2026-10-12 Asia/Seoul
 
 ## Confirmed results

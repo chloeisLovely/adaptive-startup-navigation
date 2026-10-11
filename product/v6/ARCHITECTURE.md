@@ -1,3 +1,5 @@
+> **Approved backend deployment completed (2026-10-12):** Supabase schema and feedback function are live, actual receipt/access checks passed, and the operator email is registered. Owner Auth signup/verification and V6 frontend release remain pending. [Current deployment status](../../backend/asnm/DEPLOYMENT.md). Older blocked-deployment entries below are retained as audit history.
+
 > **2026-10-12 service update:** Live browser AI and the six-role response are now verified; the messages-only Worker compatibility bug is fixed. Supabase is ACTIVE_HEALTHY. Schema/function deployment was blocked by automatic approval review and remains pending explicit approval. Earlier inactive/unverified entries below are the initial audit, not the current service state. See [current recovery evidence](../../backend/asnm/SERVICE_RECOVERY.md).
 
 # V6 architecture

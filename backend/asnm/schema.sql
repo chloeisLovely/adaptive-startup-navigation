@@ -1,5 +1,5 @@
 -- Review and apply to the operator-approved Supabase project only.
--- Final production schema application is pending explicit approval; see SERVICE_RECOVERY.md.
+-- Applied after explicit approval; see DEPLOYMENT.md.
 create table if not exists public.asnm_feedback (
  id bigint generated always as identity primary key,
  created_at timestamptz not null default now(),

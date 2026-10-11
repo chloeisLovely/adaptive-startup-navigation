@@ -9,8 +9,8 @@ window.ASNM_CONFIG = {
   // 문의 이메일 
   contactEmail: '',
   // Public configuration only. Never put service-role or AI secrets here.
-  feedbackApiUrl: '',
-  supabaseUrl: '',
-  supabasePublishableKey: '',
+  feedbackApiUrl: 'https://uuyydrrjqeejvahfhdmj.supabase.co/functions/v1/asnm',
+  supabaseUrl: 'https://uuyydrrjqeejvahfhdmj.supabase.co',
+  supabasePublishableKey: 'sb_publishable_IRbVesnodzYWgsObdOWpqw_9FBFBYHp',
   anonymousAnalytics: false
 };

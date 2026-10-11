@@ -20,7 +20,7 @@ export function makeHandler({origin,db,auth,rate}){
    if(action==='admin'&&request.method==='GET'){
     const token=request.headers.get('Authorization')?.match(/^Bearer (.+)$/)?.[1];if(!token)return json({error:'Authentication required'},401);
     const user=await auth(token);if(!user?.id)return json({error:'Invalid session'},401);
-    if(!await db.isAdmin(user.id))return json({error:'Admin access denied'},403);
+    if(!await db.isAdmin(user.id,user))return json({error:'Admin access denied'},403);
     return json(await db.overview(dateRange(u)));
    }
    if(request.method!=='POST'||!['feedback','event'].includes(action))return json({error:'Not found'},404);
