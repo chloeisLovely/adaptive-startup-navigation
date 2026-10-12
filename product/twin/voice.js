@@ -33,7 +33,7 @@ export function teamVoice(lang,onSpeaker){
     try{
      u=new Utterance(turn.text);u.lang=lang==='ko'?'ko-KR':'en-US';
      const voices=synth.getVoices().filter(v=>v.lang.startsWith(lang));
-     const n=Math.max(0,['CTO','CFO','Growth','Product','Customer','Investor'].indexOf(turn.role));
+     const n=Math.max(0,['CTO','CFO','Growth','HR','Product','Customer','Investor'].indexOf(turn.role));
      if(voices.length)u.voice=voices[n%voices.length];
      u.rate=.98;u.pitch=[1,.88,1.07,1.02,1.12,.93][n]||1;
      u.onend=()=>finish(true);u.onerror=()=>finish(false);

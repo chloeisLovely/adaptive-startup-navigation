@@ -7,7 +7,7 @@ import {initialProfile,profileEditor} from './settings.js';
 import {localProposal,generateSituation,askRole} from './agents.js';
 import {teamVoice} from './voice.js';
 import {el,button,card,note,field,select,details,row,grid,list,table} from '../trusted/ui.js';
-const root=new URL('../../',import.meta.url),roleRoom={CTO:'product',CFO:'finance',Growth:'market',Product:'product',Customer:'customer',Investor:'investor'};
+const root=new URL('../../',import.meta.url),roleRoom={HR:'team',CTO:'product',CFO:'finance',Growth:'market',Product:'product',Customer:'customer',Investor:'investor'};
 let runtime;
 function loadBabylon(){if(globalThis.BABYLON)return Promise.resolve();return runtime??=new Promise((resolve,reject)=>document.head.append(el('script',{src:new URL('module4/vendor/babylon.js',root).href,onload:resolve,onerror:()=>{runtime=null;reject(Error('3D runtime unavailable'));}})));}
 export async function renderTwinWorld(c){

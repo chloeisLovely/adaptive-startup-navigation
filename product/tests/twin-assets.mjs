@@ -13,7 +13,7 @@ B.SceneLoader.OnPluginActivatedObservable.add(plugin=>{plugin.skipMaterials=true
 const original=B.SceneLoader.LoadAssetContainerAsync;
 const requested=[];
 B.SceneLoader.LoadAssetContainerAsync=(base,file,scene)=>{requested.push(file);const bytes=readFileSync(new URL(file,base));return original.call(B.SceneLoader,'','data:;base64,'+bytes.toString('base64'),scene,undefined,'.glb');};
-const roles=['CTO','CFO','Growth','Product','Customer','Investor','CTO'];
+const roles=['CTO','CFO','Growth','HR','Product','Customer','Investor'];
 const actors=roles.map((role,i)=>{const root=new B.TransformNode('test-'+i,scene),body=B.MeshBuilder.CreateBox('fallback-'+i,{},scene);body.parent=root;root.metadata={state:'idle',speaking:false};return {root,body,role,roomId:'test',phase:i};});
 const runtime=installHumanAvatars(B,scene,{actors});
 try{
