@@ -8,9 +8,27 @@ export async function createReportPDF(article,lang='ko'){
  let page,y=0;const width=595.28,height=841.89,left=44,right=551,ink=rgb(.09,.17,.26),accent=rgb(.02,.38,.46);
  function newPage(){page=pdf.addPage([width,height]);y=777;page.drawText('ASNM / FOUNDER DECISION REPORT',{x:left,y:810,size:9,font,color:accent});}
  function room(h){if(y-h<52)newPage();}
- const clean=text=>String(text).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').normalize('NFC');
- function lines(text,size,maxWidth){const rows=[];for(const paragraph of clean(text).split('\n')){let line='';for(const ch of paragraph){if(font.widthOfTextAtSize(line+ch,size)>maxWidth&&line){rows.push(line);line=ch;}else line+=ch;}rows.push(line);}return rows;}
- function paragraph(text,size=10,gap=8){const rows=lines(text,size,right-left);room(Math.min(rows.length,3)*(size*1.55)+gap);for(const line of rows){room(size*1.55);page.drawText(line,{x:left,y,size,font,color:size>=15?accent:ink});y-=size*1.55;}y-=gap;}
+ const clean=text=>String(text).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').normalize('NFC').replace(/[\u2011\u2013\u2014\u2212]/g,'-');
+ function lines(text,size,maxWidth){
+  const rows=[];
+  for(const paragraph of clean(text).split('\n')){
+   let line='';
+   // Keep Latin words together; CJK still wraps naturally between characters.
+   const tokens=paragraph.match(/[A-Za-z0-9][A-Za-z0-9'’.,:/%+_-]*|\s+|./gu)||[];
+   for(const token of tokens){
+    if(font.widthOfTextAtSize(line+token,size)<=maxWidth){line+=token;continue;}
+    if(line.trim()){rows.push(line.trimEnd());line='';}
+    if(!token.trim())continue;
+    for(const ch of token){
+     if(line&&font.widthOfTextAtSize(line+ch,size)>maxWidth){rows.push(line);line='';}
+     line+=ch;
+    }
+   }
+   rows.push(line.trimEnd());
+  }
+  return rows;
+ }
+ function paragraph(text,size=10,gap=8){const rows=lines(text,size,right-left);room(Math.min(rows.length,3)*(size*1.55)+gap+(size>=13?28:0));for(const line of rows){room(size*1.55);page.drawText(line,{x:left,y,size,font,color:size>=15?accent:ink});y-=size*1.55;}y-=gap;}
  async function chart(svg){room(225);const clone=svg.cloneNode(true);clone.setAttribute('xmlns','http://www.w3.org/2000/svg');clone.querySelectorAll('text').forEach(n=>n.setAttribute('fill','#142c40'));const url=URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)],{type:'image/svg+xml'}));try{const img=new Image();await new Promise((ok,no)=>{img.onload=ok;img.onerror=no;img.src=url;});const canvas=document.createElement('canvas'),v=svg.viewBox.baseVal;canvas.width=v.width*2;canvas.height=v.height*2;const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);const data=await pdf.embedPng(canvas.toDataURL('image/png'));const h=Math.min(210,(right-left)*canvas.height/canvas.width),w=h*canvas.width/canvas.height;page.drawImage(data,{x:(width-w)/2,y:y-h,width:w,height:h});y-=h+16;}finally{URL.revokeObjectURL(url);}}
  async function walk(n){if(n.nodeType!==1)return;if(n.matches('button,.tw-no-print,.v6-advisor'))return;if(n.tagName.toLowerCase()==='svg'){await chart(n);return;}if(n.tagName==='TABLE'){const rows=[...n.rows],headers=rows[0]?[...rows[0].cells].map(c=>c.textContent.trim()):[];for(const row of rows.slice(1)){const text=[...row.cells].map((c,i)=>(headers[i]||'')+': '+c.textContent.trim()).join('   |   ');paragraph(text,9,7);}return;}if(n.matches('h1,h2,h3,p,li,pre,figcaption,summary')){paragraph(n.textContent.trim(),n.tagName==='H2'?17:n.tagName==='H3'?13:10);return;}if(n.children.length===0&&n.textContent.trim()){paragraph(n.textContent.trim());return;}for(const child of n.children)await walk(child);}
  newPage();paragraph(lang==='ko'?'다음 결정을 위한 실행 보고서':'Your next decision & action plan',22,14);paragraph(new Date().toISOString().slice(0,10)+' · V6 beta',10,20);await walk(article);

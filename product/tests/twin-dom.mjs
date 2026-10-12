@@ -16,3 +16,17 @@ const p=newProject('dom-test');p.company={...p.company,name:'교육사업',indus
 let writes=0;const host=document.getElementById('host'),c={project:p,host,lang:'ko',t:(k,e)=>k,save:()=>{validateProject(p);writes++;return true},notify:console.log,go:()=>{},store:{save:()=>{}},setProject:()=>{}};
 const dispose=await renderTwinWorld(c);assert.equal(host.querySelectorAll('[data-twin-role]').length,6);assert.ok(host.querySelector('#twin-commit'));host.querySelector('#twin-commit').click();assert.equal(p.twin.history.length,1);assert.ok(host.querySelector('#twin-outcome').textContent.includes('내 결정'));
 host.querySelector('#twin-edit-settings').click();let input=host.querySelector('#twin-revision-cash');input.value='42000000';input.dispatchEvent(new window.Event('input'));host.querySelector('#twin-apply-settings').click();assert.equal(p.twin.state.venture.cash,42000000);assert.equal(p.simulation.state.venture.cash,30000000);assert.equal(p.twin.history.length,2);assert.ok(validateProject(p));dispose();host.replaceChildren();renderTwinReport(c);assert.equal(host.querySelectorAll('#tw-integrated-report>section').length,7);assert.ok(host.textContent.includes('4200')||host.textContent.includes('42,000,000'));host.replaceChildren();renderEntry(c);assert.ok(host.querySelector('#twin-industry'));assert.ok(host.querySelector('#v6-initial-cash'));assert.ok(host.querySelector('#v6-enter-office'));console.log(JSON.stringify({dom:'passed',checks:['six roles','decision commit','revision applied','Module3 original retained','replay restore','seven report sections','editable entry'],writes}));
+// Navigating away before the runtime script resolves must still dispose active voice.
+host.replaceChildren();delete globalThis.BABYLON;
+let voiceCancelled=0;
+globalThis.SpeechSynthesisUtterance=class{constructor(text){this.text=text;}};
+globalThis.speechSynthesis={getVoices:()=>[],speak:()=>{},cancel:()=>voiceCancelled++};
+const pendingView=renderTwinWorld(c);
+host.querySelector('#twin-play-team').click();
+const cancelBeforeLeave=voiceCancelled;
+const runtimeScript=[...document.querySelectorAll('script')].find(s=>s.src.includes('/module4/vendor/babylon.js'));
+assert.ok(runtimeScript);host.remove();runtimeScript.dispatchEvent(new window.Event('load'));
+const cleanup=await pendingView;cleanup();
+assert.ok(voiceCancelled>cancelBeforeLeave);
+assert.ok(!host.classList.contains('twin-experience'));
+console.log(JSON.stringify({lifecycle:'passed',check:'voice cleanup after leaving during runtime load'}));
