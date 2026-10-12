@@ -7,7 +7,7 @@ window.ASNM_CONFIG = {
   // 사이트 단계 표기
   stage: 'V6 beta',
   // 문의 이메일 
-  contactEmail: '',
+  contactEmail: 'hello.asnm@gmail.com',
   // Public configuration only. Never put service-role or AI secrets here.
   feedbackApiUrl: 'https://uuyydrrjqeejvahfhdmj.supabase.co/functions/v1/asnm',
   supabaseUrl: 'https://uuyydrrjqeejvahfhdmj.supabase.co',

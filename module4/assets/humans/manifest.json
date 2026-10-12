@@ -1,0 +1,157 @@
+{
+  "assetLicense": "MIT",
+  "loaderVersion": "8.26.0",
+  "loaderLicense": "Apache-2.0",
+  "models": [
+    {
+      "file": "business_female_01.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Female_01",
+      "bytes": 2238696,
+      "sha256": "6bb22de4095e640c84df24cbcc9af8a338606ba1cf09e67b3a7eb6731c6a302f",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 3
+    },
+    {
+      "file": "business_female_02.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Female_02",
+      "bytes": 2916920,
+      "sha256": "cd1045528b9496e1dd84625437fe760334255af8cc8aaf792e2d66614a75e6ac",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 4
+    },
+    {
+      "file": "business_female_03.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Female_03",
+      "bytes": 2209572,
+      "sha256": "bc42c23075dd3c39e10590db7518187194d47d42d4ab7a8029888bab05d2d83d",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 3
+    },
+    {
+      "file": "business_male_01.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Male_01",
+      "bytes": 2663232,
+      "sha256": "df23f419bf8621e5d43a0af6988c88b67101d3ea8c94982b6e3a8b29acab70b4",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 3
+    },
+    {
+      "file": "business_male_03.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Male_03",
+      "bytes": 1913016,
+      "sha256": "78bb7a86f48760b684eb221c8d43154a1180ef73df9590db833e018c43b335b4",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 3
+    },
+    {
+      "file": "business_male_04.glb",
+      "source": "https://github.com/microsoft/Microsoft-Rocketbox/tree/master/Assets/Avatars/Professions/Business_Male_04",
+      "bytes": 994988,
+      "sha256": "61716375035e924febb417a8abd9f189061935854cf17406aff15487a7ad10ad",
+      "joints": 80,
+      "animations": [
+        "Celebrate",
+        "Concerned",
+        "Idle",
+        "Talk",
+        "Think",
+        "Walk"
+      ],
+      "morphTargets": [
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_32_MouthFunnel",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight",
+        "AU_45_Blink"
+      ],
+      "embeddedImages": 2
+    }
+  ]
+}
