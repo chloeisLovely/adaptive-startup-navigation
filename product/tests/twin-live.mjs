@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {generateSituation,askRole} from '../twin/agents.js';
+import {sampleState} from '../../module4/state/ASNMState.js';
+import {createTwin,profileFrom,projectAction,commitAction} from '../twin/model.js';
+import fs from 'node:fs';
+if(process.env.ASNM_LIVE_CHECK!=='1')throw Error('Set ASNM_LIVE_CHECK=1 to authorize five billable synthetic model calls.');
+const p={company:{industry:'베이커리 (가상 테스트)',idea:'가상 빵집의 예약 배송',customer:'가상의 동네 주민',vision:'가상 배송 실험'}};
+const s=sampleState();const profile=profileFrom(p,s);profile.revenueModel='transaction';profile.unitPrice=10;profile.monthlyUnits=800;profile.variableCostRate=40;const tw=createTwin(s,profile);let statuses=[];
+const fetcher=async(url,opts)=>{const r=await fetch(url,{...opts,headers:{...opts.headers,Origin:'https://chloeislovely.github.io'}});statuses.push(r.status);console.log('Worker HTTP',r.status);return r;};
+const endpoint='https://asnm-ai.chloehappylee.workers.dev',before=JSON.stringify(tw);
+const r=await generateSituation(p,tw,'테스트용 가상 빵집: 매장 확장과 예약 배송을 비교해줘.','ko',endpoint,{fetcher});assert.equal(r.source,'llm');assert.equal(r.turns.length,6);assert.equal(JSON.stringify(tw),before);for(const a of r.actions)projectAction(tw.state,tw.profile,a);
+console.log('PASS Korean bakery proposal',r.actions.map(a=>a.title),r.turns.map(t=>t.role));
+const answer=await askRole(p,tw,'CFO','이 가상 실험에서 추가 비용을 어떻게 점검할까?','ko',endpoint,{fetcher});assert.equal(answer.source,'llm');console.log('PASS CFO followup',answer.text);
+commitAction(tw,r.actions[0],{reason:'Synthetic verification',proposal:r});
+p.company={industry:'Synthetic education venture',idea:'Fictional online training workshop',customer:'Fictional adult learners',vision:'Test a small paid workshop'};
+const ep=profileFrom(p,s);ep.revenueModel='project';const et=createTwin(s,ep);
+const en=await generateSituation(p,et,'Compare a small paid online workshop with building a full course first. Synthetic test only.','en',endpoint,{fetcher});assert.equal(en.source,'llm');assert.equal(en.turns.length,6);for(const a of en.actions)projectAction(et.state,et.profile,a);console.log('PASS English education proposal',en.actions.map(a=>a.title));
+if(process.env.ASNM_LIVE_RESULT_PATH)fs.writeFileSync(process.env.ASNM_LIVE_RESULT_PATH,JSON.stringify({statuses,korean:r,followup:answer,english:en,stateMutationDuringAdvice:false},null,2));console.log('PASS all live synthetic checks');

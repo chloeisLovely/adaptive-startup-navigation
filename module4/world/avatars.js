@@ -50,7 +50,7 @@ export function createAvatars(B,scene,onArrival,options={}) {
   const founder=humanoid('founder','#d6ae76',0,-2.1,'ceo',0);founder.root.metadata.role='founder';
   for(const [i,room] of rooms.entries())personas[room.id].forEach(([name],j)=>humanoid(`npc-${room.id}-${j}-${name}`,room.color,room.x+(j?1.3:-1.3),room.z-1,room.id,i+j+1));
   if(options.productExperience){
-    const mapping={ceo:'CEO',finance:'CFO',market:'Growth',product:'CTO',customer:'Customer',investor:'Investor'};
+    const mapping={ceo:'CEO',finance:'CFO',market:'Growth',product:'CTO',customer:'Customer',investor:'Investor',team:'HR'};
     for(const a of actors)a.role=a===founder?'Founder':mapping[a.roomId]||'Team';
     const p=rooms.find(r=>r.id==='product');const lead=humanoid('npc-product-lead','#d7b788',p.x+1.5,p.z-1,'product',5);lead.role='Product';
   }

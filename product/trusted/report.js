@@ -1,3 +1,4 @@
+import {renderTwinReport} from '../twin/report.js';
 import {journalInsight} from '../experience.js';
 import {radar,cashChart} from '../v6/charts.js';
 import {downloadReportPDF} from '../v6/pdf.js';
@@ -5,7 +6,7 @@ import {track} from '../telemetry.js';
 import {VERSION,RULE_VERSION,missions,buildState} from './model.js';
 import {assessmentResult,domains,founderNudge} from './assessment.js';
 import {el,button,card,note,details,row,grid,list,table,safeURL,download,metricLabel} from './ui.js';
-export function renderReport(c){track('report_view');const {project:p,t,host,lang}=c;const assessment=assessmentResult(p.assessment),sim=p.simulation,last=sim?.history.at(-1),op=p.opportunity,selected=op?.opportunities.find(o=>o.id===op.selected),b=p.company;
+export function renderReport(c){if(c.project.twin)return renderTwinReport(c);track('report_view');const {project:p,t,host,lang}=c;const assessment=assessmentResult(p.assessment),sim=p.simulation,last=sim?.history.at(-1),op=p.opportunity,selected=op?.opportunities.find(o=>o.id===op.selected),b=p.company;
  let state=sim?.state,planned=null;try{if(!state&&(b.name||b.idea))planned=buildState(b);}catch{}
  const v=state?.venture||planned?.venture,currency=state?.currency||planned?.currency||'KRW';
  const unknown=t('미입력·미완료','Not provided / not completed'),fmt=n=>n===undefined?'—':n===null?t('순현금소진 없음','No net burn'):Number(n).toLocaleString(undefined,{maximumFractionDigits:2});

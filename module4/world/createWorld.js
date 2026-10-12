@@ -1,3 +1,4 @@
+import {createStudio} from './studio.js';
 import {worldPresentation} from '../experience/WorldStatePresenter.js';
 import {rooms} from './rooms.js';
 import {createAvatars} from './avatars.js';
@@ -8,8 +9,8 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
   if(!B || !B.Engine.isSupported()) throw new Error('WebGL unavailable');
   const engine=new B.Engine(canvas,true,{preserveDrawingBuffer:true,stencil:true,doNotHandleContextLost:!!options.productExperience});
   engine.setHardwareScalingLevel(Math.max(1,globalThis.devicePixelRatio/1.5));
-  const scene=new B.Scene(engine); scene.clearColor=options.productExperience?new B.Color4(.80,.87,.83,1):new B.Color4(.075,.095,.12,1);
-  scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.008;scene.fogColor=options.productExperience?new B.Color3(.80,.87,.83):new B.Color3(.075,.095,.12);
+  const scene=new B.Scene(engine); scene.clearColor=options.productExperience?new B.Color4(.91,.89,.84,1):new B.Color4(.075,.095,.12,1);
+  scene.fogMode=B.Scene.FOGMODE_EXP2;scene.fogDensity=.008;scene.fogColor=options.productExperience?new B.Color3(.91,.89,.84):new B.Color3(.075,.095,.12);
   const camera=new B.ArcRotateCamera('campus-camera',-Math.PI/2.7,Math.PI/3.2,47,new B.Vector3(0,0,0),scene);
   camera.lowerRadiusLimit=5;camera.upperRadiusLimit=65;camera.upperBetaLimit=Math.PI/2.12;camera.lowerBetaLimit=.15;
   camera.wheelDeltaPercentage=.015;camera.panningSensibility=90;camera.attachControl(canvas,true);
@@ -18,11 +19,11 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
   const sun=new B.DirectionalLight('key',new B.Vector3(-.4,-1,.5),scene);sun.intensity=options.productExperience?.75:1.1;sun.diffuse=new B.Color3(1,.85,.69);sun.position.set(10,30,-20);
   const shadows=new B.ShadowGenerator(1024,sun);shadows.useBlurExponentialShadowMap=true;shadows.blurKernel=16;
   const mat=(name,hex,emission=0,alpha=1)=>{const m=new B.StandardMaterial(name,scene);m.diffuseColor=B.Color3.FromHexString(hex);m.emissiveColor=m.diffuseColor.scale(emission);m.specularColor=new B.Color3(.2,.3,.4);m.alpha=alpha;return m;};
-  const floorMat=mat('floor',options.productExperience?'#d9e4d9':'#26364b'),edgeMat=mat('path','#456873',.25),deskMat=mat('desks','#8b7561');
+  const floorMat=mat('floor',options.productExperience?'#e8dcc9':'#26364b'),edgeMat=mat('path','#456873',.25),deskMat=mat('desks','#8b7561');
   const leafMat=mat('leaves','#568d70'),potMat=mat('pots','#c2a187'),seatMat=mat('lounge','#b09584');
   const box=(name,w,h,d,x,y,z,material)=>{const mesh=B.MeshBuilder.CreateBox(name,{width:w,height:h,depth:d},scene);mesh.position.set(x,y,z);mesh.material=material;return mesh;};
-  box('foundation',40,.6,40,0,-.6,0,mat('foundation',options.productExperience?'#a0b7aa':'#0a1425'));
-  const ground=B.MeshBuilder.CreateGround('ground',{width:110,height:110},scene);ground.position.y=-1;ground.material=mat('ground',options.productExperience?'#c4d4c9':'#091324');
+  box('foundation',40,.6,40,0,-.6,0,mat('foundation',options.productExperience?'#c3b39c':'#0a1425'));
+  const ground=B.MeshBuilder.CreateGround('ground',{width:110,height:110},scene);ground.position.y=-1;ground.material=mat('ground',options.productExperience?'#e1d7c9':'#091324');
   for(let i=-17;i<=17;i+=2) {
     const lines=B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(-17,-.28,i),new B.Vector3(17,-.28,i)]},scene);lines.color=new B.Color3(.09,.16,.23);
     const vertical=B.MeshBuilder.CreateLines('grid',{points:[new B.Vector3(i,-.28,-17),new B.Vector3(i,-.28,17)]},scene);vertical.color=lines.color;
@@ -67,7 +68,15 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
       const panel=local(B.MeshBuilder.CreatePlane(room.id+'-live-display',{width:3.3,height:1.35},scene));panel.position.set(0,2.1,2.75);panel.rotation.y=Math.PI;
       const texture=new B.DynamicTexture(room.id+'-live-text',{width:768,height:320},scene,true);const material=new B.StandardMaterial(room.id+'-live-material',scene);material.diffuseTexture=texture;material.emissiveTexture=texture;material.disableLighting=true;panel.material=material;screens[room.id]=texture;
     }
-    if(room.id==='ceo')local(box('strategy-rug',5,.02,4,0,.14,0,mat('warm-rug','#6b5c54')));
+    if(room.id==='ceo'){
+      local(box('strategy-rug',5,.02,4,0,.14,0,mat('warm-rug','#bba18b')));
+      if(options.productExperience){
+        local(box('conference-table',3.4,.18,1.5,0,1,-.8,deskMat));
+        for(const x of [-1.25,1.25])local(box('conference-leg',.16,.9,1,x,.5,-.8,deskMat));
+        local(box('strategy-tablet',1.8,.025,.8,0,1.11,-.8,mat('tablet','#529eae',.35)));
+        for(const x of [-1.3,0,1.3])for(const z of [-2, .3])local(box('meeting-seat',.55,.4,.55,x,.4,z,seatMat));
+      }
+    }
     if(room.id==='team')local(box('collaboration-board',4.5,1.2,.1,0,2,2.9,deskMat));
     const beacon=B.MeshBuilder.CreateCylinder(room.id+'-beacon',{diameter:.75,height:.16,tessellation:32},scene);beacon.position.set(0,.34,-2.2);beacon.material=color;local(beacon);markers.push(beacon);indicators[room.id]=color;
     const label=B.MeshBuilder.CreatePlane(room.id+'-label',{width:6,height:.95},scene);label.position.set(0,3.8,0);label.billboardMode=B.Mesh.BILLBOARDMODE_ALL;local(label);
@@ -83,12 +92,13 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
   }
   scene.onPointerObservable.add(info=>{
     if(info.type===B.PointerEventTypes.POINTERPICK && info.pickInfo?.hit) {
-      const id=info.pickInfo.pickedMesh?.metadata?.roomId;if(id) onRoom(id);
+      const meta=info.pickInfo.pickedMesh?.metadata;if(meta?.advisorRole&&options.onActor)options.onActor(meta.advisorRole);else if(meta?.roomId)onRoom(meta.roomId);
     }
   });
+  const studio=options.productExperience?createStudio(B,scene,shadows):null;
   let cameraMove=null,viewMode="overview",meetingActive=false;
   const avatars=createAvatars(B,scene,onArrival,options);
-  for(const a of avatars.actors)for(const mesh of a.root.getChildMeshes())shadows.addShadowCaster(mesh);
+  for(const a of avatars.actors)for(const mesh of a.root.getChildMeshes()){shadows.addShadowCaster(mesh);if(a.role)mesh.metadata={...mesh.metadata,advisorRole:a.role};}
   const playerRing=B.MeshBuilder.CreateTorus('player-highlight',{diameter:1.25,thickness:.045,tessellation:40},scene);playerRing.parent=avatars.founder;playerRing.position.y=.02;playerRing.material=mat('player-ring','#f4d0a1',.8);playerRing.isPickable=false;
   const smooth=(target,radius,alpha=camera.alpha,beta=camera.beta)=>{if(globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches){camera.setTarget(target);camera.radius=radius;camera.alpha=alpha;camera.beta=beta;return;}cameraMove={target,radius,alpha,beta};};
   const cameraTick=scene.onBeforeRenderObservable.add(()=>{
@@ -118,7 +128,8 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
   const resize=new ResizeObserver(()=>engine.resize());resize.observe(canvas);
   canvas.dataset.ready='true';
   return {
-    scene,camera,avatars,
+    scene,camera,avatars,shadows,
+    setEnvironment(kind){studio?.setEnvironment(kind);},
     setRole(role){avatars.founder.metadata.playerRole=role;const id={CEO:'ceo',CFO:'finance',CTO:'product',Growth:'market',Product:'product'}[role]||'ceo';avatars.moveToRoom(id);},
     setView(mode){viewMode=mode;cameraMove=null;camera.lowerRadiusLimit=mode==='first'?.5:5;camera.inertialRadiusOffset=0;camera.inertialAlphaOffset=0;camera.inertialBetaOffset=0;if(mode==='first'){camera.radius=.8;camera.beta=Math.PI/2.1;camera.setTarget(avatars.founder.position.add(new B.Vector3(0,1.75,0)));}avatars.founder.getChildMeshes().forEach(m=>m.visibility=mode==='first'?0:1);if(mode==='overview')this.overview();else if(mode==='third')smooth(avatars.founder.position.add(new B.Vector3(0,1,0)),8,-Math.PI/2.7,Math.PI/3);},
     meeting(active){if(viewMode==='first')this.setView('third');meetingActive=active;avatars.meeting(active);if(active){viewMode='overview';smooth(new B.Vector3(0,1,0),13,-Math.PI/2.7,Math.PI/3);}},
@@ -130,13 +141,14 @@ export function createWorld(canvas,onRoom,onArrival=()=>{},options={}) {
     pause(){engine.stopRenderLoop(renderFrame);},
     resume(){engine.resize();engine.runRenderLoop(renderFrame);},
     update(s,log){
-      visual=worldPresentation(s,log);avatars.update(s,log);
+      studio?.update(s.venture.ventureName);
+      visual=worldPresentation(s,log);if(s.twinMetrics){visual.financeWarning=s.twinMetrics.runway!==null&&s.twinMetrics.runway<6;visual.revenue=s.twinMetrics.monthlyRevenue;}avatars.update(s,log);
       const values=[s.venture.productProgress,s.venture.runway===null?100:Math.min(100,s.venture.runway/12*100),s.market.demand,s.venture.productProgress,s.venture.retention,s.venture.teamCapacity,s.operations.founderEquity];
       progressBars.forEach((b,i)=>b.scaling.x=Math.max(.02,values[i]/100));
       for(const r of rooms){const alert=r.id==='finance'?visual.financeWarning:r.id==='customer'?visual.customerWarning:r.id==='investor'?visual.offer:r.id==='market'?visual.event&&visual.event.id!=='quiet':false;indicators[r.id].emissiveColor=B.Color3.FromHexString(alert?'#f5a86b':r.color).scale(alert?.65:.18);scene.getTransformNodeByName(r.id+'-root').metadata={alert:!!alert};}
       const proto=scene.getMeshByName('prototype');if(proto){proto.scaling.setAll(.65+visual.product);proto.rotation.y=visual.product*Math.PI;}
       const draw=(id,lines)=>{const texture=screens[id],ctx=texture.getContext();ctx.fillStyle='#132a32';ctx.fillRect(0,0,768,320);ctx.font='bold 40px sans-serif';ctx.fillStyle='#efd0a0';lines.forEach((line,i)=>ctx.fillText(line,28,62+i*65));texture.update();};
-      draw('ceo',['REVENUE / MRR',s.currency+' '+Math.round(visual.revenue).toLocaleString(),visual.revenueHistory.map(n=>Math.round(n).toLocaleString()).join(' → ')]);
+      draw('ceo',['REVENUE / MRR',s.currency+' '+Math.round(visual.revenue).toLocaleString(),s.releasePlan?'MVP: '+s.releasePlan.status.toUpperCase():visual.revenueHistory.map(n=>Math.round(n).toLocaleString()).join(' → ')]);
       if(visual.event)draw('market',['MARKET EVENT',visual.event.en.slice(0,30),'MONTH '+s.simulation.currentMonth]);
       draw('team',['TEAM '+visual.teamActual,'1 player + '+visual.teamShown+' visible staff','Visual cap: 6 staff · advisors separate']);
     },

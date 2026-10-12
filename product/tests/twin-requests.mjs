@@ -1,0 +1,28 @@
+// Deterministic UI race regression. linkedom@0.18.12 via NODE_PATH; no network.
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+const {parseHTML}=createRequire(import.meta.url)('linkedom');
+const {window}=parseHTML('<html><head></head><body><main></main></body></html>');
+for(const k of ['document','HTMLElement','Event','CustomEvent'])globalThis[k]=window[k];
+globalThis.window=window;globalThis.BABYLON={Engine:{isSupported:()=>false}};globalThis.ASNM_CONFIG={aiProxyUrl:'https://synthetic.invalid'};globalThis.matchMedia=()=>({matches:false});
+Object.defineProperty(window.HTMLSelectElement.prototype,'value',{get(){return this._value??this.querySelector('option')?.getAttribute('value')??'';},set(v){this._value=String(v);}});
+window.HTMLElement.prototype.scrollIntoView=()=>{};
+const {newProject,buildState}=await import('../trusted/model.js');
+const {renderTwinWorld}=await import('../twin/world.js');
+const p=newProject('race-test');const state=buildState(p.company);p.simulation={initialState:state,state:structuredClone(state),history:[]};p.worldEntry={confirmed:true,mode:'quick'};
+const host=document.querySelector('main'),c={project:p,host,lang:'en',t:(k,e)=>e,save:()=>true,go:()=>{},notify:()=>{}};
+const dispose=await renderTwinWorld(c),calls=[];
+globalThis.fetch=(url,options)=>new Promise((resolve,reject)=>calls.push({resolve,reject,options}));
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+host.querySelector('#twin-ai-consent').checked=true;host.querySelector('#twin-generate').click();assert.equal(calls.length,1);
+[...host.querySelectorAll('button')].find(b=>b.textContent==='Cancel').click();host.querySelector('#twin-generate').click();assert.equal(calls.length,2);
+calls[0].reject(new Error('old request aborted'));await tick();assert.equal(host.querySelector('#twin-generate').disabled,true);
+const proposal=p.twin.pending;assert.equal(proposal,null);
+const actions=['a','b'].map(id=>({id,title:id,why:'Synthetic option',risk:'Unverified assumption',next:'Measure demand',values:[14,0,0,-10,0,10,0,0,0,0],assumptions:['Synthetic only'],evidenceIds:[]}));
+calls[1].resolve({ok:true,json:async()=>({proposal:{title:'Current request',situation:'Synthetic test',uncertainty:'Not real data',actions}})});await tick();assert.equal(calls.length,3);
+const roles=['CTO','CFO','Growth','Product','Customer','Investor'];calls[2].resolve({ok:true,json:async()=>({proposal:{turns:roles.map(role=>({role,replyTo:'Founder',text:'Synthetic perspective '+role}))}})});await tick();
+assert.equal(p.twin.pending.title,'Current request');assert.equal(host.querySelector('#twin-generate').disabled,false);assert.equal(p.twin.dialogue.length,6);
+const q=host.querySelector('#twin-role-question');q.value='What next?';host.querySelector('#twin-ask-role').click();assert.equal(calls.length,4);
+host.querySelector('#twin-edit-settings').click();host.querySelector('#twin-apply-settings').click();
+calls[3].resolve({ok:true,json:async()=>({proposal:{text:'Obsolete advice'}})});await tick();assert.ok(!p.twin.dialogue.some(d=>d.text==='Obsolete advice'));assert.ok(!host.textContent.includes('Obsolete advice'));
+dispose();console.log(JSON.stringify({requests:'passed',checks:['cancel/restart keeps new request busy','current proposal commits once','late role reply after revision discarded']}));

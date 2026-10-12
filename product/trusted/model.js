@@ -1,3 +1,4 @@
+import {validateTwin,validateProfile} from '../twin/model.js';
 import {clone,validateState,MODEL_VERSION} from '../../module4/state/ASNMState.js';
 import {simulateMonth,snapshot} from '../../module4/simulation/SimulationEngine.js';
 import {defaultDecisions} from '../../module4/simulation/DecisionEngine.js';
@@ -8,6 +9,7 @@ export const text=(lang,ko,en)=>lang==='en'?en:ko;
 export const industries=[['AI·소프트웨어','AI & software'],['IT·클라우드·보안','IT, cloud & security'],['데이터·자동화','Data & automation'],['로봇·첨단제조','Robotics & manufacturing'],['반도체·전자','Semiconductors & electronics'],['교육·에듀테크','Education & edtech'],['의료·디지털 헬스','Healthcare'],['바이오·제약','Biotech & pharma'],['시니어·돌봄','Ageing & care'],['식품·외식·베이커리','Food & bakeries'],['농업·애그테크','Agriculture'],['유통·이커머스','Retail & commerce'],['패션·뷰티','Fashion & beauty'],['관광·여행·숙박','Travel & hospitality'],['콘텐츠·게임','Content & games'],['금융·핀테크','Finance & fintech'],['부동산·프롭테크','Property'],['물류·모빌리티·철도','Logistics, mobility & rail'],['에너지·기후테크','Energy & climate'],['건설·스마트시티','Construction & smart cities'],['공공서비스·GovTech','Public services'],['제조·B2B 산업','Industrial B2B'],['지역 생활서비스','Local services'],['사회적기업','Social ventures'],['반려동물','Pet care'],['스포츠·웰니스','Sports & wellness'],['기타 · 직접 입력','Other · enter anything']];
 const option=(id,ko,en,changes={},extra=null)=>({id,ko,en,changes,extra});
 export const missions=[
+ {id:'launch',room:'product',ko:'이번 달의 도전 · MVP 출시',en:'This month’s challenge · launch your MVP',options:[option('ship','지금 MVP 출시','Release MVP now',{product:'improve',marketing:'increase'}),option('polish','2주간 안정화 후 출시','Stabilize for two weeks, then launch',{product:'debt'}),option('pilot','고객 20명에게 먼저 테스트','Pilot with 20 customers',{market:'test',product:'improve'})]},
  {id:'team',room:'team',ko:'첫 팀 · 인재 영입',en:'Build your team',options:[option('developer','개발자 1명','One developer',{hiring:'developer'}),option('marketer','마케터 1명','One marketer',{hiring:'marketer'}),option('hold','현재 팀 유지','Keep the team')]},
  {id:'technology',room:'product',ko:'기술 도입',en:'Choose technology',options:[option('service','외부 서비스 도입','Adopt external service',{}, {kind:'technology',value:'service',once:1000,monthly:300,progress:2}),option('custom','자체 기술 구축','Build custom technology',{}, {kind:'technology',value:'custom',once:4000,monthly:100,progress:5}),option('outsource','범위를 정한 외주 개발','Scoped outsourcing',{}, {kind:'technology',value:'outsource',once:2500,monthly:400,progress:4}),option('hybrid','내부·외부 혼합 개발','Hybrid development',{}, {kind:'technology',value:'hybrid',once:2000,monthly:250,progress:3}),option('hold','현재 기술 유지','Keep technology')]},
  {id:'product',room:'product',ko:'제품·MVP 전략',en:'Product & MVP',options:[option('feature','핵심 기능 개발','Build core feature',{product:'feature'}),option('improve','기존 경험 개선','Improve experience',{product:'improve'}),option('debt','기술부채 정리','Reduce technical debt',{product:'debt'})]},
@@ -30,6 +32,13 @@ export function simulateDecision(input,missionId,actionId,reason='',timestamp=''
  if(o.extra){const x=o.extra,u=s.costUnit,policies=s.venturePolicies||{};const old=policies[x.kind];
   if(old?.value!==x.value){s.venture.cash-=x.once*u;if(s.venture.cash<=0)throw Error('Insufficient cash for setup cost');s.venture.monthlyBurn+=(x.monthly-(old?.monthly||0))*u;s.venture.productProgress=Math.min(100,s.venture.productProgress+x.progress);s.venturePolicies={...policies,[x.kind]:{value:x.value,monthly:x.monthly}};}
   assumptions.push(`${x.kind}: setup ${x.once*u} ${s.currency}, monthly ${x.monthly*u} ${s.currency}; replaces this policy's prior monthly allowance. Product index +${x.progress} on adoption, capped at 100. No employee retention effect modeled.`);
+ }
+ if(missionId==='launch'){
+  // A within-month milestone, never an extra monthly tick. Original engine still closes the month.
+  if(actionId==='ship'){s.venture.retention=Math.max(0,s.venture.retention-2);s.operations.technicalDebt=Math.min(100,s.operations.technicalDebt+4);}
+  if(actionId==='polish'){s.venture.productProgress=Math.min(100,s.venture.productProgress+6);s.venture.cash-=500*s.costUnit;if(s.venture.cash<=0)throw Error('Insufficient cash for release preparation');}
+  s.releasePlan={status:actionId==='pilot'?'pilot':'released',action:actionId,targetParticipants:actionId==='pilot'?20:null,preparationDays:actionId==='polish'?14:0,month:s.simulation.currentMonth+1};
+  assumptions.push('Launch v1: ship reduces retention by 2 points and adds 4 debt points; stabilize adds 6 readiness points and costs 500 cost units; pilot uses the existing segment-test cost and uncertainty rule. 14 days is a milestone inside the modeled month, not a half-month financial forecast. 20 is a target sample, not acquired or observed customers.');
  }
  const choices={...defaultDecisions(),...o.changes};
  const result=simulateMonth(s,choices,reason,timestamp);
@@ -99,6 +108,7 @@ export function validateProject(data){
   p.simulation={...sim,state,history};
  }
  for(const c of p.comparisons){if(!Array.isArray(c.ids)||c.ids.length<2||c.ids.length>3)throw Error('Invalid comparison');c.results=compareDecisions(validateState(c.state),c.missionId,c.ids);}
+ if(p.twinProfile)p.twinProfile=validateProfile(p.twinProfile);if(p.twin)p.twin=validateTwin(p.twin);
  return p;
 }
 export function importProject(raw,id){const d=JSON.parse(raw);if(d.schema==='asnm-project'){const p=validateProject(d);p.id=id;p.revision=0;return p;}const old=decodeImport(raw),p=newProject(id),s=old.session?.state||old.state;p.company={...p.company,name:s.venture.ventureName,idea:s.venture.industry,kind:'planned'};p.legacyImport=old;p.simulation={initialState:clone(s),state:clone(s),history:[]};return p;}
