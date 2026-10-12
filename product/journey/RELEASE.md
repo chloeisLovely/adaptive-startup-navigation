@@ -25,3 +25,12 @@ Saved project version remains 1. Readiness and selected-sector metadata are opti
 - One authorized synthetic request to the existing ASNM server: HTTP 200, source `llm`, module `m3a`; project state unchanged.
 
 Browser-rendered visual inspection, device microphone behavior and mobile pixel layout were not verified: the current managed Sites environment has no supported browser control capability. Offline DOM tests and stylesheet parsing do not substitute for those checks. No screenshot is presented as a rendering of this release.
+
+## Follow-up: input preservation and consistent cash review
+
+- Preserve all 36 sector labels plus the full 600-character custom question in the combined topic (2,400-character limit). Keep card titles short while retaining the full topic in the brief, export and market advice context.
+- Update sector selection in place so the active keyboard button remains in the document; removing a selected chip moves focus to the next chip or search field.
+- Share revenue-model-aware cash checks between builder warnings and readiness cards. Transaction/project revenue and variable costs now inform builder warnings; missing financial input remains missing.
+- Builder readiness and its advisor use the edited company draft. Experience reports continue using the completed/current simulation state, with no financial state mutation.
+- Clarify fixed-cost versus variable-cost input, and prevent speech input from bypassing disabled/read-only fields.
+- Validation: 92 passing unit/regression tests; journey, ecosystem and twin DOM tests passing. All-sector/custom-text export restoration, stable choice nodes, draft-versus-modeled cash and disabled-field recognition covered. Browser visual QA remains unavailable as described above.
