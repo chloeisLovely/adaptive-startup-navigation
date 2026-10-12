@@ -1,4 +1,4 @@
-import {mountWorkspace,projectURL,adoptLegacy,recordQuickResult} from './workspace.js';
+import {mountWorkspace,projectURL,adoptLegacy,recordQuickResult,getActiveProject,saveActiveProject} from './workspace.js';
 import {el,button,note} from './ui.js';
 export function installTrusted(){
  const lang=document.documentElement.lang==='en'?'en':'ko',t=(k,e)=>lang==='ko'?k:e;
@@ -19,6 +19,7 @@ export function installTrusted(){
  const desc=document.querySelector('#page-m1 .ai-search-desc');if(desc)desc.textContent=t('선택 시 기존 AI 프록시에 질문이 전송됩니다. 실시간 검색이 아닌 생성형 설명이며 출처와 수치는 별도 확인이 필요합니다.','Submitting sends your question to the existing AI proxy. This is generated explanation, not live search; verify sources and figures separately.');
  const oldQuery=window.aiTrendSearch;if(oldQuery)window.aiTrendSearch=function(){const consent=confirm(t('입력한 질문이 설정된 ASNM AI 프록시와 AI 제공자에게 전송됩니다. 전송할까요?','Your question will be sent to the configured ASNM AI proxy and provider. Send it?'));if(consent)return oldQuery.apply(this,arguments);};
  const quickResult=window.showFounderResult;if(quickResult)window.showFounderResult=function(){const result=quickResult.apply(this,arguments);recordQuickResult(window._founderType||'',window.getFounderAnswers?.()||[]);const graph=document.getElementById('founder-result');if(graph&&!graph.querySelector('.v6-radar-note'))graph.append(el('p',{class:'v6-radar-note',text:t('기존 유형 레이더는 유형 설명용 예시이며 실제 응답 점수가 아닙니다. 심층 결과의 레이더는 실제 답변 평균을 표시합니다.','The original type radar is illustrative, not an answer-derived score. The deeper assessment radar uses actual answer averages.')}));return result;};
+ window.addEventListener('asnm:barl-complete',event=>{getActiveProject().barl=structuredClone(event.detail);saveActiveProject();});
  window.addEventListener('asnm:module3-complete',event=>{
   document.getElementById('trusted-legacy-handoff')?.remove();
   const handoff=el('div',{class:'trusted',id:'trusted-legacy-handoff'},el('h2',{text:t('이 회사로 V6 경영 미션 체험','Experience V6 missions with this company')}),button(t('기존 결과를 보존하고 연결 →','Preserve & connect these results →'),()=>{adoptLegacy(event.detail);location.assign(projectURL('world',lang));},{class:'tw-primary'}));

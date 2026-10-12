@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),{parseHTML}=require('linkedom');
 const {document}=parseHTML('<html><head></head><body><main></main></body></html>');
 globalThis.document=document;
+Object.defineProperty(document.defaultView.HTMLSelectElement.prototype,'value',{get(){return this._value??this.querySelector('option')?.getAttribute('value')??''},set(v){this._value=String(v)},configurable:true});
 globalThis.PDFLib=require('../v6/vendor/pdf-lib.min.js');
 globalThis.fontkit=require('../v6/vendor/fontkit.umd.min.js');
 globalThis.fetch=async url=>{assert.equal(new URL(url).protocol,'file:');const bytes=await readFile(url);return {ok:true,arrayBuffer:async()=>bytes};};

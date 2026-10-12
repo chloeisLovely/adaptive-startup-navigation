@@ -1,3 +1,4 @@
+import {migrateBuilder,validateBarl,validateEcosystem} from '../ecosystem/model.js';
 import {validateTwin,validateProfile} from '../twin/model.js';
 import {clone,validateState,MODEL_VERSION} from '../../module4/state/ASNMState.js';
 import {simulateMonth,snapshot} from '../../module4/simulation/SimulationEngine.js';
@@ -64,7 +65,7 @@ export function opportunityBrief(topic,customer='',region='',lang='ko'){
   {id:'workflow',title:t(`${topic}: 기존 업무 개선`,`${topic}: improve an existing workflow`),problem:t('기존 도구와 함께 사용할 수 있는 개선 지점을 고객에게 확인합니다.','Ask customers where an improvement could work alongside existing tools.'),experiment:t('현재 방식과 간단한 시제품의 시간·오류를 비교하세요.','Compare time and errors between the current method and a small prototype.')}
  ],uncertainty:t('실시간 검색을 수행하지 않았습니다. 시장 규모·성장률·경쟁 정보가 확인되지 않았으며, 아래는 검증할 가설입니다.','No live search was performed. Market size, growth and competitors are unverified; these are hypotheses to test.')};
 }
-export function newProject(id){return {schema:'asnm-project',version:1,id,revision:0,name:'',opportunity:null,assessment:{answers:{},situations:{},step:0},company:{kind:'planned',stage:'idea',team:'solo',funds:'6-12'},simulation:null,comparisons:[]};}
+export function newProject(id){return {schema:'asnm-project',version:1,id,revision:0,name:'',opportunity:null,assessment:{answers:{},situations:{},step:0},company:{builderVersion:2,step:0,kind:'planned',stage:'idea',team:'solo',funds:'6-12'},simulation:null,comparisons:[]};}
 const canonical=x=>JSON.stringify(x,(_,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.fromEntries(Object.keys(v).sort().map(k=>[k,v[k]])):v);
 function validatePolicies(state){
  if(state.venturePolicies===undefined)return;
@@ -88,10 +89,11 @@ export function validateProject(data){
  if(!record(p.company)||!record(p.assessment)||!record(p.assessment.answers)||!record(p.assessment.situations))throw Error('Missing project sections');
  if(p.founderContext&&(!record(p.founderContext)||Object.values(p.founderContext).some(v=>typeof v!=='string'||v.length>240)))throw Error('Invalid founder context');
  if(p.adviceHistory&&(!Array.isArray(p.adviceHistory)||p.adviceHistory.length>12||p.adviceHistory.some(v=>!record(v)||typeof v.question!=='string'||v.question.length>600||typeof v.answer!=='string'||v.answer.length>900||!['llm','rules','rules-fallback'].includes(v.source))))throw Error('Invalid advice history');
+ if(p.adviceHistory?.some(h=>(h.nextAction!==undefined&&(typeof h.nextAction!=='string'||h.nextAction.length>900))||(h.step!==undefined&&(!Number.isInteger(h.step)||h.step<0||h.step>5))))throw Error('Invalid advice detail');
  if(p.quickCheck?.answers&&(!Array.isArray(p.quickCheck.answers)||p.quickCheck.answers.length>10||p.quickCheck.answers.some(v=>!['V','A','C','T','I','S'].includes(v))))throw Error('Invalid quick answers');
  if(p.entryQuestion!==undefined&&typeof p.entryQuestion!=='string')throw Error('Invalid question');
  if(p.assessment.step!==undefined&&(!Number.isInteger(p.assessment.step)||p.assessment.step<0||p.assessment.step>18))throw Error('Invalid assessment step');
- if(p.company.step!==undefined&&(!Number.isInteger(p.company.step)||p.company.step<0||p.company.step>4))throw Error('Invalid builder step');
+ migrateBuilder(p.company); if(!Number.isInteger(p.company.step)||p.company.step<0||p.company.step>5)throw Error('Invalid builder step'); validateBarl(p.barl);validateEcosystem(p.ecosystem);
  if(p.worldUI&&(!['CEO','CTO','CFO','Growth','Product'].includes(p.worldUI.role)||!missions.some(m=>m.id===p.worldUI.mission)))throw Error('Invalid role or mission');
  for(const [k,v] of Object.entries(p.company))if(k!=='step'&&typeof v!=='string'&&typeof v!=='number')throw Error('Invalid company field');
  for(const val of Object.values(p.assessment.answers))if(!Number.isInteger(val)||val<1||val>5)throw Error('Invalid assessment answer');

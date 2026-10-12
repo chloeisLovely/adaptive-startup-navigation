@@ -20,8 +20,8 @@ calls[0].reject(new Error('old request aborted'));await tick();assert.equal(host
 const proposal=p.twin.pending;assert.equal(proposal,null);
 const actions=['a','b'].map(id=>({id,title:id,why:'Synthetic option',risk:'Unverified assumption',next:'Measure demand',values:[14,0,0,-10,0,10,0,0,0,0],assumptions:['Synthetic only'],evidenceIds:[]}));
 calls[1].resolve({ok:true,json:async()=>({proposal:{title:'Current request',situation:'Synthetic test',uncertainty:'Not real data',actions}})});await tick();assert.equal(calls.length,3);
-const roles=['CTO','CFO','Growth','Product','Customer','Investor'];calls[2].resolve({ok:true,json:async()=>({proposal:{turns:roles.map(role=>({role,replyTo:'Founder',text:'Synthetic perspective '+role}))}})});await tick();
-assert.equal(p.twin.pending.title,'Current request');assert.equal(host.querySelector('#twin-generate').disabled,false);assert.equal(p.twin.dialogue.length,6);
+const roles=['CTO','CFO','Growth','HR','Product','Customer','Investor'];calls[2].resolve({ok:true,json:async()=>({proposal:{turns:roles.map(role=>({role,replyTo:'Founder',text:'Synthetic perspective '+role}))}})});await tick();
+assert.equal(p.twin.pending.title,'Current request');assert.equal(host.querySelector('#twin-generate').disabled,false);assert.equal(p.twin.dialogue.length,7);
 const q=host.querySelector('#twin-role-question');q.value='What next?';host.querySelector('#twin-ask-role').click();assert.equal(calls.length,4);
 host.querySelector('#twin-edit-settings').click();host.querySelector('#twin-apply-settings').click();
 calls[3].resolve({ok:true,json:async()=>({proposal:{text:'Obsolete advice'}})});await tick();assert.ok(!p.twin.dialogue.some(d=>d.text==='Obsolete advice'));assert.ok(!host.textContent.includes('Obsolete advice'));

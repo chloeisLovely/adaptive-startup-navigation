@@ -3874,6 +3874,7 @@ function renderSimSteps(){
   });
 }
 
+window.ASNM_BARL={get:()=>structuredClone(simData.barl||{}),set:value=>{simData.barl=structuredClone(value);const keys=['survival','growth','months','failReason1','failReason2','failReason3'];keys.forEach((key,i)=>{const node=document.getElementById('barl-q'+(i+1));if(node)node.value=value[key]??'';});document.querySelectorAll('.barl-bias').forEach((node,i)=>{node.checked=[node.value,['과신','계획오류','확증편향','매몰비용','가용성편향','오만'][i],['Overconfidence','Planning fallacy','Confirmation bias','Sunk cost','Availability bias','Prior-success hubris'][i]].some(key=>(value.biases||[]).includes(key));});}};
 function completeBarl(){
   // 모든 필수 필드 체크
   const q1 = document.getElementById('barl-q1').value.trim();
@@ -3901,6 +3902,7 @@ function completeBarl(){
     biases: biases
   };
   
+  window.dispatchEvent(new CustomEvent('asnm:barl-complete',{detail:structuredClone(simData.barl)}));
   document.getElementById('barl-required-msg').classList.remove('show');
   
   // 다음 스텝
