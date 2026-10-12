@@ -1,3 +1,4 @@
+import {validateDesign} from '../service/design.js';
 import {validateReadiness} from '../journey/readiness.js';
 import {migrateBuilder,validateBarl,validateEcosystem} from '../ecosystem/model.js';
 import {validateTwin,validateProfile} from '../twin/model.js';
@@ -88,7 +89,7 @@ export function decisionReflection(row,reflection={}){
 export function validateProject(data){
  if(!data||data.schema!=='asnm-project'||data.version!==1||typeof data.id!=='string'||!/^[a-zA-Z0-9-]{1,80}$/.test(data.id)||!Number.isInteger(data.revision)||data.revision<0)throw Error('Unsupported project');
  if(JSON.stringify(data).length>8*1024*1024)throw Error('Project exceeds 8 MB');
- const p=clone(data);validateReadiness(p.readiness);const record=v=>v&&typeof v==='object'&&!Array.isArray(v);
+ const p=clone(data);validateDesign(p.design);if(p.founderFlow!==undefined&&!['intro','quick','deep','result'].includes(p.founderFlow))throw Error('Invalid founder flow');if(p.quickStep!==undefined&&(!Number.isInteger(p.quickStep)||p.quickStep<0||p.quickStep>9))throw Error('Invalid quick step');validateReadiness(p.readiness);const record=v=>v&&typeof v==='object'&&!Array.isArray(v);
  if(p.marketDraft!==undefined){const d=p.marketDraft;if(!record(d)||['topic','customer','region','freeTopic'].some(k=>d[k]!==undefined&&(typeof d[k]!=='string'||d[k].length>(k==='topic'?TOPIC_LIMIT:600)))||(d.sectors!==undefined&&(!Array.isArray(d.sectors)||d.sectors.length>36||d.sectors.some(x=>typeof x!=='string'||x.length>60))))throw Error('Invalid market draft');}
  if(!record(p.company)||!record(p.assessment)||!record(p.assessment.answers)||!record(p.assessment.situations))throw Error('Missing project sections');
  if(p.founderContext&&(!record(p.founderContext)||Object.values(p.founderContext).some(v=>typeof v!=='string'||v.length>240)))throw Error('Invalid founder context');

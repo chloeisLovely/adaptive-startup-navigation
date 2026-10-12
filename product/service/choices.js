@@ -1,0 +1,12 @@
+import {el,button,field,details,table,note} from '../trusted/ui.js';
+import {spokenField} from '../journey/inputs.js';
+import {catalog} from './catalog.js';
+import {designLabels,designRows} from './design.js';
+export function paintIcon(b,icon,label){b.replaceChildren(el('span',{class:'service-icon','aria-hidden':'true',text:icon}),el('span',{text:label}),el('span',{class:'service-tick','aria-hidden':'true',text:'✓'}));return b;}
+export function designPicker(c,key){const {project:p,t,lang}=c;p.design??={};p.design[key]??={selected:[],other:''};const d=p.design[key],grid=el('div',{class:'service-choice-grid'}),status=el('p',{class:'service-selection',role:'status'}),box=el('section',{class:'service-picker','data-design':key},el('h3',{text:t(...designLabels[key])}),el('p',{text:t('필요한 것만 골라보세요. 정하지 않고 넘어가도 괜찮아요.','Choose what matters. You can leave this undecided.')}));
+ const update=()=>{status.textContent=d.selected.length?t(`${d.selected.length}개 선택 · 언제든 변경할 수 있어요`,`${d.selected.length} selected · change anytime`):t('아직 고르지 않았어요','Nothing selected yet');grid.querySelectorAll('[data-design-value]').forEach(b=>b.setAttribute('aria-pressed',String(d.selected.includes(b.dataset.designValue))));c.save();c.refreshContext?.();};
+ const other=details(t('기타 · 직접 쓰거나 말하기','Other · type or speak'),spokenField(field('service-'+key+'-other',t('나만의 선택','Your own choice'),d.other,v=>{d.other=v;update();},{multiline:true}),lang));other.open=!!d.other;
+ for(const [id,icon,ko,en] of catalog[key])grid.append(paintIcon(button('',()=>{d.selected=d.selected.includes(id)?d.selected.filter(x=>x!==id):[...d.selected,id];update();},{class:'service-choice','data-design-value':id,'aria-pressed':d.selected.includes(id)}),icon,t(ko,en)));
+ grid.append(paintIcon(button('',()=>{other.open=true;other.querySelector('input,textarea').focus();},{class:'service-choice'}),'✏️',t('기타','Other')));status.textContent=t('선택 사항 · 중복 선택 가능','Optional · choose multiple');box.append(grid,status,other);return box;
+}
+export function designSummary(p,lang='ko'){const t=(k,e)=>lang==='ko'?k:e,rows=designRows(p,lang);return el('div',{class:'service-design-summary'},el('h3',{text:t('내가 선택한 회사의 모습','My venture choices')}),rows.length?table([t('구성','Area'),t('나의 선택','My choices')],rows.map(r=>[r.label,r.text])):note(t('기술·역할·복지는 아직 정하지 않았어요.','Technology, roles and benefits are not selected yet.')),el('small',{text:t('희망 계획입니다. 채용·도입 비용은 시뮬레이션에서 직접 확인하고 결정하세요.','These are plans. Review and confirm hiring or adoption costs in your simulation.')}));}

@@ -1,0 +1,5 @@
+import {catalog} from './catalog.js';
+export const designKeys=['technology','talent','culture'];
+export const designLabels={technology:['기술·도구','Technology & tools'],talent:['함께할 역할','Roles to consider'],culture:['복지·일하는 방식','Culture & benefits']};
+export function validateDesign(value){if(value===undefined)return;if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid venture design');for(const [key,row] of Object.entries(value)){if(!designKeys.includes(key)||!row||!Array.isArray(row.selected)||row.selected.length>catalog[key].length||row.selected.some(id=>!catalog[key].some(x=>x[0]===id))||new Set(row.selected).size!==row.selected.length||typeof row.other!=='string'||row.other.length>600)throw Error('Invalid design choices');}}
+export function designRows(p,lang='ko'){return designKeys.map(key=>{const d=p.design?.[key];if(!d)return null;const values=(d.selected||[]).map(id=>catalog[key].find(x=>x[0]===id)).filter(Boolean).map(x=>x[lang==='en'?3:2]);if(d.other)values.push(d.other);return {key,label:designLabels[key][lang==='en'?1:0],text:values.join(' · ')};}).filter(r=>r?.text);}
