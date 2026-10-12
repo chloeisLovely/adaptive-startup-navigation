@@ -1,3 +1,4 @@
+import {validateReadiness} from '../journey/readiness.js';
 import {migrateBuilder,validateBarl,validateEcosystem} from '../ecosystem/model.js';
 import {validateTwin,validateProfile} from '../twin/model.js';
 import {clone,validateState,MODEL_VERSION} from '../../module4/state/ASNMState.js';
@@ -85,7 +86,8 @@ export function decisionReflection(row,reflection={}){
 export function validateProject(data){
  if(!data||data.schema!=='asnm-project'||data.version!==1||typeof data.id!=='string'||!/^[a-zA-Z0-9-]{1,80}$/.test(data.id)||!Number.isInteger(data.revision)||data.revision<0)throw Error('Unsupported project');
  if(JSON.stringify(data).length>8*1024*1024)throw Error('Project exceeds 8 MB');
- const p=clone(data),record=v=>v&&typeof v==='object'&&!Array.isArray(v);
+ const p=clone(data);validateReadiness(p.readiness);const record=v=>v&&typeof v==='object'&&!Array.isArray(v);
+ if(p.marketDraft!==undefined){const d=p.marketDraft;if(!record(d)||['topic','customer','region','freeTopic'].some(k=>d[k]!==undefined&&(typeof d[k]!=='string'||d[k].length>600))||(d.sectors!==undefined&&(!Array.isArray(d.sectors)||d.sectors.length>36||d.sectors.some(x=>typeof x!=='string'||x.length>60))))throw Error('Invalid market draft');}
  if(!record(p.company)||!record(p.assessment)||!record(p.assessment.answers)||!record(p.assessment.situations))throw Error('Missing project sections');
  if(p.founderContext&&(!record(p.founderContext)||Object.values(p.founderContext).some(v=>typeof v!=='string'||v.length>240)))throw Error('Invalid founder context');
  if(p.adviceHistory&&(!Array.isArray(p.adviceHistory)||p.adviceHistory.length>12||p.adviceHistory.some(v=>!record(v)||typeof v.question!=='string'||v.question.length>600||typeof v.answer!=='string'||v.answer.length>900||!['llm','rules','rules-fallback'].includes(v.source))))throw Error('Invalid advice history');

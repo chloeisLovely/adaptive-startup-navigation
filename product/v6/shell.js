@@ -2,6 +2,7 @@ import {el} from '../trusted/ui.js';
 export const root=new URL('../../',import.meta.url);
 export function installShell(lang=document.documentElement.lang==='en'?'en':'ko'){
  if(!document.getElementById('v6-style'))document.head.append(el('link',{id:'v6-style',rel:'stylesheet',href:new URL('./cosmic.css',import.meta.url).href}));
+ if(!document.getElementById('journey-style'))document.head.append(el('link',{id:'journey-style',rel:'stylesheet',href:new URL('../journey/journey.css',import.meta.url).href}));
  document.querySelectorAll('.p-maker-credit,.p-footer').forEach(n=>n.remove());
  document.getElementById('asnm-footer')?.remove();
  const t=(k,e)=>lang==='ko'?k:e;
